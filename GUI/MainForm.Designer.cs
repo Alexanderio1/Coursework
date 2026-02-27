@@ -116,24 +116,24 @@ namespace GUI
             // 
             this.miNew.Name = "miNew";
             this.miNew.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.miNew.Size = new System.Drawing.Size(458, 44);
-            this.miNew.Text = "Создать (Ctrl+N)";
+            this.miNew.Size = new System.Drawing.Size(479, 44);
+            this.miNew.Text = "Создать";
             this.miNew.Click += new System.EventHandler(this.CmdNew_Click);
             // 
             // miOpen
             // 
             this.miOpen.Name = "miOpen";
             this.miOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.miOpen.Size = new System.Drawing.Size(631, 44);
-            this.miOpen.Text = "Открыть (Ctrl+O)";
+            this.miOpen.Size = new System.Drawing.Size(479, 44);
+            this.miOpen.Text = "Открыть";
             this.miOpen.Click += new System.EventHandler(this.CmdOpen_Click);
             // 
             // miSave
             // 
             this.miSave.Name = "miSave";
             this.miSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.miSave.Size = new System.Drawing.Size(631, 44);
-            this.miSave.Text = "Сохранить (Ctrl+S)";
+            this.miSave.Size = new System.Drawing.Size(479, 44);
+            this.miSave.Text = "Сохранить";
             this.miSave.Click += new System.EventHandler(this.CmdSave_Click);
             // 
             // miSaveAs
@@ -141,16 +141,16 @@ namespace GUI
             this.miSaveAs.Name = "miSaveAs";
             this.miSaveAs.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.S)));
-            this.miSaveAs.Size = new System.Drawing.Size(631, 44);
-            this.miSaveAs.Text = "Сохранить как (Ctrl+Shift+S)";
+            this.miSaveAs.Size = new System.Drawing.Size(479, 44);
+            this.miSaveAs.Text = "Сохранить как";
             this.miSaveAs.Click += new System.EventHandler(this.CmdSaveAs_Click);
             // 
             // miExit
             // 
             this.miExit.Name = "miExit";
             this.miExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.miExit.Size = new System.Drawing.Size(631, 44);
-            this.miExit.Text = "Выход (Alt+F4)";
+            this.miExit.Size = new System.Drawing.Size(479, 44);
+            this.miExit.Text = "Выход";
             this.miExit.Click += new System.EventHandler(this.CmdExit_Click);
             // 
             // miEdit
@@ -164,56 +164,63 @@ namespace GUI
             this.miDelete,
             this.miSelectAll});
             this.miEdit.Name = "miEdit";
-            this.miEdit.Size = new System.Drawing.Size(114, 36);
+            this.miEdit.Size = new System.Drawing.Size(114, 38);
             this.miEdit.Text = "Правка";
             // 
             // miUndo
             // 
             this.miUndo.Name = "miUndo";
-            this.miUndo.Size = new System.Drawing.Size(386, 44);
-            this.miUndo.Text = "Отменить (Ctrl+Z)";
+            this.miUndo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.miUndo.Size = new System.Drawing.Size(395, 44);
+            this.miUndo.Text = "Отменить";
             this.miUndo.Click += new System.EventHandler(this.CmdUndo_Click);
             // 
             // miRedo
             // 
             this.miRedo.Name = "miRedo";
-            this.miRedo.Size = new System.Drawing.Size(386, 44);
-            this.miRedo.Text = "Вернуть (Ctrl+Y)";
+            this.miRedo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.miRedo.Size = new System.Drawing.Size(395, 44);
+            this.miRedo.Text = "Вернуть";
             this.miRedo.Click += new System.EventHandler(this.CmdRedo_Click);
             // 
             // miCut
             // 
             this.miCut.Name = "miCut";
-            this.miCut.Size = new System.Drawing.Size(386, 44);
-            this.miCut.Text = "Вырезать (Ctrl+X)";
+            this.miCut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
+            this.miCut.Size = new System.Drawing.Size(395, 44);
+            this.miCut.Text = "Вырезать";
             this.miCut.Click += new System.EventHandler(this.CmdCut_Click);
             // 
             // miCopy
             // 
             this.miCopy.Name = "miCopy";
-            this.miCopy.Size = new System.Drawing.Size(386, 44);
-            this.miCopy.Text = "Копировать (Ctrl+C)";
+            this.miCopy.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.miCopy.Size = new System.Drawing.Size(395, 44);
+            this.miCopy.Text = "Копировать";
             this.miCopy.Click += new System.EventHandler(this.CmdCopy_Click);
             // 
             // miPaste
             // 
             this.miPaste.Name = "miPaste";
-            this.miPaste.Size = new System.Drawing.Size(386, 44);
-            this.miPaste.Text = "Вставить (Ctrl+V)";
+            this.miPaste.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.miPaste.Size = new System.Drawing.Size(395, 44);
+            this.miPaste.Text = "Вставить";
             this.miPaste.Click += new System.EventHandler(this.CmdPaste_Click);
             // 
             // miDelete
             // 
             this.miDelete.Name = "miDelete";
-            this.miDelete.Size = new System.Drawing.Size(386, 44);
-            this.miDelete.Text = "Удалить (Del)";
+            this.miDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
+            this.miDelete.Size = new System.Drawing.Size(395, 44);
+            this.miDelete.Text = "Удалить";
             this.miDelete.Click += new System.EventHandler(this.CmdDelete_Click);
             // 
             // miSelectAll
             // 
             this.miSelectAll.Name = "miSelectAll";
-            this.miSelectAll.Size = new System.Drawing.Size(386, 44);
-            this.miSelectAll.Text = "Выделить все (Ctrl+A)";
+            this.miSelectAll.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.miSelectAll.Size = new System.Drawing.Size(395, 44);
+            this.miSelectAll.Text = "Выделить все";
             this.miSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
             // 
             // miText
@@ -292,14 +299,15 @@ namespace GUI
             this.miHelpContent,
             this.miAbout});
             this.miHelp.Name = "miHelp";
-            this.miHelp.Size = new System.Drawing.Size(126, 36);
+            this.miHelp.Size = new System.Drawing.Size(126, 38);
             this.miHelp.Text = "Справка";
             // 
             // miHelpContent
             // 
             this.miHelpContent.Name = "miHelpContent";
+            this.miHelpContent.ShortcutKeys = System.Windows.Forms.Keys.F1;
             this.miHelpContent.Size = new System.Drawing.Size(359, 44);
-            this.miHelpContent.Text = "Вызов справки (F1)";
+            this.miHelpContent.Text = "Вызов справки";
             this.miHelpContent.Click += new System.EventHandler(this.CmdHelp_Click);
             // 
             // miAbout
