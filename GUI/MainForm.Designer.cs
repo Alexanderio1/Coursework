@@ -317,14 +317,14 @@ namespace GUI
             this.toolStripSeparator4});
             this.toolMain.Location = new System.Drawing.Point(0, 40);
             this.toolMain.Name = "toolMain";
-            this.toolMain.Size = new System.Drawing.Size(1588, 38);
+            this.toolMain.Size = new System.Drawing.Size(1588, 34);
             this.toolMain.TabIndex = 11;
             this.toolMain.Text = "toolStrip1";
             // 
             // splitMain
             // 
             this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 78);
+            this.splitMain.Location = new System.Drawing.Point(0, 74);
             this.splitMain.Name = "splitMain";
             this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -335,8 +335,8 @@ namespace GUI
             // splitMain.Panel2
             // 
             this.splitMain.Panel2.Controls.Add(this.rtbOutput);
-            this.splitMain.Size = new System.Drawing.Size(1588, 817);
-            this.splitMain.SplitterDistance = 518;
+            this.splitMain.Size = new System.Drawing.Size(1588, 821);
+            this.splitMain.SplitterDistance = 521;
             this.splitMain.SplitterWidth = 6;
             this.splitMain.TabIndex = 12;
             // 
@@ -349,7 +349,7 @@ namespace GUI
             this.rtbEditor.HideSelection = false;
             this.rtbEditor.Location = new System.Drawing.Point(0, 0);
             this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 521);
             this.rtbEditor.TabIndex = 0;
             this.rtbEditor.Text = "";
             this.rtbEditor.WordWrap = false;
@@ -362,7 +362,7 @@ namespace GUI
             this.rtbOutput.Location = new System.Drawing.Point(0, 0);
             this.rtbOutput.Name = "rtbOutput";
             this.rtbOutput.ReadOnly = true;
-            this.rtbOutput.Size = new System.Drawing.Size(1588, 293);
+            this.rtbOutput.Size = new System.Drawing.Size(1588, 294);
             this.rtbOutput.TabIndex = 0;
             this.rtbOutput.TabStop = false;
             this.rtbOutput.Text = "";
@@ -378,23 +378,23 @@ namespace GUI
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 38);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 38);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 34);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 38);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 34);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 38);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 34);
             // 
             // btnNew
             // 
@@ -402,7 +402,7 @@ namespace GUI
             this.btnNew.Image = global::GUI.Properties.Resources._new;
             this.btnNew.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnNew.Name = "btnNew";
-            this.btnNew.Size = new System.Drawing.Size(46, 32);
+            this.btnNew.Size = new System.Drawing.Size(46, 28);
             this.btnNew.Text = "New";
             this.btnNew.Click += new System.EventHandler(this.CmdNew_Click);
             // 
@@ -412,7 +412,7 @@ namespace GUI
             this.btnOpen.Image = global::GUI.Properties.Resources.open;
             this.btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnOpen.Name = "btnOpen";
-            this.btnOpen.Size = new System.Drawing.Size(46, 32);
+            this.btnOpen.Size = new System.Drawing.Size(46, 28);
             this.btnOpen.Text = "Open";
             this.btnOpen.Click += new System.EventHandler(this.CmdOpen_Click);
             // 
@@ -422,7 +422,7 @@ namespace GUI
             this.btnSave.Image = global::GUI.Properties.Resources.save;
             this.btnSave.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(46, 32);
+            this.btnSave.Size = new System.Drawing.Size(46, 28);
             this.btnSave.Text = "Save";
             this.btnSave.Click += new System.EventHandler(this.CmdSave_Click);
             // 
@@ -432,7 +432,7 @@ namespace GUI
             this.btnSaveAs.Image = global::GUI.Properties.Resources.saveas;
             this.btnSaveAs.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnSaveAs.Name = "btnSaveAs";
-            this.btnSaveAs.Size = new System.Drawing.Size(46, 32);
+            this.btnSaveAs.Size = new System.Drawing.Size(46, 28);
             this.btnSaveAs.Text = "Save as";
             this.btnSaveAs.Click += new System.EventHandler(this.CmdSaveAs_Click);
             // 
@@ -442,7 +442,7 @@ namespace GUI
             this.btnExit.Image = global::GUI.Properties.Resources.exit;
             this.btnExit.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(46, 32);
+            this.btnExit.Size = new System.Drawing.Size(46, 28);
             this.btnExit.Text = "Exit";
             this.btnExit.Click += new System.EventHandler(this.CmdExit_Click);
             // 
@@ -452,7 +452,7 @@ namespace GUI
             this.btnUndo.Image = global::GUI.Properties.Resources.undo;
             this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnUndo.Name = "btnUndo";
-            this.btnUndo.Size = new System.Drawing.Size(46, 32);
+            this.btnUndo.Size = new System.Drawing.Size(46, 28);
             this.btnUndo.Text = "Undo";
             this.btnUndo.Click += new System.EventHandler(this.CmdUndo_Click);
             // 
@@ -462,7 +462,7 @@ namespace GUI
             this.btnRedo.Image = global::GUI.Properties.Resources.redo;
             this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRedo.Name = "btnRedo";
-            this.btnRedo.Size = new System.Drawing.Size(46, 32);
+            this.btnRedo.Size = new System.Drawing.Size(46, 28);
             this.btnRedo.Text = "Redo";
             this.btnRedo.Click += new System.EventHandler(this.CmdRedo_Click);
             // 
@@ -472,7 +472,7 @@ namespace GUI
             this.btnCut.Image = global::GUI.Properties.Resources.cut;
             this.btnCut.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnCut.Name = "btnCut";
-            this.btnCut.Size = new System.Drawing.Size(46, 32);
+            this.btnCut.Size = new System.Drawing.Size(46, 28);
             this.btnCut.Text = "Cut";
             this.btnCut.Click += new System.EventHandler(this.CmdCut_Click);
             // 
@@ -482,7 +482,7 @@ namespace GUI
             this.btnCopy.Image = global::GUI.Properties.Resources.copy;
             this.btnCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnCopy.Name = "btnCopy";
-            this.btnCopy.Size = new System.Drawing.Size(46, 32);
+            this.btnCopy.Size = new System.Drawing.Size(46, 28);
             this.btnCopy.Text = "Copy";
             this.btnCopy.Click += new System.EventHandler(this.CmdCopy_Click);
             // 
@@ -492,7 +492,7 @@ namespace GUI
             this.btnPaste.Image = global::GUI.Properties.Resources.paste;
             this.btnPaste.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnPaste.Name = "btnPaste";
-            this.btnPaste.Size = new System.Drawing.Size(46, 32);
+            this.btnPaste.Size = new System.Drawing.Size(46, 28);
             this.btnPaste.Text = "Paste";
             this.btnPaste.Click += new System.EventHandler(this.CmdPaste_Click);
             // 
@@ -502,7 +502,7 @@ namespace GUI
             this.btnDelete.Image = global::GUI.Properties.Resources.delete;
             this.btnDelete.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(46, 32);
+            this.btnDelete.Size = new System.Drawing.Size(46, 28);
             this.btnDelete.Text = "Delete";
             this.btnDelete.Click += new System.EventHandler(this.CmdDelete_Click);
             // 
@@ -512,7 +512,7 @@ namespace GUI
             this.btnSelectAll.Image = global::GUI.Properties.Resources.selectall;
             this.btnSelectAll.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnSelectAll.Name = "btnSelectAll";
-            this.btnSelectAll.Size = new System.Drawing.Size(46, 32);
+            this.btnSelectAll.Size = new System.Drawing.Size(46, 28);
             this.btnSelectAll.Text = "Select all";
             this.btnSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
             // 
@@ -522,7 +522,7 @@ namespace GUI
             this.btnRun.Image = global::GUI.Properties.Resources.run;
             this.btnRun.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnRun.Name = "btnRun";
-            this.btnRun.Size = new System.Drawing.Size(46, 32);
+            this.btnRun.Size = new System.Drawing.Size(46, 28);
             this.btnRun.Text = "Run (анализатор)";
             this.btnRun.Click += new System.EventHandler(this.CmdRun_Click);
             // 
@@ -534,7 +534,7 @@ namespace GUI
             this.btnAbout.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnAbout.Name = "btnAbout";
             this.btnAbout.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.btnAbout.Size = new System.Drawing.Size(46, 32);
+            this.btnAbout.Size = new System.Drawing.Size(46, 28);
             this.btnAbout.Text = "About";
             this.btnAbout.Click += new System.EventHandler(this.CmdAbout_Click);
             // 
@@ -545,7 +545,7 @@ namespace GUI
             this.btnHelp.Image = global::GUI.Properties.Resources.help;
             this.btnHelp.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(46, 32);
+            this.btnHelp.Size = new System.Drawing.Size(46, 28);
             this.btnHelp.Text = "Help";
             this.btnHelp.Click += new System.EventHandler(this.CmdHelp_Click);
             // 
@@ -560,6 +560,7 @@ namespace GUI
             this.MainMenuStrip = this.menuMain;
             this.MinimumSize = new System.Drawing.Size(800, 500);
             this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Analyser";
             this.menuMain.ResumeLayout(false);
             this.menuMain.PerformLayout();

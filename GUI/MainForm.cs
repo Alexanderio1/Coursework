@@ -42,7 +42,7 @@ namespace GUI
                 ? "Untitled"
                 : Path.GetFileName(_currentFilePath);
 
-            Text = _isDirty ? $"{fileName} * - GUI" : $"{fileName} - GUI";
+            Text = _isDirty ? $"{fileName} * - Analyser" : $"{fileName} - Analyser";
         }
 
         private bool ConfirmSaveIfDirty()
@@ -102,7 +102,6 @@ namespace GUI
             File.WriteAllText(_currentFilePath, rtbEditor.Text, Encoding.UTF8);
             _isDirty = false;
 
-            rtbOutput.AppendText($"Сохранено: {_currentFilePath}{Environment.NewLine}");
             UpdateTitle();
             UpdateCommandStates();
             return true;
@@ -140,7 +139,7 @@ namespace GUI
                 _currentFilePath = ofd.FileName;
                 _isDirty = false;
 
-                rtbOutput.AppendText($"Открыт файл: {_currentFilePath}{Environment.NewLine}");
+                rtbOutput.Clear();
                 UpdateTitle();
                 UpdateCommandStates();
             }
