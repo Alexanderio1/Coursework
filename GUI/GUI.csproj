@@ -51,6 +51,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AboutForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AboutForm.Designer.cs">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HelpForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HelpForm.Designer.cs">
+      <DependentUpon>HelpForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -59,6 +71,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="AboutForm.resx">
+      <DependentUpon>AboutForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HelpForm.resx">
+      <DependentUpon>HelpForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -123,6 +141,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\free-icon-about-8021793.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-save-11361240.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-exit-3094700.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-erase-5353046.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-highlighter-5596856.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

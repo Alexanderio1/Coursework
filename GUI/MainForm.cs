@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 
@@ -21,7 +15,11 @@ namespace GUI
         {
             InitializeComponent();
             this.FormClosing += MainForm_FormClosing;
+            this.Activated += MainForm_Activated;
             rtbEditor.TextChanged += rtbEditor_TextChanged;
+            rtbEditor.SelectionChanged += rtbEditor_SelectionChanged;
+            UpdateTitle();
+            UpdateCommandStates();
         }
 
         private void rtbEditor_TextChanged(object sender, EventArgs e)
@@ -30,6 +28,12 @@ namespace GUI
 
             _isDirty = true;
             UpdateTitle();
+            UpdateCommandStates();
+        }
+
+        private void rtbEditor_SelectionChanged(object sender, EventArgs e)
+        {
+            UpdateCommandStates();
         }
 
         private void UpdateTitle()
@@ -75,16 +79,19 @@ namespace GUI
             _currentFilePath = null;
             _isDirty = false;
             UpdateTitle();
+            UpdateCommandStates();
         }
 
         private void CmdSave_Click(object sender, EventArgs e)
         {
             SaveFile();
+            UpdateCommandStates();
         }
 
         private void CmdSaveAs_Click(object sender, EventArgs e)
         {
             SaveFileAs();
+            UpdateCommandStates();
         }
 
         private bool SaveFile()
@@ -97,6 +104,7 @@ namespace GUI
 
             rtbOutput.AppendText($"Сохранено: {_currentFilePath}{Environment.NewLine}");
             UpdateTitle();
+            UpdateCommandStates();
             return true;
         }
 
@@ -134,6 +142,7 @@ namespace GUI
 
                 rtbOutput.AppendText($"Открыт файл: {_currentFilePath}{Environment.NewLine}");
                 UpdateTitle();
+                UpdateCommandStates();
             }
         }
 
@@ -144,67 +153,124 @@ namespace GUI
 
         private void CmdUndo_Click(object sender, EventArgs e)
         {
-            if (rtbEditor.CanUndo) rtbEditor.Undo();
+            if (rtbEditor.CanUndo) 
+                rtbEditor.Undo();
+            UpdateCommandStates();
         }
 
         private void CmdRedo_Click(object sender, EventArgs e)
         {
-            try { rtbEditor.Redo(); } catch { }
+            if (rtbEditor.CanRedo)
+                rtbEditor.Redo();
+            UpdateCommandStates();
         }
 
         private void CmdCut_Click(object sender, EventArgs e)
         {
             rtbEditor.Cut();
+            UpdateCommandStates();
         }
 
         private void CmdCopy_Click(object sender, EventArgs e)
         {
             rtbEditor.Copy();
+            UpdateCommandStates();
         }
 
         private void CmdPaste_Click(object sender, EventArgs e)
         {
             rtbEditor.Paste();
+            UpdateCommandStates();
         }
 
         private void CmdDelete_Click(object sender, EventArgs e)
         {
             rtbEditor.SelectedText = "";
+            UpdateCommandStates();
         }
 
         private void CmdSelectAll_Click(object sender, EventArgs e)
         {
             rtbEditor.SelectAll();
+            UpdateCommandStates();
         }
 
         private void CmdHelp_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(
-            "Реализовано: Файл/Правка/Справка.\nПункты «Текст» и «Пуск» пока заглушки.",
-            "Справка",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+            using (var form = new HelpForm())
+            {
+                form.ShowDialog(this);
+            }
         }
 
         private void CmdAbout_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(
-            "GUI (ЛР1)\nАвтор: Костоломов А.Е.\nГруппа: АВТ-314",
-            "О программе",
-            MessageBoxButtons.OK,
-            MessageBoxIcon.Information);
+            using (var form = new AboutForm())
+            {
+                form.ShowDialog(this);
+            }
         }
 
         private void CmdRun_Click(object sender, EventArgs e)
         {
-            rtbOutput.AppendText("Пуск: анализатор будет реализован позже.\n");
+            rtbOutput.Clear();
+            rtbOutput.AppendText("Запуск языкового процессора пока не реализован." + Environment.NewLine);
         }
 
-        private void CmdTextStub_Click(object sender, EventArgs e)
+        private bool ClipboardHasText()
         {
-            if (sender is ToolStripItem item)
-                MessageBox.Show($"Раздел «{item.Text}» будет реализован позже.", "Текст");
+            try
+            {
+                return Clipboard.ContainsText();
+            }
+            catch
+            {
+                return false;
+            }
         }
+
+        private void UpdateCommandStates()
+        {
+            bool hasText = !string.IsNullOrEmpty(rtbEditor.Text);
+            bool hasSelection = rtbEditor.SelectionLength > 0;
+            bool canPaste = ClipboardHasText();
+
+            btnSaveAs.Enabled = true;
+            btnExit.Enabled = true;
+
+            miSave.Enabled = _isDirty;
+            btnSave.Enabled = _isDirty;
+
+            miUndo.Enabled = rtbEditor.CanUndo;
+            btnUndo.Enabled = rtbEditor.CanUndo;
+
+            miRedo.Enabled = rtbEditor.CanRedo;
+            btnRedo.Enabled = rtbEditor.CanRedo;
+
+            miCut.Enabled = hasSelection;
+            btnCut.Enabled = hasSelection;
+
+            miCopy.Enabled = hasSelection;
+            btnCopy.Enabled = hasSelection;
+
+            miDelete.Enabled = hasSelection;
+            btnDelete.Enabled = hasSelection;
+
+            miPaste.Enabled = canPaste;
+            btnPaste.Enabled = canPaste;
+
+            miSelectAll.Enabled = hasText;
+            btnSelectAll.Enabled = hasText;
+
+            miRunExecute.Enabled = hasText;
+            btnRun.Enabled = hasText;
+        }
+
+        private void MainForm_Activated(object sender, EventArgs e)
+        {
+            UpdateCommandStates();
+        }
+
     }
 
 }

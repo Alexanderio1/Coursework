@@ -45,15 +45,7 @@ namespace GUI
             this.miPaste = new System.Windows.Forms.ToolStripMenuItem();
             this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectAll = new System.Windows.Forms.ToolStripMenuItem();
-            this.miText = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextTask = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextGrammar = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextClass = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextMethod = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextExample = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextSources = new System.Windows.Forms.ToolStripMenuItem();
-            this.miTextCode = new System.Windows.Forms.ToolStripMenuItem();
-            this.miRun = new System.Windows.Forms.ToolStripMenuItem();
+            this.miRunExecute = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelpContent = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,20 +55,29 @@ namespace GUI
             this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
             this.toolMain = new System.Windows.Forms.ToolStrip();
-            this.btnNew = new System.Windows.Forms.ToolStripButton();
-            this.btnOpen = new System.Windows.Forms.ToolStripButton();
-            this.btnSave = new System.Windows.Forms.ToolStripButton();
-            this.btnUndo = new System.Windows.Forms.ToolStripButton();
-            this.btnRedo = new System.Windows.Forms.ToolStripButton();
-            this.btnCopy = new System.Windows.Forms.ToolStripButton();
-            this.btnCut = new System.Windows.Forms.ToolStripButton();
-            this.btnPaste = new System.Windows.Forms.ToolStripButton();
-            this.btnRun = new System.Windows.Forms.ToolStripButton();
-            this.btnAbout = new System.Windows.Forms.ToolStripButton();
-            this.btnHelp = new System.Windows.Forms.ToolStripButton();
             this.splitMain = new System.Windows.Forms.SplitContainer();
             this.rtbEditor = new System.Windows.Forms.RichTextBox();
             this.rtbOutput = new System.Windows.Forms.RichTextBox();
+            this.выполнитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnNew = new System.Windows.Forms.ToolStripButton();
+            this.btnOpen = new System.Windows.Forms.ToolStripButton();
+            this.btnSave = new System.Windows.Forms.ToolStripButton();
+            this.btnSaveAs = new System.Windows.Forms.ToolStripButton();
+            this.btnExit = new System.Windows.Forms.ToolStripButton();
+            this.btnUndo = new System.Windows.Forms.ToolStripButton();
+            this.btnRedo = new System.Windows.Forms.ToolStripButton();
+            this.btnCut = new System.Windows.Forms.ToolStripButton();
+            this.btnCopy = new System.Windows.Forms.ToolStripButton();
+            this.btnPaste = new System.Windows.Forms.ToolStripButton();
+            this.btnDelete = new System.Windows.Forms.ToolStripButton();
+            this.btnSelectAll = new System.Windows.Forms.ToolStripButton();
+            this.btnRun = new System.Windows.Forms.ToolStripButton();
+            this.btnAbout = new System.Windows.Forms.ToolStripButton();
+            this.btnHelp = new System.Windows.Forms.ToolStripButton();
             this.menuMain.SuspendLayout();
             this.toolMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
@@ -91,12 +92,11 @@ namespace GUI
             this.menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miFile,
             this.miEdit,
-            this.miText,
-            this.miRun,
+            this.miRunExecute,
             this.miHelp});
             this.menuMain.Location = new System.Drawing.Point(0, 0);
             this.menuMain.Name = "menuMain";
-            this.menuMain.Size = new System.Drawing.Size(1588, 42);
+            this.menuMain.Size = new System.Drawing.Size(1588, 40);
             this.menuMain.TabIndex = 2;
             this.menuMain.Text = "menuStrip1";
             // 
@@ -109,7 +109,7 @@ namespace GUI
             this.miSaveAs,
             this.miExit});
             this.miFile.Name = "miFile";
-            this.miFile.Size = new System.Drawing.Size(90, 38);
+            this.miFile.Size = new System.Drawing.Size(90, 36);
             this.miFile.Text = "Файл";
             // 
             // miNew
@@ -164,7 +164,7 @@ namespace GUI
             this.miDelete,
             this.miSelectAll});
             this.miEdit.Name = "miEdit";
-            this.miEdit.Size = new System.Drawing.Size(114, 38);
+            this.miEdit.Size = new System.Drawing.Size(114, 36);
             this.miEdit.Text = "Правка";
             // 
             // miUndo
@@ -223,75 +223,13 @@ namespace GUI
             this.miSelectAll.Text = "Выделить все";
             this.miSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
             // 
-            // miText
+            // miRunExecute
             // 
-            this.miText.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.miTextTask,
-            this.miTextGrammar,
-            this.miTextClass,
-            this.miTextMethod,
-            this.miTextExample,
-            this.miTextSources,
-            this.miTextCode});
-            this.miText.Name = "miText";
-            this.miText.Size = new System.Drawing.Size(93, 36);
-            this.miText.Text = "Текст";
-            // 
-            // miTextTask
-            // 
-            this.miTextTask.Name = "miTextTask";
-            this.miTextTask.Size = new System.Drawing.Size(454, 44);
-            this.miTextTask.Text = "Постановка задачи";
-            this.miTextTask.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miTextGrammar
-            // 
-            this.miTextGrammar.Name = "miTextGrammar";
-            this.miTextGrammar.Size = new System.Drawing.Size(454, 44);
-            this.miTextGrammar.Text = "Грамматика";
-            this.miTextGrammar.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miTextClass
-            // 
-            this.miTextClass.Name = "miTextClass";
-            this.miTextClass.Size = new System.Drawing.Size(454, 44);
-            this.miTextClass.Text = "Классификация грамматики";
-            this.miTextClass.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miTextMethod
-            // 
-            this.miTextMethod.Name = "miTextMethod";
-            this.miTextMethod.Size = new System.Drawing.Size(454, 44);
-            this.miTextMethod.Text = "Метод анализа";
-            this.miTextMethod.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miTextExample
-            // 
-            this.miTextExample.Name = "miTextExample";
-            this.miTextExample.Size = new System.Drawing.Size(454, 44);
-            this.miTextExample.Text = "Тестовый пример";
-            this.miTextExample.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miTextSources
-            // 
-            this.miTextSources.Name = "miTextSources";
-            this.miTextSources.Size = new System.Drawing.Size(454, 44);
-            this.miTextSources.Text = "Список литературы";
-            this.miTextSources.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miTextCode
-            // 
-            this.miTextCode.Name = "miTextCode";
-            this.miTextCode.Size = new System.Drawing.Size(454, 44);
-            this.miTextCode.Text = "Исходный код программы";
-            this.miTextCode.Click += new System.EventHandler(this.CmdTextStub_Click);
-            // 
-            // miRun
-            // 
-            this.miRun.Name = "miRun";
-            this.miRun.Size = new System.Drawing.Size(86, 36);
-            this.miRun.Text = "Пуск";
-            this.miRun.Click += new System.EventHandler(this.CmdRun_Click);
+            this.miRunExecute.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.выполнитьToolStripMenuItem});
+            this.miRunExecute.Name = "miRunExecute";
+            this.miRunExecute.Size = new System.Drawing.Size(86, 36);
+            this.miRunExecute.Text = "Пуск";
             // 
             // miHelp
             // 
@@ -299,21 +237,21 @@ namespace GUI
             this.miHelpContent,
             this.miAbout});
             this.miHelp.Name = "miHelp";
-            this.miHelp.Size = new System.Drawing.Size(126, 38);
+            this.miHelp.Size = new System.Drawing.Size(126, 36);
             this.miHelp.Text = "Справка";
             // 
             // miHelpContent
             // 
             this.miHelpContent.Name = "miHelpContent";
             this.miHelpContent.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.miHelpContent.Size = new System.Drawing.Size(359, 44);
-            this.miHelpContent.Text = "Вызов справки";
+            this.miHelpContent.Size = new System.Drawing.Size(296, 44);
+            this.miHelpContent.Text = "Справка";
             this.miHelpContent.Click += new System.EventHandler(this.CmdHelp_Click);
             // 
             // miAbout
             // 
             this.miAbout.Name = "miAbout";
-            this.miAbout.Size = new System.Drawing.Size(359, 44);
+            this.miAbout.Size = new System.Drawing.Size(296, 44);
             this.miAbout.Text = "О программе";
             this.miAbout.Click += new System.EventHandler(this.CmdAbout_Click);
             // 
@@ -361,19 +299,102 @@ namespace GUI
             this.btnNew,
             this.btnOpen,
             this.btnSave,
+            this.btnSaveAs,
+            this.btnExit,
+            this.toolStripSeparator1,
             this.btnUndo,
             this.btnRedo,
-            this.btnCopy,
             this.btnCut,
+            this.btnCopy,
             this.btnPaste,
+            this.btnDelete,
+            this.btnSelectAll,
+            this.toolStripSeparator3,
             this.btnRun,
             this.btnAbout,
-            this.btnHelp});
-            this.toolMain.Location = new System.Drawing.Point(0, 42);
+            this.btnHelp,
+            this.toolStripSeparator2,
+            this.toolStripSeparator4});
+            this.toolMain.Location = new System.Drawing.Point(0, 40);
             this.toolMain.Name = "toolMain";
-            this.toolMain.Size = new System.Drawing.Size(1588, 34);
+            this.toolMain.Size = new System.Drawing.Size(1588, 38);
             this.toolMain.TabIndex = 11;
             this.toolMain.Text = "toolStrip1";
+            // 
+            // splitMain
+            // 
+            this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitMain.Location = new System.Drawing.Point(0, 78);
+            this.splitMain.Name = "splitMain";
+            this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitMain.Panel1
+            // 
+            this.splitMain.Panel1.Controls.Add(this.rtbEditor);
+            // 
+            // splitMain.Panel2
+            // 
+            this.splitMain.Panel2.Controls.Add(this.rtbOutput);
+            this.splitMain.Size = new System.Drawing.Size(1588, 817);
+            this.splitMain.SplitterDistance = 518;
+            this.splitMain.SplitterWidth = 6;
+            this.splitMain.TabIndex = 12;
+            // 
+            // rtbEditor
+            // 
+            this.rtbEditor.AcceptsTab = true;
+            this.rtbEditor.BackColor = System.Drawing.SystemColors.Window;
+            this.rtbEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbEditor.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.rtbEditor.HideSelection = false;
+            this.rtbEditor.Location = new System.Drawing.Point(0, 0);
+            this.rtbEditor.Name = "rtbEditor";
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
+            this.rtbEditor.TabIndex = 0;
+            this.rtbEditor.Text = "";
+            this.rtbEditor.WordWrap = false;
+            // 
+            // rtbOutput
+            // 
+            this.rtbOutput.BackColor = System.Drawing.SystemColors.ControlLight;
+            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbOutput.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
+            this.rtbOutput.Name = "rtbOutput";
+            this.rtbOutput.ReadOnly = true;
+            this.rtbOutput.Size = new System.Drawing.Size(1588, 293);
+            this.rtbOutput.TabIndex = 0;
+            this.rtbOutput.TabStop = false;
+            this.rtbOutput.Text = "";
+            this.rtbOutput.WordWrap = false;
+            // 
+            // выполнитьToolStripMenuItem
+            // 
+            this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
+            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(269, 44);
+            this.выполнитьToolStripMenuItem.Text = "Выполнить";
+            this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 38);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 38);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 38);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 38);
             // 
             // btnNew
             // 
@@ -405,6 +426,26 @@ namespace GUI
             this.btnSave.Text = "Save";
             this.btnSave.Click += new System.EventHandler(this.CmdSave_Click);
             // 
+            // btnSaveAs
+            // 
+            this.btnSaveAs.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSaveAs.Image = global::GUI.Properties.Resources.saveas;
+            this.btnSaveAs.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSaveAs.Name = "btnSaveAs";
+            this.btnSaveAs.Size = new System.Drawing.Size(46, 32);
+            this.btnSaveAs.Text = "Save as";
+            this.btnSaveAs.Click += new System.EventHandler(this.CmdSaveAs_Click);
+            // 
+            // btnExit
+            // 
+            this.btnExit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnExit.Image = global::GUI.Properties.Resources.exit;
+            this.btnExit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExit.Name = "btnExit";
+            this.btnExit.Size = new System.Drawing.Size(46, 32);
+            this.btnExit.Text = "Exit";
+            this.btnExit.Click += new System.EventHandler(this.CmdExit_Click);
+            // 
             // btnUndo
             // 
             this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -425,16 +466,6 @@ namespace GUI
             this.btnRedo.Text = "Redo";
             this.btnRedo.Click += new System.EventHandler(this.CmdRedo_Click);
             // 
-            // btnCopy
-            // 
-            this.btnCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnCopy.Image = global::GUI.Properties.Resources.copy;
-            this.btnCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnCopy.Name = "btnCopy";
-            this.btnCopy.Size = new System.Drawing.Size(46, 32);
-            this.btnCopy.Text = "Copy";
-            this.btnCopy.Click += new System.EventHandler(this.CmdCopy_Click);
-            // 
             // btnCut
             // 
             this.btnCut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -445,6 +476,16 @@ namespace GUI
             this.btnCut.Text = "Cut";
             this.btnCut.Click += new System.EventHandler(this.CmdCut_Click);
             // 
+            // btnCopy
+            // 
+            this.btnCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnCopy.Image = global::GUI.Properties.Resources.copy;
+            this.btnCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(46, 32);
+            this.btnCopy.Text = "Copy";
+            this.btnCopy.Click += new System.EventHandler(this.CmdCopy_Click);
+            // 
             // btnPaste
             // 
             this.btnPaste.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -454,6 +495,26 @@ namespace GUI
             this.btnPaste.Size = new System.Drawing.Size(46, 32);
             this.btnPaste.Text = "Paste";
             this.btnPaste.Click += new System.EventHandler(this.CmdPaste_Click);
+            // 
+            // btnDelete
+            // 
+            this.btnDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnDelete.Image = global::GUI.Properties.Resources.delete;
+            this.btnDelete.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(46, 32);
+            this.btnDelete.Text = "Delete";
+            this.btnDelete.Click += new System.EventHandler(this.CmdDelete_Click);
+            // 
+            // btnSelectAll
+            // 
+            this.btnSelectAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSelectAll.Image = global::GUI.Properties.Resources.selectall;
+            this.btnSelectAll.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSelectAll.Name = "btnSelectAll";
+            this.btnSelectAll.Size = new System.Drawing.Size(46, 32);
+            this.btnSelectAll.Text = "Select all";
+            this.btnSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
             // 
             // btnRun
             // 
@@ -473,7 +534,7 @@ namespace GUI
             this.btnAbout.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.btnAbout.Name = "btnAbout";
             this.btnAbout.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.btnAbout.Size = new System.Drawing.Size(46, 28);
+            this.btnAbout.Size = new System.Drawing.Size(46, 32);
             this.btnAbout.Text = "About";
             this.btnAbout.Click += new System.EventHandler(this.CmdAbout_Click);
             // 
@@ -488,50 +549,6 @@ namespace GUI
             this.btnHelp.Text = "Help";
             this.btnHelp.Click += new System.EventHandler(this.CmdHelp_Click);
             // 
-            // splitMain
-            // 
-            this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 76);
-            this.splitMain.Name = "splitMain";
-            this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitMain.Panel1
-            // 
-            this.splitMain.Panel1.Controls.Add(this.rtbEditor);
-            // 
-            // splitMain.Panel2
-            // 
-            this.splitMain.Panel2.Controls.Add(this.rtbOutput);
-            this.splitMain.Size = new System.Drawing.Size(1588, 819);
-            this.splitMain.SplitterDistance = 520;
-            this.splitMain.SplitterWidth = 6;
-            this.splitMain.TabIndex = 12;
-            // 
-            // rtbEditor
-            // 
-            this.rtbEditor.AcceptsTab = true;
-            this.rtbEditor.BackColor = System.Drawing.SystemColors.Window;
-            this.rtbEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbEditor.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.rtbEditor.Location = new System.Drawing.Point(0, 0);
-            this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 520);
-            this.rtbEditor.TabIndex = 0;
-            this.rtbEditor.Text = "";
-            this.rtbEditor.WordWrap = false;
-            // 
-            // rtbOutput
-            // 
-            this.rtbOutput.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
-            this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.ReadOnly = true;
-            this.rtbOutput.Size = new System.Drawing.Size(1588, 293);
-            this.rtbOutput.TabIndex = 0;
-            this.rtbOutput.TabStop = false;
-            this.rtbOutput.Text = "";
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
@@ -543,7 +560,7 @@ namespace GUI
             this.MainMenuStrip = this.menuMain;
             this.MinimumSize = new System.Drawing.Size(800, 500);
             this.Name = "MainForm";
-            this.Text = "GUI";
+            this.Text = "Analyser";
             this.menuMain.ResumeLayout(false);
             this.menuMain.PerformLayout();
             this.toolMain.ResumeLayout(false);
@@ -567,8 +584,7 @@ namespace GUI
         private System.Windows.Forms.ToolStripMenuItem miSaveAs;
         private System.Windows.Forms.ToolStripMenuItem miExit;
         private System.Windows.Forms.ToolStripMenuItem miEdit;
-        private System.Windows.Forms.ToolStripMenuItem miText;
-        private System.Windows.Forms.ToolStripMenuItem miRun;
+        private System.Windows.Forms.ToolStripMenuItem miRunExecute;
         private System.Windows.Forms.ToolStripMenuItem miHelp;
         private System.Windows.Forms.ToolStripMenuItem miUndo;
         private System.Windows.Forms.ToolStripMenuItem miRedo;
@@ -577,13 +593,6 @@ namespace GUI
         private System.Windows.Forms.ToolStripMenuItem miPaste;
         private System.Windows.Forms.ToolStripMenuItem miDelete;
         private System.Windows.Forms.ToolStripMenuItem miSelectAll;
-        private System.Windows.Forms.ToolStripMenuItem miTextTask;
-        private System.Windows.Forms.ToolStripMenuItem miTextGrammar;
-        private System.Windows.Forms.ToolStripMenuItem miTextClass;
-        private System.Windows.Forms.ToolStripMenuItem miTextMethod;
-        private System.Windows.Forms.ToolStripMenuItem miTextExample;
-        private System.Windows.Forms.ToolStripMenuItem miTextSources;
-        private System.Windows.Forms.ToolStripMenuItem miTextCode;
         private System.Windows.Forms.ToolStripMenuItem miHelpContent;
         private System.Windows.Forms.ToolStripMenuItem miAbout;
         private System.Windows.Forms.ToolStripPanel BottomToolStripPanel;
@@ -606,6 +615,15 @@ namespace GUI
         private System.Windows.Forms.ToolStripButton btnRun;
         private System.Windows.Forms.ToolStripButton btnHelp;
         private System.Windows.Forms.ToolStripButton btnAbout;
+        private System.Windows.Forms.ToolStripMenuItem выполнитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton btnSaveAs;
+        private System.Windows.Forms.ToolStripButton btnExit;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton btnDelete;
+        private System.Windows.Forms.ToolStripButton btnSelectAll;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     }
 }
 
