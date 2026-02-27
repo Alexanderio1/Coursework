@@ -8,11 +8,12 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>GUI</RootNamespace>
     <AssemblyName>GUI</AssemblyName>
-    <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <PreferNativeArm64>true</PreferNativeArm64>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,6 +33,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -66,6 +70,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -79,6 +84,45 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\disket.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\filepng.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-file-13673699.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-paste-4598412.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-scissors-4420444.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-copy-3979381.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-up-left-8563543.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-up-right-8563545.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-backward-318339.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\direction.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-right-arrow-16873058.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-question-7887097.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\free-icon-about-8021793.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
