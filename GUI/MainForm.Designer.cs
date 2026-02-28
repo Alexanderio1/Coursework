@@ -317,14 +317,14 @@ namespace GUI
             this.toolStripSeparator4});
             this.toolMain.Location = new System.Drawing.Point(0, 40);
             this.toolMain.Name = "toolMain";
-            this.toolMain.Size = new System.Drawing.Size(1588, 34);
+            this.toolMain.Size = new System.Drawing.Size(1588, 38);
             this.toolMain.TabIndex = 11;
             this.toolMain.Text = "toolStrip1";
             // 
             // splitMain
             // 
             this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 74);
+            this.splitMain.Location = new System.Drawing.Point(0, 78);
             this.splitMain.Name = "splitMain";
             this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -335,8 +335,8 @@ namespace GUI
             // splitMain.Panel2
             // 
             this.splitMain.Panel2.Controls.Add(this.rtbOutput);
-            this.splitMain.Size = new System.Drawing.Size(1588, 821);
-            this.splitMain.SplitterDistance = 521;
+            this.splitMain.Size = new System.Drawing.Size(1588, 817);
+            this.splitMain.SplitterDistance = 518;
             this.splitMain.SplitterWidth = 6;
             this.splitMain.TabIndex = 12;
             // 
@@ -349,7 +349,7 @@ namespace GUI
             this.rtbEditor.HideSelection = false;
             this.rtbEditor.Location = new System.Drawing.Point(0, 0);
             this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 521);
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
             this.rtbEditor.TabIndex = 0;
             this.rtbEditor.Text = "";
             this.rtbEditor.WordWrap = false;
@@ -362,7 +362,7 @@ namespace GUI
             this.rtbOutput.Location = new System.Drawing.Point(0, 0);
             this.rtbOutput.Name = "rtbOutput";
             this.rtbOutput.ReadOnly = true;
-            this.rtbOutput.Size = new System.Drawing.Size(1588, 294);
+            this.rtbOutput.Size = new System.Drawing.Size(1588, 293);
             this.rtbOutput.TabIndex = 0;
             this.rtbOutput.TabStop = false;
             this.rtbOutput.Text = "";
