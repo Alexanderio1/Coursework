@@ -111,6 +111,9 @@
     <Compile Include="HelpForm.Designer.cs">
       <DependentUpon>HelpForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Lexer\LexerItem.cs" />
+    <Compile Include="Lexer\LexerResult.cs" />
+    <Compile Include="Lexer\LexerTokenCode.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
