@@ -46,6 +46,7 @@ namespace GUI
             this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectAll = new System.Windows.Forms.ToolStripMenuItem();
             this.miRunExecute = new System.Windows.Forms.ToolStripMenuItem();
+            this.выполнитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelpContent = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,19 +56,12 @@ namespace GUI
             this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
             this.toolMain = new System.Windows.Forms.ToolStrip();
-            this.splitMain = new System.Windows.Forms.SplitContainer();
-            this.rtbEditor = new System.Windows.Forms.RichTextBox();
-            this.rtbOutput = new System.Windows.Forms.RichTextBox();
-            this.выполнитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnNew = new System.Windows.Forms.ToolStripButton();
             this.btnOpen = new System.Windows.Forms.ToolStripButton();
             this.btnSave = new System.Windows.Forms.ToolStripButton();
             this.btnSaveAs = new System.Windows.Forms.ToolStripButton();
             this.btnExit = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnUndo = new System.Windows.Forms.ToolStripButton();
             this.btnRedo = new System.Windows.Forms.ToolStripButton();
             this.btnCut = new System.Windows.Forms.ToolStripButton();
@@ -75,15 +69,26 @@ namespace GUI
             this.btnPaste = new System.Windows.Forms.ToolStripButton();
             this.btnDelete = new System.Windows.Forms.ToolStripButton();
             this.btnSelectAll = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRun = new System.Windows.Forms.ToolStripButton();
             this.btnAbout = new System.Windows.Forms.ToolStripButton();
             this.btnHelp = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.splitMain = new System.Windows.Forms.SplitContainer();
+            this.rtbEditor = new System.Windows.Forms.RichTextBox();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
+            this.colCode = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colType = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colLexeme = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colLocation = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuMain.SuspendLayout();
             this.toolMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
             this.splitMain.Panel1.SuspendLayout();
             this.splitMain.Panel2.SuspendLayout();
             this.splitMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
             this.SuspendLayout();
             // 
             // menuMain
@@ -231,6 +236,13 @@ namespace GUI
             this.miRunExecute.Size = new System.Drawing.Size(86, 36);
             this.miRunExecute.Text = "Пуск";
             // 
+            // выполнитьToolStripMenuItem
+            // 
+            this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
+            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(269, 44);
+            this.выполнитьToolStripMenuItem.Text = "Выполнить";
+            this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
+            // 
             // miHelp
             // 
             this.miHelp.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -317,84 +329,9 @@ namespace GUI
             this.toolStripSeparator4});
             this.toolMain.Location = new System.Drawing.Point(0, 40);
             this.toolMain.Name = "toolMain";
-            this.toolMain.Size = new System.Drawing.Size(1588, 38);
+            this.toolMain.Size = new System.Drawing.Size(1588, 34);
             this.toolMain.TabIndex = 11;
             this.toolMain.Text = "toolStrip1";
-            // 
-            // splitMain
-            // 
-            this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 78);
-            this.splitMain.Name = "splitMain";
-            this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            // 
-            // splitMain.Panel1
-            // 
-            this.splitMain.Panel1.Controls.Add(this.rtbEditor);
-            // 
-            // splitMain.Panel2
-            // 
-            this.splitMain.Panel2.Controls.Add(this.rtbOutput);
-            this.splitMain.Size = new System.Drawing.Size(1588, 817);
-            this.splitMain.SplitterDistance = 518;
-            this.splitMain.SplitterWidth = 6;
-            this.splitMain.TabIndex = 12;
-            // 
-            // rtbEditor
-            // 
-            this.rtbEditor.AcceptsTab = true;
-            this.rtbEditor.BackColor = System.Drawing.SystemColors.Window;
-            this.rtbEditor.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbEditor.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.rtbEditor.HideSelection = false;
-            this.rtbEditor.Location = new System.Drawing.Point(0, 0);
-            this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
-            this.rtbEditor.TabIndex = 0;
-            this.rtbEditor.Text = "";
-            this.rtbEditor.WordWrap = false;
-            // 
-            // rtbOutput
-            // 
-            this.rtbOutput.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbOutput.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
-            this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.ReadOnly = true;
-            this.rtbOutput.Size = new System.Drawing.Size(1588, 293);
-            this.rtbOutput.TabIndex = 0;
-            this.rtbOutput.TabStop = false;
-            this.rtbOutput.Text = "";
-            this.rtbOutput.WordWrap = false;
-            // 
-            // выполнитьToolStripMenuItem
-            // 
-            this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
-            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(269, 44);
-            this.выполнитьToolStripMenuItem.Text = "Выполнить";
-            this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 34);
-            // 
-            // toolStripSeparator3
-            // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 34);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 34);
             // 
             // btnNew
             // 
@@ -445,6 +382,11 @@ namespace GUI
             this.btnExit.Size = new System.Drawing.Size(46, 28);
             this.btnExit.Text = "Exit";
             this.btnExit.Click += new System.EventHandler(this.CmdExit_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
             // 
             // btnUndo
             // 
@@ -516,6 +458,11 @@ namespace GUI
             this.btnSelectAll.Text = "Select all";
             this.btnSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
             // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 34);
+            // 
             // btnRun
             // 
             this.btnRun.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -549,6 +496,102 @@ namespace GUI
             this.btnHelp.Text = "Help";
             this.btnHelp.Click += new System.EventHandler(this.CmdHelp_Click);
             // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 34);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 34);
+            // 
+            // splitMain
+            // 
+            this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.splitMain.Location = new System.Drawing.Point(0, 74);
+            this.splitMain.Name = "splitMain";
+            this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            // 
+            // splitMain.Panel1
+            // 
+            this.splitMain.Panel1.Controls.Add(this.rtbEditor);
+            // 
+            // splitMain.Panel2
+            // 
+            this.splitMain.Panel2.Controls.Add(this.dgvResults);
+            this.splitMain.Size = new System.Drawing.Size(1588, 821);
+            this.splitMain.SplitterDistance = 520;
+            this.splitMain.SplitterWidth = 6;
+            this.splitMain.TabIndex = 12;
+            // 
+            // rtbEditor
+            // 
+            this.rtbEditor.AcceptsTab = true;
+            this.rtbEditor.BackColor = System.Drawing.SystemColors.Window;
+            this.rtbEditor.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.rtbEditor.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.rtbEditor.HideSelection = false;
+            this.rtbEditor.Location = new System.Drawing.Point(0, 0);
+            this.rtbEditor.Name = "rtbEditor";
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 520);
+            this.rtbEditor.TabIndex = 0;
+            this.rtbEditor.Text = "";
+            this.rtbEditor.WordWrap = false;
+            // 
+            // dgvResults
+            // 
+            this.dgvResults.AllowUserToAddRows = false;
+            this.dgvResults.AllowUserToDeleteRows = false;
+            this.dgvResults.AllowUserToResizeColumns = false;
+            this.dgvResults.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvResults.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colCode,
+            this.colType,
+            this.colLexeme,
+            this.colLocation});
+            this.dgvResults.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvResults.Location = new System.Drawing.Point(0, 0);
+            this.dgvResults.MultiSelect = false;
+            this.dgvResults.Name = "dgvResults";
+            this.dgvResults.ReadOnly = true;
+            this.dgvResults.RowHeadersVisible = false;
+            this.dgvResults.RowHeadersWidth = 82;
+            this.dgvResults.RowTemplate.Height = 33;
+            this.dgvResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvResults.Size = new System.Drawing.Size(1588, 295);
+            this.dgvResults.TabIndex = 0;
+            // 
+            // colCode
+            // 
+            this.colCode.HeaderText = "Условный код";
+            this.colCode.MinimumWidth = 10;
+            this.colCode.Name = "colCode";
+            this.colCode.ReadOnly = true;
+            // 
+            // colType
+            // 
+            this.colType.HeaderText = "Тип лексемы";
+            this.colType.MinimumWidth = 10;
+            this.colType.Name = "colType";
+            this.colType.ReadOnly = true;
+            // 
+            // colLexeme
+            // 
+            this.colLexeme.HeaderText = "Лексема / Сообщение";
+            this.colLexeme.MinimumWidth = 10;
+            this.colLexeme.Name = "colLexeme";
+            this.colLexeme.ReadOnly = true;
+            // 
+            // colLocation
+            // 
+            this.colLocation.HeaderText = "Местоположение";
+            this.colLocation.MinimumWidth = 10;
+            this.colLocation.Name = "colLocation";
+            this.colLocation.ReadOnly = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
@@ -570,6 +613,7 @@ namespace GUI
             this.splitMain.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).EndInit();
             this.splitMain.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -604,7 +648,6 @@ namespace GUI
         private System.Windows.Forms.ToolStrip toolMain;
         private System.Windows.Forms.SplitContainer splitMain;
         private System.Windows.Forms.RichTextBox rtbEditor;
-        private System.Windows.Forms.RichTextBox rtbOutput;
         private System.Windows.Forms.ToolStripButton btnNew;
         private System.Windows.Forms.ToolStripButton btnOpen;
         private System.Windows.Forms.ToolStripButton btnSave;
@@ -625,6 +668,11 @@ namespace GUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.DataGridView dgvResults;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colCode;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colType;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colLexeme;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colLocation;
     }
 }
 

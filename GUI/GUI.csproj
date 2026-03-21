@@ -114,6 +114,7 @@
     <Compile Include="Lexer\LexerItem.cs" />
     <Compile Include="Lexer\LexerResult.cs" />
     <Compile Include="Lexer\LexerTokenCode.cs" />
+    <Compile Include="Lexer\LexicalAnalyzer.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
