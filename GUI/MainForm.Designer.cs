@@ -563,6 +563,7 @@ namespace GUI
             this.dgvResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvResults.Size = new System.Drawing.Size(1588, 295);
             this.dgvResults.TabIndex = 0;
+            this.dgvResults.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvResults_CellClick);
             // 
             // colCode
             // 

@@ -63,10 +63,38 @@ namespace GUI
             return SaveFile();
         }
 
+        private void ClearResultsGrid()
+        {
+            dgvResults.Rows.Clear();
+        }
+
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (!ConfirmSaveIfDirty())
                 e.Cancel = true;
+        }
+
+        private void RenderAnalysisResult(LexerResult result)
+        {
+            ClearResultsGrid();
+
+            foreach (var item in result.Items)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    item.DisplayCode,
+                    item.TypeName,
+                    item.DisplayText,
+                    item.LocationText);
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = item;
+
+                if (item.IsError)
+                {
+                    row.DefaultCellStyle.BackColor = Color.MistyRose;
+                    row.DefaultCellStyle.ForeColor = Color.DarkRed;
+                }
+            }
         }
 
         private void CmdNew_Click(object sender, EventArgs e)
@@ -75,7 +103,7 @@ namespace GUI
 
             _suppressDirty = true;
             rtbEditor.Clear();
-            rtbOutput.Clear();
+            ClearResultsGrid();
             _suppressDirty = false;
 
             _currentFilePath = null;
@@ -141,7 +169,7 @@ namespace GUI
                 _currentFilePath = ofd.FileName;
                 _isDirty = false;
 
-                rtbOutput.Clear();
+                ClearResultsGrid();
                 UpdateTitle();
                 UpdateCommandStates();
             }
@@ -214,9 +242,42 @@ namespace GUI
 
         private void CmdRun_Click(object sender, EventArgs e)
         {
-            rtbOutput.Clear();
-            rtbOutput.AppendText("Запуск языкового процессора пока не реализован." + Environment.NewLine);
+            var analyzer = new LexicalAnalyzer();
+            var result = analyzer.Analyze(rtbEditor.Text);
+
+            RenderAnalysisResult(result);
         }
+
+        private void GoToEditorPosition(int absoluteIndex)
+        {
+            if (absoluteIndex < 0)
+                absoluteIndex = 0;
+
+            if (absoluteIndex > rtbEditor.TextLength)
+                absoluteIndex = rtbEditor.TextLength;
+
+            rtbEditor.Focus();
+            rtbEditor.SelectionStart = absoluteIndex;
+            rtbEditor.SelectionLength = absoluteIndex < rtbEditor.TextLength ? 1 : 0;
+            rtbEditor.ScrollToCaret();
+        }
+        private void dgvResults_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0)
+                return;
+
+            var row = dgvResults.Rows[e.RowIndex];
+            var item = row.Tag as LexerItem;
+
+            if (item == null)
+                return;
+
+            if (item.IsError)
+            {
+                GoToEditorPosition(item.AbsoluteIndex);
+            }
+        }
+
 
         private bool ClipboardHasText()
         {
