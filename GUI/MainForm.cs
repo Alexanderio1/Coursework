@@ -272,10 +272,7 @@ namespace GUI
             if (item == null)
                 return;
 
-            if (item.IsError)
-            {
-                GoToEditorPosition(item.AbsoluteIndex);
-            }
+            GoToEditorPosition(item.AbsoluteIndex);
         }
 
 

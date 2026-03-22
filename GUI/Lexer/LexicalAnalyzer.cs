@@ -78,7 +78,7 @@ namespace GUI.Lexer
                     default:
                         AddError(
                             result,
-                            string.Format("Недопустимый символ '{0}'", DescribeChar(current)),
+                            $"Недопустимый символ '{DescribeChar(current)}'",
                             current.ToString(),
                             index,
                             line,
@@ -153,16 +153,62 @@ namespace GUI.Lexer
 
             bool isDouble = false;
 
-            if (Peek(text, index) == '.' && char.IsDigit(Peek(text, index + 1)))
+            if (Peek(text, index) == '.')
             {
-                isDouble = true;
+                if (char.IsDigit(Peek(text, index + 1)))
+                {
+                    isDouble = true;
 
-                Advance(text, ref index, ref line, ref column);
+                    Advance(text, ref index, ref line, ref column);
 
-                while (char.IsDigit(Peek(text, index)))
+                    while (char.IsDigit(Peek(text, index)))
+                    {
+                        Advance(text, ref index, ref line, ref column);
+                    }
+                }
+                else
+                {
+                    Advance(text, ref index, ref line, ref column);
+
+                    while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
+                    {
+                        Advance(text, ref index, ref line, ref column);
+                    }
+
+                    string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+                    AddError(
+                        result,
+                        "Некорректная запись вещественного числа",
+                        invalidLexeme,
+                        startIndex,
+                        startLine,
+                        startColumn,
+                        invalidLexeme.Length);
+
+                    return;
+                }
+            }
+
+            if (char.IsLetter(Peek(text, index)) || Peek(text, index) == '_' || Peek(text, index) == '.')
+            {
+                while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
                 {
                     Advance(text, ref index, ref line, ref column);
                 }
+
+                string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+                AddError(
+                    result,
+                    "Некорректная запись числового литерала",
+                    invalidLexeme,
+                    startIndex,
+                    startLine,
+                    startColumn,
+                    invalidLexeme.Length);
+
+                return;
             }
 
             string lexeme = text.Substring(startIndex, index - startIndex);
@@ -215,6 +261,24 @@ namespace GUI.Lexer
                     return;
                 }
 
+                if (!IsAllowedStringChar(current))
+                {
+                    Advance(text, ref index, ref line, ref column);
+
+                    string fragment = text.Substring(startIndex, index - startIndex);
+
+                    AddError(
+                        result,
+                        "Недопустимый символ в строковом литерале",
+                        fragment,
+                        startIndex,
+                        startLine,
+                        startColumn,
+                        fragment.Length);
+
+                    return;
+                }
+
                 Advance(text, ref index, ref line, ref column);
             }
 
@@ -248,11 +312,12 @@ namespace GUI.Lexer
                     startLine,
                     startColumn,
                     1);
-
                 return;
             }
 
-            if (Peek(text, index) == '\'')
+            char valueChar = Peek(text, index);
+
+            if (valueChar == '\'')
             {
                 Advance(text, ref index, ref line, ref column);
 
@@ -264,13 +329,29 @@ namespace GUI.Lexer
                     startLine,
                     startColumn,
                     2);
+                return;
+            }
 
+            if (!IsAllowedCharLiteralChar(valueChar))
+            {
+                Advance(text, ref index, ref line, ref column);
+
+                string invalid = text.Substring(startIndex, index - startIndex);
+
+                AddError(
+                    result,
+                    "Недопустимый символ в символьном литерале",
+                    invalid,
+                    startIndex,
+                    startLine,
+                    startColumn,
+                    invalid.Length);
                 return;
             }
 
             Advance(text, ref index, ref line, ref column);
 
-            if (index < text.Length && Peek(text, index) == '\'')
+            if (Peek(text, index) == '\'')
             {
                 Advance(text, ref index, ref line, ref column);
 
@@ -285,21 +366,21 @@ namespace GUI.Lexer
                 Advance(text, ref index, ref line, ref column);
             }
 
-            if (index < text.Length && Peek(text, index) == '\'')
+            if (Peek(text, index) == '\'')
             {
                 Advance(text, ref index, ref line, ref column);
             }
 
-            string invalid = text.Substring(startIndex, index - startIndex);
+            string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
             AddError(
                 result,
                 "Символьный литерал должен содержать ровно один символ",
-                invalid,
+                invalidLexeme,
                 startIndex,
                 startLine,
                 startColumn,
-                Math.Max(invalid.Length, 1));
+                Math.Max(invalidLexeme.Length, 1));
         }
 
         private void SkipWhitespace(string text, ref int index, ref int line, ref int column)
@@ -385,6 +466,29 @@ namespace GUI.Lexer
             return char.IsLetterOrDigit(c) || c == '_';
         }
 
+        private bool IsAllowedStringChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_' || c == ' ';
+        }
+
+        private bool IsAllowedCharLiteralChar(char c)
+        {
+            return char.IsLetterOrDigit(c) || c == '_' || c == ' ';
+        }
+
+        private bool IsTokenDelimiter(char c)
+        {
+            return c == '\0'
+                || char.IsWhiteSpace(c)
+                || c == ','
+                || c == '('
+                || c == ')'
+                || c == ';'
+                || c == '+'
+                || c == '-'
+                || c == '=';
+        }
+
         private bool IsLineBreak(char c)
         {
             return c == '\r' || c == '\n';
@@ -433,18 +537,12 @@ namespace GUI.Lexer
         {
             switch (c)
             {
-                case '\t':
-                    return "\\t";
-                case '\r':
-                    return "\\r";
-                case '\n':
-                    return "\\n";
-                case '\'':
-                    return "\\'";
-                case '\"':
-                    return "\\\"";
-                default:
-                    return c.ToString();
+                case '\t': return "\\t";
+                case '\r': return "\\r";
+                case '\n': return "\\n";
+                case '\'': return "\\'";
+                case '\"': return "\\\"";
+                default: return c.ToString();
             }
         }
     }
