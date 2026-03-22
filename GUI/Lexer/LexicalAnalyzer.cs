@@ -211,10 +211,7 @@ namespace GUI.Lexer
 
                 if (!char.IsDigit(Peek(text, index)))
                 {
-                    while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
-                    {
-                        Advance(text, ref index, ref line, ref column);
-                    }
+                    SkipToDelimiter(text, ref index, ref line, ref column);
 
                     string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
@@ -237,10 +234,7 @@ namespace GUI.Lexer
 
                 if (IsInvalidNumberTail(Peek(text, index)))
                 {
-                    while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
-                    {
-                        Advance(text, ref index, ref line, ref column);
-                    }
+                    SkipToDelimiter(text, ref index, ref line, ref column);
 
                     string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
@@ -272,10 +266,7 @@ namespace GUI.Lexer
 
             if (IsInvalidNumberTail(Peek(text, index)))
             {
-                while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
-                {
-                    Advance(text, ref index, ref line, ref column);
-                }
+                SkipToDelimiter(text, ref index, ref line, ref column);
 
                 string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
@@ -309,7 +300,7 @@ namespace GUI.Lexer
             int startLine = line;
             int startColumn = column;
 
-            Advance(text, ref index, ref line, ref column);
+            Advance(text, ref index, ref line, ref column); // открывающая "
 
             while (index < text.Length)
             {
@@ -355,7 +346,20 @@ namespace GUI.Lexer
                     return;
                 }
 
-                Advance(text, ref index, ref line, ref column);
+                // Недопустимый символ внутри строки:
+                // дочитываем до закрывающей " или конца строки,
+                // чтобы не оставлять хвостовую кавычку на повторный разбор.
+                while (index < text.Length
+                       && !IsLineBreak(Peek(text, index))
+                       && Peek(text, index) != '"')
+                {
+                    Advance(text, ref index, ref line, ref column);
+                }
+
+                if (Peek(text, index) == '"')
+                {
+                    Advance(text, ref index, ref line, ref column);
+                }
 
                 string invalid = text.Substring(startIndex, index - startIndex);
 
@@ -389,7 +393,7 @@ namespace GUI.Lexer
             int startLine = line;
             int startColumn = column;
 
-            Advance(text, ref index, ref line, ref column);
+            Advance(text, ref index, ref line, ref column); // открывающая '
 
             if (index >= text.Length || IsLineBreak(Peek(text, index)))
             {
@@ -404,11 +408,42 @@ namespace GUI.Lexer
                 return;
             }
 
+            // Пустой символьный литерал: ''
+            if (Peek(text, index) == '\'')
+            {
+                Advance(text, ref index, ref line, ref column);
+
+                string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+                AddError(
+                    result,
+                    "Символьный литерал должен содержать ровно один символ",
+                    invalidLexeme,
+                    startIndex,
+                    startLine,
+                    startColumn,
+                    Math.Max(invalidLexeme.Length, 1));
+
+                return;
+            }
+
             char current = Peek(text, index);
 
             if (!IsAllowedCharLiteralChar(current))
             {
                 Advance(text, ref index, ref line, ref column);
+
+                while (index < text.Length
+                       && !IsLineBreak(Peek(text, index))
+                       && Peek(text, index) != '\'')
+                {
+                    Advance(text, ref index, ref line, ref column);
+                }
+
+                if (Peek(text, index) == '\'')
+                {
+                    Advance(text, ref index, ref line, ref column);
+                }
 
                 string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
@@ -444,7 +479,25 @@ namespace GUI.Lexer
                 return;
             }
 
-            while (index < text.Length && !IsLineBreak(Peek(text, index)) && Peek(text, index) != '\'')
+            if (index >= text.Length || IsLineBreak(Peek(text, index)))
+            {
+                string invalid = text.Substring(startIndex, index - startIndex);
+
+                AddError(
+                    result,
+                    "Не завершён символьный литерал",
+                    invalid,
+                    startIndex,
+                    startLine,
+                    startColumn,
+                    Math.Max(invalid.Length, 1));
+
+                return;
+            }
+
+            while (index < text.Length
+                   && !IsLineBreak(Peek(text, index))
+                   && Peek(text, index) != '\'')
             {
                 Advance(text, ref index, ref line, ref column);
             }
@@ -454,21 +507,29 @@ namespace GUI.Lexer
                 Advance(text, ref index, ref line, ref column);
             }
 
-            string invalid = text.Substring(startIndex, index - startIndex);
+            string invalidMulti = text.Substring(startIndex, index - startIndex);
 
             AddError(
                 result,
                 "Символьный литерал должен содержать ровно один символ",
-                invalid,
+                invalidMulti,
                 startIndex,
                 startLine,
                 startColumn,
-                Math.Max(invalid.Length, 1));
+                Math.Max(invalidMulti.Length, 1));
         }
 
         private void SkipWhitespace(string text, ref int index, ref int line, ref int column)
         {
             while (index < text.Length && char.IsWhiteSpace(Peek(text, index)))
+            {
+                Advance(text, ref index, ref line, ref column);
+            }
+        }
+
+        private void SkipToDelimiter(string text, ref int index, ref int line, ref int column)
+        {
+            while (!IsTokenDelimiter(Peek(text, index)))
             {
                 Advance(text, ref index, ref line, ref column);
             }
@@ -574,7 +635,9 @@ namespace GUI.Lexer
                    || c == ')'
                    || c == ';'
                    || c == '+'
-                   || c == '-';
+                   || c == '-'
+                   || c == '"'
+                   || c == '\'';
         }
 
         private bool IsLineBreak(char c)
