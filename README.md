@@ -235,6 +235,7 @@
 # Лабораторная работа №2. Разработка лексического анализатора
 
 ## Цель работы
+
 Изучить назначение и принципы работы лексического анализатора в структуре компилятора. Спроектировать диаграмму состояний конечного автомата и выполнить программную реализацию сканера для выделения лексем из входного текста. Интегрировать разработанный модуль в ранее созданный графический интерфейс языкового процессора.
 
 ## Постановка задачи
@@ -273,7 +274,6 @@ val animals = listOf("Dog", "Cat", "Cow");
 - знаки `+` и `-`.
 
 ## Диаграмма состояний
-**Скриншот:** `images/lab2/state-diagram.png`
 
 ![Диаграмма состояний](images/lab2/state-diagram.png)
 
@@ -296,7 +296,6 @@ val animals = listOf("Dog", "Cat", "Cow");
 
 Результат работы программы:
 
-**Скриншот:** `images/lab2/main-success.png`
 
 ![Корректный пример](images/lab2/main-success.png)
 
@@ -307,7 +306,6 @@ val animals = listOf("Dog", "Cat", "Cow");
 val animals = listOf("Dog", "Cat", "Cow")
 ```
 
-**Скриншот:** `images/lab2/error-missing-semicolon.png`
 
 ![Ошибка: нет точки с запятой](images/lab2/error-missing-semicolon.png)
 
@@ -316,7 +314,6 @@ val animals = listOf("Dog", "Cat", "Cow")
 val animals = listOf("Dog", , "Cow");
 ```
 
-**Скриншот:** `images/lab2/error-double-comma.png`
 
 ![Ошибка: двойная запятая](images/lab2/error-double-comma.png)
 
@@ -325,7 +322,6 @@ val animals = listOf("Dog", , "Cow");
 val animals = listOf("Dog", "Cat", );
 ```
 
-**Скриншот:** `images/lab2/error-trailing-comma.png`
 
 ![Ошибка: запятая перед скобкой](images/lab2/error-trailing-comma.png)
 
@@ -488,7 +484,6 @@ signed_number
 ## Интеграция Flex & Bison
 Синтаксический анализатор был собран как отдельный нативный модуль и подключён к Windows Forms приложению.
 
-**Скриншот:** `images/lab2/nativeparser-project.png`
 
 ![Проект NativeParser](images/lab2/nativeparser-project.png)
 
@@ -496,7 +491,6 @@ signed_number
 При выборе строки таблицы с лексемой курсор в редакторе переходит к позиции найденной лексемы.  
 При выборе строки с синтаксической ошибкой выполняется переход к диапазону позиции ошибки и её подсветка в редакторе.
 
-**Скриншот:** `images/lab2/error-highlight.png`
 
 ![Переход к ошибке](images/lab2/error-highlight.png)
 
