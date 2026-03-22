@@ -40,45 +40,101 @@ namespace GUI.Lexer
                 switch (current)
                 {
                     case '=':
-                        AddSingleCharToken(result, LexerTokenCode.Assign, "оператор присваивания", "=", ref index, ref line, ref column, text);
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.Assign,
+                            "оператор присваивания",
+                            "=",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
                         break;
 
                     case '(':
-                        AddSingleCharToken(result, LexerTokenCode.LeftParen, "открывающая круглая скобка", "(", ref index, ref line, ref column, text);
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.LeftParen,
+                            "открывающая круглая скобка",
+                            "(",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
                         break;
 
                     case ',':
-                        AddSingleCharToken(result, LexerTokenCode.Comma, "разделитель (запятая)", ",", ref index, ref line, ref column, text);
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.Comma,
+                            "разделитель (запятая)",
+                            ",",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
                         break;
 
                     case ')':
-                        AddSingleCharToken(result, LexerTokenCode.RightParen, "закрывающая круглая скобка", ")", ref index, ref line, ref column, text);
-                        break;
-
-                    case ';':
-                        AddSingleCharToken(result, LexerTokenCode.Semicolon, "конец оператора", ";", ref index, ref line, ref column, text);
-                        break;
-
-                    case '+':
-                        AddSingleCharToken(result, LexerTokenCode.Plus, "знак плюс", "+", ref index, ref line, ref column, text);
-                        break;
-
-                    case '-':
-                        AddSingleCharToken(result, LexerTokenCode.Minus, "знак минус", "-", ref index, ref line, ref column, text);
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.RightParen,
+                            "закрывающая круглая скобка",
+                            ")",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
                         break;
 
                     case '"':
                         ReadString(text, result, ref index, ref line, ref column);
                         break;
 
+                    case ';':
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.Semicolon,
+                            "конец оператора",
+                            ";",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
+                        break;
+
                     case '\'':
                         ReadChar(text, result, ref index, ref line, ref column);
+                        break;
+
+                    case '-':
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.Minus,
+                            "знак минус",
+                            "-",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
+                        break;
+
+                    case '+':
+                        AddSingleCharToken(
+                            result,
+                            LexerTokenCode.Plus,
+                            "знак плюс",
+                            "+",
+                            ref index,
+                            ref line,
+                            ref column,
+                            text);
                         break;
 
                     default:
                         AddError(
                             result,
-                            $"Недопустимый символ '{DescribeChar(current)}'",
+                            "Недопустимый символ '" + DescribeChar(current) + "'",
                             current.ToString(),
                             index,
                             line,
@@ -109,32 +165,30 @@ namespace GUI.Lexer
             LexerTokenCode code;
             string typeName;
 
-            switch (lexeme)
+            if (lexeme == "val")
             {
-                case "val":
-                    code = LexerTokenCode.Val;
-                    typeName = "ключевое слово";
-                    break;
-
-                case "listOf":
-                    code = LexerTokenCode.ListOf;
-                    typeName = "специальная лексема";
-                    break;
-
-                case "true":
-                    code = LexerTokenCode.True;
-                    typeName = "булев литерал";
-                    break;
-
-                case "false":
-                    code = LexerTokenCode.False;
-                    typeName = "булев литерал";
-                    break;
-
-                default:
-                    code = LexerTokenCode.Identifier;
-                    typeName = "идентификатор";
-                    break;
+                code = LexerTokenCode.Val;
+                typeName = "ключевое слово";
+            }
+            else if (lexeme == "listOf")
+            {
+                code = LexerTokenCode.ListOf;
+                typeName = "специальная лексема";
+            }
+            else if (lexeme == "true")
+            {
+                code = LexerTokenCode.True;
+                typeName = "булев литерал";
+            }
+            else if (lexeme == "false")
+            {
+                code = LexerTokenCode.False;
+                typeName = "булев литерал";
+            }
+            else
+            {
+                code = LexerTokenCode.Identifier;
+                typeName = "идентификатор";
             }
 
             AddToken(result, code, typeName, lexeme, startIndex, startLine, startColumn);
@@ -151,25 +205,12 @@ namespace GUI.Lexer
                 Advance(text, ref index, ref line, ref column);
             }
 
-            bool isDouble = false;
-
             if (Peek(text, index) == '.')
             {
-                if (char.IsDigit(Peek(text, index + 1)))
+                Advance(text, ref index, ref line, ref column);
+
+                if (!char.IsDigit(Peek(text, index)))
                 {
-                    isDouble = true;
-
-                    Advance(text, ref index, ref line, ref column);
-
-                    while (char.IsDigit(Peek(text, index)))
-                    {
-                        Advance(text, ref index, ref line, ref column);
-                    }
-                }
-                else
-                {
-                    Advance(text, ref index, ref line, ref column);
-
                     while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
                     {
                         Advance(text, ref index, ref line, ref column);
@@ -184,13 +225,52 @@ namespace GUI.Lexer
                         startIndex,
                         startLine,
                         startColumn,
-                        invalidLexeme.Length);
+                        Math.Max(invalidLexeme.Length, 1));
 
                     return;
                 }
+
+                while (char.IsDigit(Peek(text, index)))
+                {
+                    Advance(text, ref index, ref line, ref column);
+                }
+
+                if (IsInvalidNumberTail(Peek(text, index)))
+                {
+                    while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
+                    {
+                        Advance(text, ref index, ref line, ref column);
+                    }
+
+                    string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+                    AddError(
+                        result,
+                        "Некорректная запись вещественного числа",
+                        invalidLexeme,
+                        startIndex,
+                        startLine,
+                        startColumn,
+                        Math.Max(invalidLexeme.Length, 1));
+
+                    return;
+                }
+
+                string doubleLexeme = text.Substring(startIndex, index - startIndex);
+
+                AddToken(
+                    result,
+                    LexerTokenCode.Double,
+                    "вещественное число",
+                    doubleLexeme,
+                    startIndex,
+                    startLine,
+                    startColumn);
+
+                return;
             }
 
-            if (char.IsLetter(Peek(text, index)) || Peek(text, index) == '_' || Peek(text, index) == '.')
+            if (IsInvalidNumberTail(Peek(text, index)))
             {
                 while (!IsTokenDelimiter(Peek(text, index)) && Peek(text, index) != '\0')
                 {
@@ -201,23 +281,23 @@ namespace GUI.Lexer
 
                 AddError(
                     result,
-                    "Некорректная запись числового литерала",
+                    "Некорректная запись целого числа",
                     invalidLexeme,
                     startIndex,
                     startLine,
                     startColumn,
-                    invalidLexeme.Length);
+                    Math.Max(invalidLexeme.Length, 1));
 
                 return;
             }
 
-            string lexeme = text.Substring(startIndex, index - startIndex);
+            string intLexeme = text.Substring(startIndex, index - startIndex);
 
             AddToken(
                 result,
-                isDouble ? LexerTokenCode.Double : LexerTokenCode.Int,
-                isDouble ? "вещественное число" : "целое число",
-                lexeme,
+                LexerTokenCode.Int,
+                "целое число",
+                intLexeme,
                 startIndex,
                 startLine,
                 startColumn);
@@ -241,8 +321,22 @@ namespace GUI.Lexer
 
                     string lexeme = text.Substring(startIndex, index - startIndex);
 
-                    AddToken(result, LexerTokenCode.String, "строковый литерал", lexeme, startIndex, startLine, startColumn);
+                    AddToken(
+                        result,
+                        LexerTokenCode.String,
+                        "строковый литерал",
+                        lexeme,
+                        startIndex,
+                        startLine,
+                        startColumn);
+
                     return;
+                }
+
+                if (IsAllowedStringChar(current))
+                {
+                    Advance(text, ref index, ref line, ref column);
+                    continue;
                 }
 
                 if (IsLineBreak(current))
@@ -261,25 +355,20 @@ namespace GUI.Lexer
                     return;
                 }
 
-                if (!IsAllowedStringChar(current))
-                {
-                    Advance(text, ref index, ref line, ref column);
-
-                    string fragment = text.Substring(startIndex, index - startIndex);
-
-                    AddError(
-                        result,
-                        "Недопустимый символ в строковом литерале",
-                        fragment,
-                        startIndex,
-                        startLine,
-                        startColumn,
-                        fragment.Length);
-
-                    return;
-                }
-
                 Advance(text, ref index, ref line, ref column);
+
+                string invalid = text.Substring(startIndex, index - startIndex);
+
+                AddError(
+                    result,
+                    "Недопустимый символ в строковом литерале",
+                    invalid,
+                    startIndex,
+                    startLine,
+                    startColumn,
+                    Math.Max(invalid.Length, 1));
+
+                return;
             }
 
             string unfinished = text.Substring(startIndex, index - startIndex);
@@ -315,37 +404,23 @@ namespace GUI.Lexer
                 return;
             }
 
-            char valueChar = Peek(text, index);
+            char current = Peek(text, index);
 
-            if (valueChar == '\'')
+            if (!IsAllowedCharLiteralChar(current))
             {
                 Advance(text, ref index, ref line, ref column);
 
-                AddError(
-                    result,
-                    "Пустой символьный литерал",
-                    "''",
-                    startIndex,
-                    startLine,
-                    startColumn,
-                    2);
-                return;
-            }
-
-            if (!IsAllowedCharLiteralChar(valueChar))
-            {
-                Advance(text, ref index, ref line, ref column);
-
-                string invalid = text.Substring(startIndex, index - startIndex);
+                string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
                 AddError(
                     result,
                     "Недопустимый символ в символьном литерале",
-                    invalid,
+                    invalidLexeme,
                     startIndex,
                     startLine,
                     startColumn,
-                    invalid.Length);
+                    Math.Max(invalidLexeme.Length, 1));
+
                 return;
             }
 
@@ -357,7 +432,15 @@ namespace GUI.Lexer
 
                 string lexeme = text.Substring(startIndex, index - startIndex);
 
-                AddToken(result, LexerTokenCode.Char, "символьный литерал", lexeme, startIndex, startLine, startColumn);
+                AddToken(
+                    result,
+                    LexerTokenCode.Char,
+                    "символьный литерал",
+                    lexeme,
+                    startIndex,
+                    startLine,
+                    startColumn);
+
                 return;
             }
 
@@ -371,16 +454,16 @@ namespace GUI.Lexer
                 Advance(text, ref index, ref line, ref column);
             }
 
-            string invalidLexeme = text.Substring(startIndex, index - startIndex);
+            string invalid = text.Substring(startIndex, index - startIndex);
 
             AddError(
                 result,
                 "Символьный литерал должен содержать ровно один символ",
-                invalidLexeme,
+                invalid,
                 startIndex,
                 startLine,
                 startColumn,
-                Math.Max(invalidLexeme.Length, 1));
+                Math.Max(invalid.Length, 1));
         }
 
         private void SkipWhitespace(string text, ref int index, ref int line, ref int column)
@@ -458,40 +541,50 @@ namespace GUI.Lexer
 
         private bool IsIdentifierStart(char c)
         {
-            return char.IsLetter(c) || c == '_';
+            return IsLetter(c) || c == '_';
         }
 
         private bool IsIdentifierPart(char c)
         {
-            return char.IsLetterOrDigit(c) || c == '_';
+            return IsLetter(c) || char.IsDigit(c) || c == '_';
         }
 
         private bool IsAllowedStringChar(char c)
         {
-            return char.IsLetterOrDigit(c) || c == '_' || c == ' ';
+            return IsLetter(c) || char.IsDigit(c) || c == '_' || c == ' ';
         }
 
         private bool IsAllowedCharLiteralChar(char c)
         {
-            return char.IsLetterOrDigit(c) || c == '_' || c == ' ';
+            return IsLetter(c) || char.IsDigit(c) || c == '_' || c == ' ';
+        }
+
+        private bool IsInvalidNumberTail(char c)
+        {
+            return IsLetter(c) || c == '_' || c == '.';
         }
 
         private bool IsTokenDelimiter(char c)
         {
             return c == '\0'
-                || char.IsWhiteSpace(c)
-                || c == ','
-                || c == '('
-                || c == ')'
-                || c == ';'
-                || c == '+'
-                || c == '-'
-                || c == '=';
+                   || char.IsWhiteSpace(c)
+                   || c == '='
+                   || c == '('
+                   || c == ','
+                   || c == ')'
+                   || c == ';'
+                   || c == '+'
+                   || c == '-';
         }
 
         private bool IsLineBreak(char c)
         {
             return c == '\r' || c == '\n';
+        }
+
+        private bool IsLetter(char c)
+        {
+            return char.IsLetter(c);
         }
 
         private char Peek(string text, int index)
