@@ -249,16 +249,25 @@ namespace GUI
 
             RenderAnalysisResult(result);
 
-            // Если есть лексические ошибки, до синтаксического анализа не идём
             if (result.HasErrors)
                 return;
 
-            var parserMessages = new List<string>();
+            var parserErrors = new List<ParserErrorInfo>();
 
-            NativeParserInterop.ErrorCallback callback = (line, msgPtr) =>
+            NativeParserInterop.ErrorCallback callback = (startLine, startColumn, endLine, endColumn, msgPtr, lexemePtr) =>
             {
-                string msg = Marshal.PtrToStringAnsi(msgPtr) ?? "syntax error";
-                parserMessages.Add("Строка " + line + ": " + msg);
+                string rawMessage = Marshal.PtrToStringAnsi(msgPtr) ?? "syntax error";
+                string lexeme = Marshal.PtrToStringAnsi(lexemePtr) ?? string.Empty;
+
+                parserErrors.Add(new ParserErrorInfo
+                {
+                    StartLine = startLine,
+                    StartColumn = startColumn,
+                    EndLine = endLine,
+                    EndColumn = endColumn,
+                    Message = BuildFriendlyParserMessage(rawMessage, lexeme),
+                    Lexeme = lexeme
+                });
             };
 
             int parseResult = NativeParserInterop.ParseSourceCode(rtbEditor.Text, callback);
@@ -271,24 +280,46 @@ namespace GUI
                     "Синтаксический анализ завершён успешно",
                     "-"
                 );
+                return;
             }
-            else
-            {
-                foreach (var message in parserMessages)
-                {
-                    int rowIndex = dgvResults.Rows.Add(
-                        "P001",
-                        "Синтаксическая ошибка",
-                        message,
-                        "-"
-                    );
 
-                    var row = dgvResults.Rows[rowIndex];
-                    row.DefaultCellStyle.BackColor = Color.MistyRose;
-                    row.DefaultCellStyle.ForeColor = Color.DarkRed;
-                    row.Tag = null;
-                }
+            foreach (var error in parserErrors)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    "P001",
+                    "Синтаксическая ошибка",
+                    error.Message,
+                    $"строка {error.StartLine}, столбцы {error.StartColumn}-{error.EndColumn}"
+                );
+
+                var row = dgvResults.Rows[rowIndex];
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+                row.Tag = error;
             }
+        }
+
+        private string BuildFriendlyParserMessage(string rawMessage, string lexeme)
+        {
+            if (rawMessage.Contains("unexpected end of file"))
+                return "Неожиданное окончание ввода. Возможно, пропущена закрывающая скобка ')' или символ ';'.";
+
+            if (rawMessage.Contains("unexpected \",\""))
+                return "Лишняя запятая или отсутствует элемент списка.";
+
+            if (rawMessage.Contains("unexpected \")\""))
+                return "Перед закрывающей скобкой ожидается элемент списка.";
+
+            if (rawMessage.Contains("unexpected \";\""))
+                return "Перед символом ';' ожидается закрывающая скобка ')' или элемент списка.";
+
+            if (rawMessage.Contains("unexpected \"invalid symbol\""))
+                return "Обнаружен недопустимый символ: " + lexeme;
+
+            if (!string.IsNullOrWhiteSpace(lexeme))
+                return "Синтаксическая ошибка возле лексемы " + lexeme + ". " + rawMessage;
+
+            return "Синтаксическая ошибка. " + rawMessage;
         }
 
         private void GoToEditorPosition(int absoluteIndex)
@@ -310,12 +341,50 @@ namespace GUI
                 return;
 
             var row = dgvResults.Rows[e.RowIndex];
-            var item = row.Tag as LexerItem;
 
-            if (item == null)
+            if (row.Tag is LexerItem lexerItem)
+            {
+                GoToEditorPosition(lexerItem.AbsoluteIndex);
                 return;
+            }
 
-            GoToEditorPosition(item.AbsoluteIndex);
+            if (row.Tag is ParserErrorInfo parserError)
+            {
+                HighlightRange(
+                    parserError.StartLine,
+                    parserError.StartColumn,
+                    parserError.EndLine,
+                    parserError.EndColumn
+                );
+            }
+        }
+
+        private int GetCharIndexFromLineColumn(int line, int column)
+        {
+            if (line < 1)
+                return 0;
+
+            int firstChar = rtbEditor.GetFirstCharIndexFromLine(line - 1);
+            if (firstChar < 0)
+                return rtbEditor.TextLength;
+
+            int index = firstChar + Math.Max(0, column - 1);
+            return Math.Min(index, rtbEditor.TextLength);
+        }
+
+        private void HighlightRange(int startLine, int startColumn, int endLine, int endColumn)
+        {
+            int startIndex = GetCharIndexFromLineColumn(startLine, startColumn);
+            int endIndex = GetCharIndexFromLineColumn(endLine, endColumn);
+
+            if (endIndex < startIndex)
+                endIndex = startIndex;
+
+            int length = Math.Max(1, endIndex - startIndex + 1);
+
+            rtbEditor.Focus();
+            rtbEditor.Select(startIndex, length);
+            rtbEditor.ScrollToCaret();
         }
 
 

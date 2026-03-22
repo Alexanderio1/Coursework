@@ -68,10 +68,26 @@
 #include <stdio.h>
 
 int yylex(void);
+
+extern int token_start_line;
+extern int token_start_column;
+extern int token_end_line;
+extern int token_end_column;
+extern char token_text[256];
+
+void ReportParserError(
+    const char* message,
+    int startLine,
+    int startColumn,
+    int endLine,
+    int endColumn,
+    const char* lexeme
+);
+
 void yyerror(const char* s);
 
 /* Line 371 of yacc.c  */
-#line 75 "parser.tab.c"
+#line 91 "parser.tab.c"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -86,7 +102,7 @@ void yyerror(const char* s);
 # undef YYERROR_VERBOSE
 # define YYERROR_VERBOSE 1
 #else
-# define YYERROR_VERBOSE 0
+# define YYERROR_VERBOSE 1
 #endif
 
 /* In a future release of Bison, this section will be replaced
@@ -155,7 +171,7 @@ int yyparse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 159 "parser.tab.c"
+#line 175 "parser.tab.c"
 
 #ifdef short
 # undef short
@@ -448,20 +464,21 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    30,    30,    34,    38,    39,    43,    44,    45,    46,
-      50,    51,    52,    53,    54,    55
+       0,    48,    48,    52,    56,    57,    61,    62,    63,    64,
+      68,    69,    70,    71,    72,    73
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || 0
+#if YYDEBUG || YYERROR_VERBOSE || 1
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "VAL", "LISTOF", "IDENTIFIER", "STRING",
-  "INT", "DOUBLE", "TRUE", "FALSE", "LPAREN", "RPAREN", "COMMA",
-  "SEMICOLON", "ASSIGN", "PLUS", "MINUS", "INVALID", "$accept", "program",
-  "statement", "elements", "element", "signed_number", YY_NULL
+  "$end", "error", "$undefined", "\"val\"", "\"listOf\"",
+  "\"identifier\"", "\"string literal\"", "\"integer literal\"",
+  "\"double literal\"", "\"true\"", "\"false\"", "\"(\"", "\")\"", "\",\"",
+  "\";\"", "\"=\"", "\"+\"", "\"-\"", "\"invalid symbol\"", "$accept",
+  "program", "statement", "elements", "element", "signed_number", YY_NULL
 };
 #endif
 
@@ -1353,7 +1370,7 @@ yyreduce:
     {
       
 /* Line 1792 of yacc.c  */
-#line 1357 "parser.tab.c"
+#line 1374 "parser.tab.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1585,4 +1602,17 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 58 "parser.y"
+#line 76 "parser.y"
+
+
+void yyerror(const char* s)
+{
+    ReportParserError(
+        s != NULL ? s : "syntax error",
+        token_start_line,
+        token_start_column,
+        token_end_line,
+        token_end_column,
+        token_text
+    );
+}
