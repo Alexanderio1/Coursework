@@ -239,7 +239,8 @@ namespace GUI
             // выполнитьToolStripMenuItem
             // 
             this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
-            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(269, 44);
+            this.выполнитьToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
             this.выполнитьToolStripMenuItem.Text = "Выполнить";
             this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
             // 

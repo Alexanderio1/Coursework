@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using System.IO;
 using GUI.Lexer;
 using System.Drawing;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace GUI
 {
@@ -246,6 +248,47 @@ namespace GUI
             var result = analyzer.Analyze(rtbEditor.Text);
 
             RenderAnalysisResult(result);
+
+            // Если есть лексические ошибки, до синтаксического анализа не идём
+            if (result.HasErrors)
+                return;
+
+            var parserMessages = new List<string>();
+
+            NativeParserInterop.ErrorCallback callback = (line, msgPtr) =>
+            {
+                string msg = Marshal.PtrToStringAnsi(msgPtr) ?? "syntax error";
+                parserMessages.Add("Строка " + line + ": " + msg);
+            };
+
+            int parseResult = NativeParserInterop.ParseSourceCode(rtbEditor.Text, callback);
+
+            if (parseResult == 0)
+            {
+                dgvResults.Rows.Add(
+                    "OK",
+                    "Синтаксис",
+                    "Синтаксический анализ завершён успешно",
+                    "-"
+                );
+            }
+            else
+            {
+                foreach (var message in parserMessages)
+                {
+                    int rowIndex = dgvResults.Rows.Add(
+                        "P001",
+                        "Синтаксическая ошибка",
+                        message,
+                        "-"
+                    );
+
+                    var row = dgvResults.Rows[rowIndex];
+                    row.DefaultCellStyle.BackColor = Color.MistyRose;
+                    row.DefaultCellStyle.ForeColor = Color.DarkRed;
+                    row.Tag = null;
+                }
+            }
         }
 
         private void GoToEditorPosition(int absoluteIndex)
