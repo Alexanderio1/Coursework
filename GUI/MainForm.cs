@@ -314,7 +314,7 @@ namespace GUI
                 return "Перед символом ';' ожидается закрывающая скобка ')' или элемент списка.";
 
             if (rawMessage.Contains("unexpected \"invalid symbol\""))
-                return "Обнаружен недопустимый символ: " + lexeme;
+                return "Обнаружен недопустимый фрагмент: " + lexeme;
 
             if (!string.IsNullOrWhiteSpace(lexeme))
                 return "Синтаксическая ошибка возле лексемы " + lexeme + ". " + rawMessage;
@@ -344,7 +344,11 @@ namespace GUI
 
             if (row.Tag is LexerItem lexerItem)
             {
-                GoToEditorPosition(lexerItem.AbsoluteIndex);
+                HighlightRange(
+                    lexerItem.Line,
+                    lexerItem.StartColumn,
+                    lexerItem.Line,
+                    lexerItem.EndColumn);
                 return;
             }
 

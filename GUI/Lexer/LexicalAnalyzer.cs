@@ -132,21 +132,65 @@ namespace GUI.Lexer
                         break;
 
                     default:
-                        AddError(
-                            result,
-                            "Недопустимый символ '" + DescribeChar(current) + "'",
-                            current.ToString(),
-                            index,
-                            line,
-                            column,
-                            1);
-
-                        Advance(text, ref index, ref line, ref column);
+                        ReadInvalidSequence(text, result, ref index, ref line, ref column);
                         break;
                 }
             }
 
             return result;
+        }
+
+        private void ReadInvalidSequence(string text, LexerResult result, ref int index, ref int line, ref int column)
+        {
+            int startIndex = index;
+            int startLine = line;
+            int startColumn = column;
+
+            while (index < text.Length)
+            {
+                char current = Peek(text, index);
+
+                if (char.IsWhiteSpace(current) || IsStartOfValidToken(current))
+                    break;
+
+                Advance(text, ref index, ref line, ref column);
+            }
+
+            string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+            if (string.IsNullOrEmpty(invalidLexeme))
+            {
+                char current = Peek(text, index);
+                invalidLexeme = current.ToString();
+                Advance(text, ref index, ref line, ref column);
+            }
+
+            AddError(
+                result,
+                invalidLexeme.Length == 1
+                    ? "Недопустимый символ '" + DescribeChar(invalidLexeme[0]) + "'"
+                    : "Недопустимый фрагмент \"" + invalidLexeme + "\"",
+                invalidLexeme,
+                startIndex,
+                startLine,
+                startColumn,
+                Math.Max(invalidLexeme.Length, 1));
+        }
+
+        private bool IsStartOfValidToken(char c)
+        {
+            return c == '\0'
+                || IsIdentifierStart(c)
+                || char.IsDigit(c)
+                || c == '='
+                || c == '('
+                || c == ','
+                || c == ')'
+                || c == ';'
+                || c == '+'
+                || c == '-'
+                || c == '"'
+                || c == '\'';
         }
 
         private void ReadIdentifierOrKeyword(string text, LexerResult result, ref int index, ref int line, ref int column)

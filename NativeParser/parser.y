@@ -25,6 +25,7 @@ void yyerror(const char* s);
 %token LISTOF
 %token IDENTIFIER
 %token STRING
+%token CHAR
 %token INT
 %token DOUBLE
 %token TRUE
@@ -57,6 +58,7 @@ elements
 
 element
     : STRING
+    | CHAR
     | TRUE
     | FALSE
     | signed_number

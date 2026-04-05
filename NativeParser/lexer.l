@@ -32,6 +32,7 @@ static void mark_token()
 
 DIGIT   [0-9]
 ID      [A-Za-z_][A-Za-z0-9_]*
+INVALID_SEQ [^[:space:]A-Za-z_0-9(),;=+\"\'-]+
 
 %%
 
@@ -52,12 +53,13 @@ ID      [A-Za-z_][A-Za-z0-9_]*
 "-"                     { mark_token(); return MINUS; }
 
 \"([^"\\\r\n]|\\.)*\"   { mark_token(); return STRING; }
+\'([^'\\\r\n]|\\.)\'    { mark_token(); return CHAR; }
 
 {DIGIT}+"."{DIGIT}+     { mark_token(); return DOUBLE; }
 {DIGIT}+                { mark_token(); return INT; }
 
 {ID}                    { mark_token(); return IDENTIFIER; }
 
+{INVALID_SEQ}           { mark_token(); return INVALID; }
 .                       { mark_token(); return INVALID; }
-
 %%

@@ -50,18 +50,19 @@ extern int yydebug;
      LISTOF = 259,
      IDENTIFIER = 260,
      STRING = 261,
-     INT = 262,
-     DOUBLE = 263,
-     TRUE = 264,
-     FALSE = 265,
-     LPAREN = 266,
-     RPAREN = 267,
-     COMMA = 268,
-     SEMICOLON = 269,
-     ASSIGN = 270,
-     PLUS = 271,
-     MINUS = 272,
-     INVALID = 273
+     CHAR = 262,
+     INT = 263,
+     DOUBLE = 264,
+     TRUE = 265,
+     FALSE = 266,
+     LPAREN = 267,
+     RPAREN = 268,
+     COMMA = 269,
+     SEMICOLON = 270,
+     ASSIGN = 271,
+     PLUS = 272,
+     MINUS = 273,
+     INVALID = 274
    };
 #endif
 

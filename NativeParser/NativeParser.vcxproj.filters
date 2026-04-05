@@ -35,10 +35,10 @@
     <ClCompile Include="wrapper.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="parser.tab.c">
+    <ClCompile Include="lex.yy.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="lex.yy.c">
+    <ClCompile Include="parser.tab.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
