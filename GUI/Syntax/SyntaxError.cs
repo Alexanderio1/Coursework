@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GUI.Syntax
+﻿namespace GUI.Syntax
 {
-    internal class SyntaxError
+    public sealed class SyntaxError
     {
+        public string InvalidFragment { get; set; } = string.Empty;
+        public int Line { get; set; }
+        public int StartColumn { get; set; }
+        public int EndColumn { get; set; }
+        public int AbsoluteIndex { get; set; }
+        public string Message { get; set; } = string.Empty;
+
+        public string LocationText
+        {
+            get { return string.Format("строка {0}, {1}-{2}", Line, StartColumn, EndColumn); }
+        }
     }
 }
