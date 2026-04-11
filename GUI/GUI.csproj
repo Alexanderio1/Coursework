@@ -123,6 +123,10 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Syntax\SyntaxAnalyzer.cs" />
+    <Compile Include="Syntax\SyntaxError.cs" />
+    <Compile Include="Syntax\SyntaxResult.cs" />
+    <Compile Include="Syntax\SyntaxTokenStream.cs" />
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>
