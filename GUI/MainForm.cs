@@ -4,8 +4,6 @@ using System.Windows.Forms;
 using System.IO;
 using GUI.Lexer;
 using System.Drawing;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
 
 namespace GUI
 {
@@ -252,74 +250,12 @@ namespace GUI
             if (result.HasErrors)
                 return;
 
-            var parserErrors = new List<ParserErrorInfo>();
-
-            NativeParserInterop.ErrorCallback callback = (startLine, startColumn, endLine, endColumn, msgPtr, lexemePtr) =>
-            {
-                string rawMessage = Marshal.PtrToStringAnsi(msgPtr) ?? "syntax error";
-                string lexeme = Marshal.PtrToStringAnsi(lexemePtr) ?? string.Empty;
-
-                parserErrors.Add(new ParserErrorInfo
-                {
-                    StartLine = startLine,
-                    StartColumn = startColumn,
-                    EndLine = endLine,
-                    EndColumn = endColumn,
-                    Message = BuildFriendlyParserMessage(rawMessage, lexeme),
-                    Lexeme = lexeme
-                });
-            };
-
-            int parseResult = NativeParserInterop.ParseSourceCode(rtbEditor.Text, callback);
-
-            if (parseResult == 0)
-            {
-                dgvResults.Rows.Add(
-                    "OK",
-                    "Синтаксис",
-                    "Синтаксический анализ завершён успешно",
-                    "-"
-                );
-                return;
-            }
-
-            foreach (var error in parserErrors)
-            {
-                int rowIndex = dgvResults.Rows.Add(
-                    "P001",
-                    "Синтаксическая ошибка",
-                    error.Message,
-                    $"строка {error.StartLine}, столбцы {error.StartColumn}-{error.EndColumn}"
-                );
-
-                var row = dgvResults.Rows[rowIndex];
-                row.DefaultCellStyle.BackColor = Color.MistyRose;
-                row.DefaultCellStyle.ForeColor = Color.DarkRed;
-                row.Tag = error;
-            }
-        }
-
-        private string BuildFriendlyParserMessage(string rawMessage, string lexeme)
-        {
-            if (rawMessage.Contains("unexpected end of file"))
-                return "Неожиданное окончание ввода. Возможно, пропущена закрывающая скобка ')' или символ ';'.";
-
-            if (rawMessage.Contains("unexpected \",\""))
-                return "Лишняя запятая или отсутствует элемент списка.";
-
-            if (rawMessage.Contains("unexpected \")\""))
-                return "Перед закрывающей скобкой ожидается элемент списка.";
-
-            if (rawMessage.Contains("unexpected \";\""))
-                return "Перед символом ';' ожидается закрывающая скобка ')' или элемент списка.";
-
-            if (rawMessage.Contains("unexpected \"invalid symbol\""))
-                return "Обнаружен недопустимый фрагмент: " + lexeme;
-
-            if (!string.IsNullOrWhiteSpace(lexeme))
-                return "Синтаксическая ошибка возле лексемы " + lexeme + ". " + rawMessage;
-
-            return "Синтаксическая ошибка. " + rawMessage;
+            dgvResults.Rows.Add(
+                "OK",
+                "Лексика",
+                "Лексический анализ завершён успешно",
+                "-"
+            );
         }
 
         private void GoToEditorPosition(int absoluteIndex)
@@ -352,15 +288,6 @@ namespace GUI
                 return;
             }
 
-            if (row.Tag is ParserErrorInfo parserError)
-            {
-                HighlightRange(
-                    parserError.StartLine,
-                    parserError.StartColumn,
-                    parserError.EndLine,
-                    parserError.EndColumn
-                );
-            }
         }
 
         private int GetCharIndexFromLineColumn(int line, int column)
