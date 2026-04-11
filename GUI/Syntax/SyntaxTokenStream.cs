@@ -81,5 +81,10 @@ namespace GUI.Syntax
             Advance();
             return true;
         }
+
+        public int Position
+        {
+            get { return _position; }
+        }
     }
 }

@@ -19,11 +19,16 @@ namespace GUI.Syntax
                 return _result;
             }
 
-            ParseDeclaration();
-
-            if (!_stream.IsAtEnd)
+            while (!_stream.IsAtEnd)
             {
-                AddError("Обнаружены лишние элементы после завершения объявления.");
+                int startPosition = _stream.Position;
+
+                ParseDeclaration();
+
+                _stream.Match(LexerTokenCode.Semicolon);
+
+                if (!_stream.IsAtEnd && _stream.Position == startPosition)
+                    _stream.Advance();
             }
 
             return _result;
@@ -32,32 +37,38 @@ namespace GUI.Syntax
         private void ParseDeclaration()
         {
             if (!Expect(LexerTokenCode.Val, "Ожидалось ключевое слово val"))
-                SkipTo(LexerTokenCode.Identifier, LexerTokenCode.Assign, LexerTokenCode.ListOf, LexerTokenCode.Semicolon);
+                SkipTo(LexerTokenCode.Identifier, LexerTokenCode.Assign, LexerTokenCode.ListOf, LexerTokenCode.Semicolon, LexerTokenCode.Val);
 
             if (!Expect(LexerTokenCode.Identifier, "Ожидался идентификатор после val"))
-                SkipTo(LexerTokenCode.Assign, LexerTokenCode.ListOf, LexerTokenCode.Semicolon);
+                SkipTo(LexerTokenCode.Assign, LexerTokenCode.ListOf, LexerTokenCode.Semicolon, LexerTokenCode.Val);
 
             if (!Expect(LexerTokenCode.Assign, "Ожидался оператор присваивания ="))
-                SkipTo(LexerTokenCode.ListOf, LexerTokenCode.LeftParen, LexerTokenCode.Semicolon);
+                SkipTo(LexerTokenCode.ListOf, LexerTokenCode.LeftParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
 
             ParseListInitializer();
 
             if (!Expect(LexerTokenCode.Semicolon, "Ожидался символ ; в конце объявления"))
-                SkipTo(LexerTokenCode.Semicolon);
+            {
+                SkipTo(LexerTokenCode.Semicolon, LexerTokenCode.Val);
+                _stream.Match(LexerTokenCode.Semicolon);
+            }
         }
 
         private void ParseListInitializer()
         {
             if (!Expect(LexerTokenCode.ListOf, "Ожидалась лексема listOf"))
-                SkipTo(LexerTokenCode.LeftParen, LexerTokenCode.RightParen, LexerTokenCode.Semicolon);
+                SkipTo(LexerTokenCode.LeftParen, LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
 
             if (!Expect(LexerTokenCode.LeftParen, "Ожидалась открывающая круглая скобка ("))
-                SkipTo(LexerTokenCode.RightParen, LexerTokenCode.Semicolon);
+                SkipTo(LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
 
             ParseElementsOpt();
 
             if (!Expect(LexerTokenCode.RightParen, "Ожидалась закрывающая круглая скобка )"))
-                SkipTo(LexerTokenCode.RightParen, LexerTokenCode.Semicolon);
+            {
+                SkipTo(LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
+                _stream.Match(LexerTokenCode.RightParen);
+            }
         }
 
         private void ParseElementsOpt()
@@ -72,7 +83,7 @@ namespace GUI.Syntax
             }
 
             AddError("Ожидался элемент списка или символ )");
-            SkipTo(LexerTokenCode.RightParen);
+            SkipTo(LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
         }
 
         private void ParseElements()
@@ -109,7 +120,7 @@ namespace GUI.Syntax
             }
 
             AddError("Ожидался корректный элемент списка");
-            SkipTo(LexerTokenCode.Comma, LexerTokenCode.RightParen);
+            SkipTo(LexerTokenCode.Comma, LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
         }
 
         private void ParseNumberLiteral()
@@ -127,7 +138,7 @@ namespace GUI.Syntax
             }
 
             AddError("Ожидался числовой литерал");
-            SkipTo(LexerTokenCode.Comma, LexerTokenCode.RightParen);
+            SkipTo(LexerTokenCode.Comma, LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
         }
 
         private void ParseSignedNumber()
@@ -141,7 +152,7 @@ namespace GUI.Syntax
                 return;
 
             AddError("После знака ожидался int или double");
-            SkipTo(LexerTokenCode.Comma, LexerTokenCode.RightParen);
+            SkipTo(LexerTokenCode.Comma, LexerTokenCode.RightParen, LexerTokenCode.Semicolon, LexerTokenCode.Val);
         }
 
         private void ParseSign()

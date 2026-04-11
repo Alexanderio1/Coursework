@@ -4,6 +4,8 @@ using System.Windows.Forms;
 using System.IO;
 using GUI.Lexer;
 using System.Drawing;
+using System.Linq;
+using GUI.Syntax;
 
 namespace GUI
 {
@@ -77,6 +79,7 @@ namespace GUI
         private void RenderAnalysisResult(LexerResult result)
         {
             ClearResultsGrid();
+            ConfigureResultsGridForLexer();
 
             foreach (var item in result.Items)
             {
@@ -242,35 +245,68 @@ namespace GUI
 
         private void CmdRun_Click(object sender, EventArgs e)
         {
-            var analyzer = new LexicalAnalyzer();
-            var result = analyzer.Analyze(rtbEditor.Text);
+            var lexer = new LexicalAnalyzer();
+            var lexResult = lexer.Analyze(rtbEditor.Text);
 
-            RenderAnalysisResult(result);
+            RenderAnalysisResult(lexResult);
 
-            if (result.HasErrors)
+            if (lexResult.HasErrors)
                 return;
 
-            dgvResults.Rows.Add(
-                "OK",
-                "Лексика",
-                "Лексический анализ завершён успешно",
-                "-"
-            );
+            var tokens = lexResult.Items
+                .Where(x => !x.IsError && x.Code.HasValue)
+                .ToList();
+
+            var parser = new SyntaxAnalyzer();
+            var syntaxResult = parser.Parse(tokens);
+
+            RenderSyntaxResult(syntaxResult);
         }
 
-        private void GoToEditorPosition(int absoluteIndex)
+        private void RenderSyntaxResult(SyntaxResult result)
         {
-            if (absoluteIndex < 0)
-                absoluteIndex = 0;
+            ClearResultsGrid();
+            ConfigureResultsGridForSyntax();
 
-            if (absoluteIndex > rtbEditor.TextLength)
-                absoluteIndex = rtbEditor.TextLength;
+            if (!result.HasErrors)
+            {
+                dgvResults.Rows.Add(
+                    "-",
+                    "-",
+                    "Синтаксический анализ завершён успешно. Ошибок не обнаружено.",
+                    string.Empty
+                );
+                return;
+            }
 
-            rtbEditor.Focus();
-            rtbEditor.SelectionStart = absoluteIndex;
-            rtbEditor.SelectionLength = absoluteIndex < rtbEditor.TextLength ? 1 : 0;
-            rtbEditor.ScrollToCaret();
+            foreach (var error in result.Errors)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    string.IsNullOrWhiteSpace(error.InvalidFragment) ? "(пусто)" : error.InvalidFragment,
+                    error.LocationText,
+                    error.Message,
+                    string.Empty
+                );
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = error;
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+
+            int totalRowIndex = dgvResults.Rows.Add(
+                "Общее количество ошибок",
+                "-",
+                result.ErrorCount.ToString(),
+                string.Empty
+            );
+
+            var totalRow = dgvResults.Rows[totalRowIndex];
+            totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+            totalRow.Tag = null;
         }
+
         private void dgvResults_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
@@ -288,6 +324,14 @@ namespace GUI
                 return;
             }
 
+            if (row.Tag is SyntaxError syntaxError)
+            {
+                HighlightRange(
+                    syntaxError.Line,
+                    syntaxError.StartColumn,
+                    syntaxError.Line,
+                    syntaxError.EndColumn);
+            }
         }
 
         private int GetCharIndexFromLineColumn(int line, int column)
@@ -373,6 +417,45 @@ namespace GUI
             UpdateCommandStates();
         }
 
+        private void ConfigureResultsGridForLexer()
+        {
+            if (dgvResults.Columns.Count < 4)
+                return;
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = true;
+
+            dgvResults.Columns[0].HeaderText = "Условный код";
+            dgvResults.Columns[1].HeaderText = "Тип лексемы";
+            dgvResults.Columns[2].HeaderText = "Лексема / Сообщение";
+            dgvResults.Columns[3].HeaderText = "Местоположение";
+
+            dgvResults.Columns[0].Width = 120;
+            dgvResults.Columns[1].Width = 220;
+            dgvResults.Columns[2].Width = 420;
+            dgvResults.Columns[3].Width = 180;
+        }
+
+        private void ConfigureResultsGridForSyntax()
+        {
+            if (dgvResults.Columns.Count < 4)
+                return;
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = false;
+
+            dgvResults.Columns[0].HeaderText = "Неверный фрагмент";
+            dgvResults.Columns[1].HeaderText = "Местоположение";
+            dgvResults.Columns[2].HeaderText = "Описание";
+
+            dgvResults.Columns[0].Width = 220;
+            dgvResults.Columns[1].Width = 220;
+            dgvResults.Columns[2].Width = 520;
+        }
     }
 
 }
