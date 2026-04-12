@@ -86,6 +86,9 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Antlr4.Runtime.Standard, Version=4.13.1.0, Culture=neutral, PublicKeyToken=e78b2c5abd1fcb3f, processorArchitecture=MSIL">
+      <HintPath>..\packages\Antlr4.Runtime.Standard.4.13.1\lib\net45\Antlr4.Runtime.Standard.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -105,12 +108,21 @@
     <Compile Include="AboutForm.Designer.cs">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ANTLR\AntlrAnalyzer.cs" />
+    <Compile Include="ANTLR\AntlrErrorListener.cs" />
+    <Compile Include="ANTLR\AntlrLexerErrorListener.cs" />
+    <Compile Include="ANTLR\AntlrSyntaxError.cs" />
+    <Compile Include="ANTLR\AntlrSyntaxResult.cs" />
     <Compile Include="HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="HelpForm.Designer.cs">
       <DependentUpon>HelpForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="KotlinListBaseListener.cs" />
+    <Compile Include="KotlinListLexer.cs" />
+    <Compile Include="KotlinListListener.cs" />
+    <Compile Include="KotlinListParser.cs" />
     <Compile Include="Lexer\LexerItem.cs" />
     <Compile Include="Lexer\LexerResult.cs" />
     <Compile Include="Lexer\LexerTokenCode.cs" />
@@ -146,7 +158,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="ANTLR\KotlinList.g4" />
     <None Include="GUI_TemporaryKey.pfx" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -224,6 +238,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="ANTLR\Generated\" />
     <Folder Include="images\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
