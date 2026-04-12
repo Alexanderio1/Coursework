@@ -82,6 +82,7 @@ namespace GUI
             this.colType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLexeme = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLocation = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.miRunAntlr = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMain.SuspendLayout();
             this.toolMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
@@ -101,7 +102,7 @@ namespace GUI
             this.miHelp});
             this.menuMain.Location = new System.Drawing.Point(0, 0);
             this.menuMain.Name = "menuMain";
-            this.menuMain.Size = new System.Drawing.Size(1588, 40);
+            this.menuMain.Size = new System.Drawing.Size(1588, 42);
             this.menuMain.TabIndex = 2;
             this.menuMain.Text = "menuStrip1";
             // 
@@ -114,7 +115,7 @@ namespace GUI
             this.miSaveAs,
             this.miExit});
             this.miFile.Name = "miFile";
-            this.miFile.Size = new System.Drawing.Size(90, 36);
+            this.miFile.Size = new System.Drawing.Size(90, 38);
             this.miFile.Text = "Файл";
             // 
             // miNew
@@ -169,7 +170,7 @@ namespace GUI
             this.miDelete,
             this.miSelectAll});
             this.miEdit.Name = "miEdit";
-            this.miEdit.Size = new System.Drawing.Size(114, 36);
+            this.miEdit.Size = new System.Drawing.Size(114, 38);
             this.miEdit.Text = "Правка";
             // 
             // miUndo
@@ -231,9 +232,10 @@ namespace GUI
             // miRunExecute
             // 
             this.miRunExecute.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.выполнитьToolStripMenuItem});
+            this.выполнитьToolStripMenuItem,
+            this.miRunAntlr});
             this.miRunExecute.Name = "miRunExecute";
-            this.miRunExecute.Size = new System.Drawing.Size(86, 36);
+            this.miRunExecute.Size = new System.Drawing.Size(86, 38);
             this.miRunExecute.Text = "Пуск";
             // 
             // выполнитьToolStripMenuItem
@@ -250,7 +252,7 @@ namespace GUI
             this.miHelpContent,
             this.miAbout});
             this.miHelp.Name = "miHelp";
-            this.miHelp.Size = new System.Drawing.Size(126, 36);
+            this.miHelp.Size = new System.Drawing.Size(126, 38);
             this.miHelp.Text = "Справка";
             // 
             // miHelpContent
@@ -328,7 +330,7 @@ namespace GUI
             this.btnHelp,
             this.toolStripSeparator2,
             this.toolStripSeparator4});
-            this.toolMain.Location = new System.Drawing.Point(0, 40);
+            this.toolMain.Location = new System.Drawing.Point(0, 42);
             this.toolMain.Name = "toolMain";
             this.toolMain.Size = new System.Drawing.Size(1588, 34);
             this.toolMain.TabIndex = 11;
@@ -511,7 +513,7 @@ namespace GUI
             // splitMain
             // 
             this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 74);
+            this.splitMain.Location = new System.Drawing.Point(0, 76);
             this.splitMain.Name = "splitMain";
             this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -522,8 +524,8 @@ namespace GUI
             // splitMain.Panel2
             // 
             this.splitMain.Panel2.Controls.Add(this.dgvResults);
-            this.splitMain.Size = new System.Drawing.Size(1588, 821);
-            this.splitMain.SplitterDistance = 520;
+            this.splitMain.Size = new System.Drawing.Size(1588, 819);
+            this.splitMain.SplitterDistance = 518;
             this.splitMain.SplitterWidth = 6;
             this.splitMain.TabIndex = 12;
             // 
@@ -536,7 +538,7 @@ namespace GUI
             this.rtbEditor.HideSelection = false;
             this.rtbEditor.Location = new System.Drawing.Point(0, 0);
             this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 520);
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
             this.rtbEditor.TabIndex = 0;
             this.rtbEditor.Text = "";
             this.rtbEditor.WordWrap = false;
@@ -593,6 +595,13 @@ namespace GUI
             this.colLocation.MinimumWidth = 10;
             this.colLocation.Name = "colLocation";
             this.colLocation.ReadOnly = true;
+            // 
+            // miRunAntlr
+            // 
+            this.miRunAntlr.Name = "miRunAntlr";
+            this.miRunAntlr.Size = new System.Drawing.Size(359, 44);
+            this.miRunAntlr.Text = "ANTLR-анализ";
+            this.miRunAntlr.Click += new System.EventHandler(this.CmdRunAntlr_Click);
             // 
             // MainForm
             // 
@@ -675,6 +684,7 @@ namespace GUI
         private System.Windows.Forms.DataGridViewTextBoxColumn colType;
         private System.Windows.Forms.DataGridViewTextBoxColumn colLexeme;
         private System.Windows.Forms.DataGridViewTextBoxColumn colLocation;
+        private System.Windows.Forms.ToolStripMenuItem miRunAntlr;
     }
 }
 

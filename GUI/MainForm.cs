@@ -1,11 +1,12 @@
-﻿using System;
+﻿using GUI.ANTLR;
+using GUI.Lexer;
+using GUI.Syntax;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using System.IO;
-using GUI.Lexer;
-using System.Drawing;
-using System.Linq;
-using GUI.Syntax;
 
 namespace GUI
 {
@@ -332,6 +333,16 @@ namespace GUI
                     syntaxError.Line,
                     syntaxError.EndColumn);
             }
+
+            if (row.Tag is AntlrSyntaxError antlrError)
+            {
+                HighlightRange(
+                    antlrError.Line,
+                    antlrError.StartColumn,
+                    antlrError.Line,
+                    antlrError.EndColumn);
+                return;
+            }
         }
 
         private int GetCharIndexFromLineColumn(int line, int column)
@@ -455,6 +466,58 @@ namespace GUI
             dgvResults.Columns[0].Width = 220;
             dgvResults.Columns[1].Width = 220;
             dgvResults.Columns[2].Width = 520;
+        }
+
+        private void CmdRunAntlr_Click(object sender, EventArgs e)
+        {
+            var antlrAnalyzer = new AntlrAnalyzer();
+            var antlrResult = antlrAnalyzer.Analyze(rtbEditor.Text);
+
+            RenderAntlrSyntaxResult(antlrResult);
+        }
+
+        private void RenderAntlrSyntaxResult(AntlrSyntaxResult result)
+        {
+            ClearResultsGrid();
+            ConfigureResultsGridForSyntax();
+
+            if (!result.HasErrors)
+            {
+                dgvResults.Rows.Add(
+                    "-",
+                    "-",
+                    "ANTLR-анализ завершён успешно. Ошибок не обнаружено.",
+                    string.Empty
+                );
+                return;
+            }
+
+            foreach (var error in result.Errors)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    string.IsNullOrWhiteSpace(error.InvalidFragment) ? "(пусто)" : error.InvalidFragment,
+                    error.LocationText,
+                    error.Message,
+                    string.Empty
+                );
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = error;
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+
+            int totalRowIndex = dgvResults.Rows.Add(
+                "Общее количество ошибок",
+                "-",
+                result.ErrorCount.ToString(),
+                string.Empty
+            );
+
+            var totalRow = dgvResults.Rows[totalRowIndex];
+            totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+            totalRow.Tag = null;
         }
     }
 
