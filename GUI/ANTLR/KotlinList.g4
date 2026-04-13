@@ -1,11 +1,20 @@
 grammar KotlinList;
 
 file
-    : declaration* EOF
+    : statement* EOF
+    ;
+
+statement
+    : declaration
+    | declarationNoVal
     ;
 
 declaration
     : VAL IDENTIFIER ASSIGN LISTOF LPAREN elementsOpt RPAREN SEMI
+    ;
+
+declarationNoVal
+    : IDENTIFIER ASSIGN LISTOF LPAREN elementsOpt RPAREN SEMI
     ;
 
 elementsOpt
@@ -37,25 +46,36 @@ sign
     | MINUS
     ;
 
-VAL         : 'val';
-LISTOF      : 'listOf';
-TRUE        : 'true';
-FALSE       : 'false';
-ASSIGN      : '=';
-LPAREN      : '(';
-RPAREN      : ')';
-COMMA       : ',';
-SEMI        : ';';
-PLUS        : '+';
-MINUS       : '-';
+VAL     : 'val';
+LISTOF  : 'listOf';
+TRUE    : 'true';
+FALSE   : 'false';
+ASSIGN  : '=';
+LPAREN  : '(';
+RPAREN  : ')';
+COMMA   : ',';
+SEMI    : ';';
+PLUS    : '+';
+MINUS   : '-';
 
-DOUBLE      : DIGIT+ '.' DIGIT+;
-INT         : DIGIT+;
-CHAR        : '\'' (~['\\\r\n] | '\\' .) '\'';
-STRING      : '"' (~["\\\r\n] | '\\' .)* '"';
-IDENTIFIER  : LETTER (LETTER | DIGIT | '_')*;
+DOUBLE  : DIGIT+ '.' DIGIT+;
+INT     : DIGIT+;
 
-WS          : [ \t\r\n]+ -> skip;
+CHAR
+    : '\'' (~['\\\r\n] | '\\' .) '\''
+    ;
+
+STRING
+    : '"' (~["\\\r\n] | '\\' .)* '"'
+    ;
+
+IDENTIFIER
+    : LETTER (LETTER | DIGIT | '_')*
+    ;
+
+WS
+    : [ \t\r\n]+ -> skip
+    ;
 
 fragment DIGIT  : [0-9];
 fragment LETTER : [a-zA-Z];

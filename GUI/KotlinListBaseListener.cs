@@ -48,6 +48,18 @@ public partial class KotlinListBaseListener : IKotlinListListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitFile([NotNull] KotlinListParser.FileContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="KotlinListParser.statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterStatement([NotNull] KotlinListParser.StatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="KotlinListParser.statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitStatement([NotNull] KotlinListParser.StatementContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="KotlinListParser.declaration"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -59,6 +71,18 @@ public partial class KotlinListBaseListener : IKotlinListListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitDeclaration([NotNull] KotlinListParser.DeclarationContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="KotlinListParser.declarationNoVal"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterDeclarationNoVal([NotNull] KotlinListParser.DeclarationNoValContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="KotlinListParser.declarationNoVal"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitDeclarationNoVal([NotNull] KotlinListParser.DeclarationNoValContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="KotlinListParser.elementsOpt"/>.
 	/// <para>The default implementation does nothing.</para>

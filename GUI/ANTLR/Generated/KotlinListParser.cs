@@ -40,11 +40,12 @@ public partial class KotlinListParser : Parser {
 		SEMI=9, PLUS=10, MINUS=11, DOUBLE=12, INT=13, CHAR=14, STRING=15, IDENTIFIER=16, 
 		WS=17;
 	public const int
-		RULE_file = 0, RULE_declaration = 1, RULE_elementsOpt = 2, RULE_elements = 3, 
-		RULE_element = 4, RULE_numberLiteral = 5, RULE_sign = 6;
+		RULE_file = 0, RULE_statement = 1, RULE_declaration = 2, RULE_declarationNoVal = 3, 
+		RULE_elementsOpt = 4, RULE_elements = 5, RULE_element = 6, RULE_numberLiteral = 7, 
+		RULE_sign = 8;
 	public static readonly string[] ruleNames = {
-		"file", "declaration", "elementsOpt", "elements", "element", "numberLiteral", 
-		"sign"
+		"file", "statement", "declaration", "declarationNoVal", "elementsOpt", 
+		"elements", "element", "numberLiteral", "sign"
 	};
 
 	private static readonly string[] _LiteralNames = {
@@ -90,11 +91,11 @@ public partial class KotlinListParser : Parser {
 
 	public partial class FileContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Eof() { return GetToken(KotlinListParser.Eof, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public DeclarationContext[] declaration() {
-			return GetRuleContexts<DeclarationContext>();
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext[] statement() {
+			return GetRuleContexts<StatementContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public DeclarationContext declaration(int i) {
-			return GetRuleContext<DeclarationContext>(i);
+		[System.Diagnostics.DebuggerNonUserCode] public StatementContext statement(int i) {
+			return GetRuleContext<StatementContext>(i);
 		}
 		public FileContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -121,22 +122,83 @@ public partial class KotlinListParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 17;
+			State = 21;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			while (_la==VAL) {
+			while (_la==VAL || _la==IDENTIFIER) {
 				{
 				{
-				State = 14;
-				declaration();
+				State = 18;
+				statement();
 				}
 				}
-				State = 19;
+				State = 23;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			State = 20;
+			State = 24;
 			Match(Eof);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class StatementContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public DeclarationContext declaration() {
+			return GetRuleContext<DeclarationContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public DeclarationNoValContext declarationNoVal() {
+			return GetRuleContext<DeclarationNoValContext>(0);
+		}
+		public StatementContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_statement; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			IKotlinListListener typedListener = listener as IKotlinListListener;
+			if (typedListener != null) typedListener.EnterStatement(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			IKotlinListListener typedListener = listener as IKotlinListListener;
+			if (typedListener != null) typedListener.ExitStatement(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public StatementContext statement() {
+		StatementContext _localctx = new StatementContext(Context, State);
+		EnterRule(_localctx, 2, RULE_statement);
+		try {
+			State = 28;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case VAL:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 26;
+				declaration();
+				}
+				break;
+			case IDENTIFIER:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 27;
+				declarationNoVal();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -181,25 +243,86 @@ public partial class KotlinListParser : Parser {
 	[RuleVersion(0)]
 	public DeclarationContext declaration() {
 		DeclarationContext _localctx = new DeclarationContext(Context, State);
-		EnterRule(_localctx, 2, RULE_declaration);
+		EnterRule(_localctx, 4, RULE_declaration);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 22;
+			State = 30;
 			Match(VAL);
-			State = 23;
+			State = 31;
 			Match(IDENTIFIER);
-			State = 24;
+			State = 32;
 			Match(ASSIGN);
-			State = 25;
+			State = 33;
 			Match(LISTOF);
-			State = 26;
+			State = 34;
 			Match(LPAREN);
-			State = 27;
+			State = 35;
 			elementsOpt();
-			State = 28;
+			State = 36;
 			Match(RPAREN);
-			State = 29;
+			State = 37;
+			Match(SEMI);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class DeclarationNoValContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(KotlinListParser.IDENTIFIER, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(KotlinListParser.ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LISTOF() { return GetToken(KotlinListParser.LISTOF, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(KotlinListParser.LPAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ElementsOptContext elementsOpt() {
+			return GetRuleContext<ElementsOptContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(KotlinListParser.RPAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMI() { return GetToken(KotlinListParser.SEMI, 0); }
+		public DeclarationNoValContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_declarationNoVal; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			IKotlinListListener typedListener = listener as IKotlinListListener;
+			if (typedListener != null) typedListener.EnterDeclarationNoVal(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			IKotlinListListener typedListener = listener as IKotlinListListener;
+			if (typedListener != null) typedListener.ExitDeclarationNoVal(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public DeclarationNoValContext declarationNoVal() {
+		DeclarationNoValContext _localctx = new DeclarationNoValContext(Context, State);
+		EnterRule(_localctx, 6, RULE_declarationNoVal);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 39;
+			Match(IDENTIFIER);
+			State = 40;
+			Match(ASSIGN);
+			State = 41;
+			Match(LISTOF);
+			State = 42;
+			Match(LPAREN);
+			State = 43;
+			elementsOpt();
+			State = 44;
+			Match(RPAREN);
+			State = 45;
 			Match(SEMI);
 			}
 		}
@@ -238,9 +361,9 @@ public partial class KotlinListParser : Parser {
 	[RuleVersion(0)]
 	public ElementsOptContext elementsOpt() {
 		ElementsOptContext _localctx = new ElementsOptContext(Context, State);
-		EnterRule(_localctx, 4, RULE_elementsOpt);
+		EnterRule(_localctx, 8, RULE_elementsOpt);
 		try {
-			State = 33;
+			State = 49;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case TRUE:
@@ -253,7 +376,7 @@ public partial class KotlinListParser : Parser {
 			case STRING:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 31;
+				State = 47;
 				elements();
 				}
 				break;
@@ -308,26 +431,26 @@ public partial class KotlinListParser : Parser {
 	[RuleVersion(0)]
 	public ElementsContext elements() {
 		ElementsContext _localctx = new ElementsContext(Context, State);
-		EnterRule(_localctx, 6, RULE_elements);
+		EnterRule(_localctx, 10, RULE_elements);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 35;
+			State = 51;
 			element();
-			State = 40;
+			State = 56;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				State = 36;
+				State = 52;
 				Match(COMMA);
-				State = 37;
+				State = 53;
 				element();
 				}
 				}
-				State = 42;
+				State = 58;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -372,36 +495,36 @@ public partial class KotlinListParser : Parser {
 	[RuleVersion(0)]
 	public ElementContext element() {
 		ElementContext _localctx = new ElementContext(Context, State);
-		EnterRule(_localctx, 8, RULE_element);
+		EnterRule(_localctx, 12, RULE_element);
 		try {
-			State = 48;
+			State = 64;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case STRING:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 43;
+				State = 59;
 				Match(STRING);
 				}
 				break;
 			case CHAR:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 44;
+				State = 60;
 				Match(CHAR);
 				}
 				break;
 			case TRUE:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 45;
+				State = 61;
 				Match(TRUE);
 				}
 				break;
 			case FALSE:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 46;
+				State = 62;
 				Match(FALSE);
 				}
 				break;
@@ -411,7 +534,7 @@ public partial class KotlinListParser : Parser {
 			case INT:
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 47;
+				State = 63;
 				numberLiteral();
 				}
 				break;
@@ -456,40 +579,40 @@ public partial class KotlinListParser : Parser {
 	[RuleVersion(0)]
 	public NumberLiteralContext numberLiteral() {
 		NumberLiteralContext _localctx = new NumberLiteralContext(Context, State);
-		EnterRule(_localctx, 10, RULE_numberLiteral);
+		EnterRule(_localctx, 14, RULE_numberLiteral);
 		try {
-			State = 58;
+			State = 74;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,4,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,5,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 50;
+				State = 66;
 				Match(INT);
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 51;
+				State = 67;
 				Match(DOUBLE);
 				}
 				break;
 			case 3:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 52;
+				State = 68;
 				sign();
-				State = 53;
+				State = 69;
 				Match(INT);
 				}
 				break;
 			case 4:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 55;
+				State = 71;
 				sign();
-				State = 56;
+				State = 72;
 				Match(DOUBLE);
 				}
 				break;
@@ -529,12 +652,12 @@ public partial class KotlinListParser : Parser {
 	[RuleVersion(0)]
 	public SignContext sign() {
 		SignContext _localctx = new SignContext(Context, State);
-		EnterRule(_localctx, 12, RULE_sign);
+		EnterRule(_localctx, 16, RULE_sign);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 60;
+			State = 76;
 			_la = TokenStream.LA(1);
 			if ( !(_la==PLUS || _la==MINUS) ) {
 			ErrorHandler.RecoverInline(this);
@@ -557,24 +680,28 @@ public partial class KotlinListParser : Parser {
 	}
 
 	private static int[] _serializedATN = {
-		4,1,17,63,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,1,0,
-		5,0,16,8,0,10,0,12,0,19,9,0,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,2,1,2,3,2,34,8,2,1,3,1,3,1,3,5,3,39,8,3,10,3,12,3,42,9,3,1,4,1,4,1,
-		4,1,4,1,4,3,4,49,8,4,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,3,5,59,8,5,1,6,1,
-		6,1,6,0,0,7,0,2,4,6,8,10,12,0,1,1,0,10,11,65,0,17,1,0,0,0,2,22,1,0,0,0,
-		4,33,1,0,0,0,6,35,1,0,0,0,8,48,1,0,0,0,10,58,1,0,0,0,12,60,1,0,0,0,14,
-		16,3,2,1,0,15,14,1,0,0,0,16,19,1,0,0,0,17,15,1,0,0,0,17,18,1,0,0,0,18,
-		20,1,0,0,0,19,17,1,0,0,0,20,21,5,0,0,1,21,1,1,0,0,0,22,23,5,1,0,0,23,24,
-		5,16,0,0,24,25,5,5,0,0,25,26,5,2,0,0,26,27,5,6,0,0,27,28,3,4,2,0,28,29,
-		5,7,0,0,29,30,5,9,0,0,30,3,1,0,0,0,31,34,3,6,3,0,32,34,1,0,0,0,33,31,1,
-		0,0,0,33,32,1,0,0,0,34,5,1,0,0,0,35,40,3,8,4,0,36,37,5,8,0,0,37,39,3,8,
-		4,0,38,36,1,0,0,0,39,42,1,0,0,0,40,38,1,0,0,0,40,41,1,0,0,0,41,7,1,0,0,
-		0,42,40,1,0,0,0,43,49,5,15,0,0,44,49,5,14,0,0,45,49,5,3,0,0,46,49,5,4,
-		0,0,47,49,3,10,5,0,48,43,1,0,0,0,48,44,1,0,0,0,48,45,1,0,0,0,48,46,1,0,
-		0,0,48,47,1,0,0,0,49,9,1,0,0,0,50,59,5,13,0,0,51,59,5,12,0,0,52,53,3,12,
-		6,0,53,54,5,13,0,0,54,59,1,0,0,0,55,56,3,12,6,0,56,57,5,12,0,0,57,59,1,
-		0,0,0,58,50,1,0,0,0,58,51,1,0,0,0,58,52,1,0,0,0,58,55,1,0,0,0,59,11,1,
-		0,0,0,60,61,7,0,0,0,61,13,1,0,0,0,5,17,33,40,48,58
+		4,1,17,79,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		7,7,2,8,7,8,1,0,5,0,20,8,0,10,0,12,0,23,9,0,1,0,1,0,1,1,1,1,3,1,29,8,1,
+		1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,3,1,
+		4,1,4,3,4,50,8,4,1,5,1,5,1,5,5,5,55,8,5,10,5,12,5,58,9,5,1,6,1,6,1,6,1,
+		6,1,6,3,6,65,8,6,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,7,75,8,7,1,8,1,8,1,
+		8,0,0,9,0,2,4,6,8,10,12,14,16,0,1,1,0,10,11,80,0,21,1,0,0,0,2,28,1,0,0,
+		0,4,30,1,0,0,0,6,39,1,0,0,0,8,49,1,0,0,0,10,51,1,0,0,0,12,64,1,0,0,0,14,
+		74,1,0,0,0,16,76,1,0,0,0,18,20,3,2,1,0,19,18,1,0,0,0,20,23,1,0,0,0,21,
+		19,1,0,0,0,21,22,1,0,0,0,22,24,1,0,0,0,23,21,1,0,0,0,24,25,5,0,0,1,25,
+		1,1,0,0,0,26,29,3,4,2,0,27,29,3,6,3,0,28,26,1,0,0,0,28,27,1,0,0,0,29,3,
+		1,0,0,0,30,31,5,1,0,0,31,32,5,16,0,0,32,33,5,5,0,0,33,34,5,2,0,0,34,35,
+		5,6,0,0,35,36,3,8,4,0,36,37,5,7,0,0,37,38,5,9,0,0,38,5,1,0,0,0,39,40,5,
+		16,0,0,40,41,5,5,0,0,41,42,5,2,0,0,42,43,5,6,0,0,43,44,3,8,4,0,44,45,5,
+		7,0,0,45,46,5,9,0,0,46,7,1,0,0,0,47,50,3,10,5,0,48,50,1,0,0,0,49,47,1,
+		0,0,0,49,48,1,0,0,0,50,9,1,0,0,0,51,56,3,12,6,0,52,53,5,8,0,0,53,55,3,
+		12,6,0,54,52,1,0,0,0,55,58,1,0,0,0,56,54,1,0,0,0,56,57,1,0,0,0,57,11,1,
+		0,0,0,58,56,1,0,0,0,59,65,5,15,0,0,60,65,5,14,0,0,61,65,5,3,0,0,62,65,
+		5,4,0,0,63,65,3,14,7,0,64,59,1,0,0,0,64,60,1,0,0,0,64,61,1,0,0,0,64,62,
+		1,0,0,0,64,63,1,0,0,0,65,13,1,0,0,0,66,75,5,13,0,0,67,75,5,12,0,0,68,69,
+		3,16,8,0,69,70,5,13,0,0,70,75,1,0,0,0,71,72,3,16,8,0,72,73,5,12,0,0,73,
+		75,1,0,0,0,74,66,1,0,0,0,74,67,1,0,0,0,74,68,1,0,0,0,74,71,1,0,0,0,75,
+		15,1,0,0,0,76,77,7,0,0,0,77,17,1,0,0,0,6,21,28,49,56,64,74
 	};
 
 	public static readonly ATN _ATN =

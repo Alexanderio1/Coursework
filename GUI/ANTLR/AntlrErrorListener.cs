@@ -25,10 +25,7 @@ namespace GUI.ANTLR
             string msg,
             RecognitionException e)
         {
-            string fragment = offendingSymbol != null
-                ? (offendingSymbol.Text ?? string.Empty)
-                : string.Empty;
-
+            string fragment = offendingSymbol != null ? (offendingSymbol.Text ?? string.Empty) : string.Empty;
             int startColumn = charPositionInLine + 1;
             int endColumn = startColumn + Math.Max(0, fragment.Length - 1);
             int absoluteIndex = offendingSymbol != null ? offendingSymbol.StartIndex : 0;
@@ -40,8 +37,39 @@ namespace GUI.ANTLR
                 StartColumn = startColumn,
                 EndColumn = endColumn,
                 AbsoluteIndex = Math.Max(0, absoluteIndex),
-                Message = string.IsNullOrWhiteSpace(msg) ? "Синтаксическая ошибка" : msg
+                Message = NormalizeMessage(offendingSymbol, msg)
             });
+        }
+
+        private static string NormalizeMessage(IToken offendingSymbol, string msg)
+        {
+            string text = msg ?? string.Empty;
+
+            if (offendingSymbol != null && offendingSymbol.Type == TokenConstants.EOF)
+            {
+                if (text.Contains("RPAREN") || text.Contains("')'"))
+                    return "Ожидался элемент списка или символ )";
+
+                if (text.Contains("SEMI") || text.Contains("';'"))
+                    return "Ожидался символ ; в конце объявления";
+            }
+
+            if (text.Contains("LISTOF") || text.Contains("'listOf'"))
+                return "Ожидалась лексема listOf";
+
+            if (text.Contains("ASSIGN") || text.Contains("'='"))
+                return "Ожидался оператор присваивания =";
+
+            if (text.Contains("IDENTIFIER"))
+                return "Ожидался идентификатор после val";
+
+            if (text.Contains("RPAREN") || text.Contains("')'"))
+                return "Ожидался элемент списка или символ )";
+
+            if (text.Contains("SEMI") || text.Contains("';'"))
+                return "Ожидался символ ; в конце объявления";
+
+            return string.IsNullOrWhiteSpace(text) ? "Синтаксическая ошибка" : text;
         }
     }
 }

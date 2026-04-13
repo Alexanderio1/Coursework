@@ -41,6 +41,16 @@ public interface IKotlinListListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitFile([NotNull] KotlinListParser.FileContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="KotlinListParser.statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterStatement([NotNull] KotlinListParser.StatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="KotlinListParser.statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitStatement([NotNull] KotlinListParser.StatementContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="KotlinListParser.declaration"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -50,6 +60,16 @@ public interface IKotlinListListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitDeclaration([NotNull] KotlinListParser.DeclarationContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="KotlinListParser.declarationNoVal"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDeclarationNoVal([NotNull] KotlinListParser.DeclarationNoValContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="KotlinListParser.declarationNoVal"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDeclarationNoVal([NotNull] KotlinListParser.DeclarationNoValContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="KotlinListParser.elementsOpt"/>.
 	/// </summary>

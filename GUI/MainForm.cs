@@ -249,19 +249,35 @@ namespace GUI
             var lexer = new LexicalAnalyzer();
             var lexResult = lexer.Analyze(rtbEditor.Text);
 
-            RenderAnalysisResult(lexResult);
-
             if (lexResult.HasErrors)
+            {
+                var syntaxResult = new SyntaxResult();
+
+                foreach (var lexError in lexResult.Items.Where(x => x.IsError))
+                {
+                    syntaxResult.Errors.Add(new SyntaxError
+                    {
+                        InvalidFragment = string.IsNullOrWhiteSpace(lexError.Lexeme) ? "(пусто)" : lexError.Lexeme,
+                        Line = lexError.Line,
+                        StartColumn = lexError.StartColumn,
+                        EndColumn = lexError.EndColumn,
+                        AbsoluteIndex = lexError.AbsoluteIndex,
+                        Message = string.IsNullOrWhiteSpace(lexError.Message) ? lexError.DisplayText : lexError.Message
+                    });
+                }
+
+                RenderSyntaxResult(syntaxResult);
                 return;
+            }
 
             var tokens = lexResult.Items
                 .Where(x => !x.IsError && x.Code.HasValue)
                 .ToList();
 
             var parser = new SyntaxAnalyzer();
-            var syntaxResult = parser.Parse(tokens);
+            var syntaxResult2 = parser.Parse(tokens);
 
-            RenderSyntaxResult(syntaxResult);
+            RenderSyntaxResult(syntaxResult2);
         }
 
         private void RenderSyntaxResult(SyntaxResult result)

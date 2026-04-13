@@ -8,6 +8,7 @@ namespace GUI.Syntax
         private SyntaxTokenStream _stream;
         private SyntaxResult _result;
         private int _currentDeclarationLine;
+        private int _declarationStartPosition;
         private bool _elementsExpectedReported;
 
         public SyntaxResult Parse(IReadOnlyList<LexerItem> tokens)
@@ -44,18 +45,35 @@ namespace GUI.Syntax
                 return;
 
             _currentDeclarationLine = _stream.Current.Line;
+            _declarationStartPosition = _stream.Position;
 
             if (!_stream.Check(LexerTokenCode.Val))
             {
                 AddError("Ожидалось ключевое слово val");
-                SkipGarbageLineOrStatement();
-                return;
+
+                if (_stream.IsAtEnd)
+                    return;
+
+                if (_stream.Check(LexerTokenCode.Semicolon))
+                {
+                    _stream.Advance();
+                    return;
+                }
+
+                if (!_stream.Check(LexerTokenCode.Identifier))
+                {
+                    SkipGarbageLineOrStatement();
+                    return;
+                }
             }
-            _stream.Advance();
+            else
+            {
+                _stream.Advance();
+            }
 
             if (!_stream.Check(LexerTokenCode.Identifier))
             {
-                AddMissingAfterPrevious(
+                AddMissingAtCurrentOrAfterPrevious(
                     "Ожидался идентификатор после val",
                     "(пропущен идентификатор)");
 
@@ -73,7 +91,7 @@ namespace GUI.Syntax
 
             if (!_stream.Check(LexerTokenCode.Assign))
             {
-                AddMissingAfterPrevious("Ожидался оператор присваивания =");
+                AddMissingAtCurrentOrAfterPrevious("Ожидался оператор присваивания =");
 
                 if (!RecoverWithinDeclaration(
                     LexerTokenCode.Assign,
@@ -88,7 +106,7 @@ namespace GUI.Syntax
 
             if (!_stream.Check(LexerTokenCode.ListOf))
             {
-                AddMissingAfterPrevious("Ожидалась лексема listOf");
+                AddMissingAtCurrentOrAfterPrevious("Ожидалась лексема listOf");
 
                 if (!RecoverWithinDeclaration(
                     LexerTokenCode.ListOf,
@@ -102,7 +120,7 @@ namespace GUI.Syntax
 
             if (!_stream.Check(LexerTokenCode.LeftParen))
             {
-                AddMissingAfterPrevious("Ожидалась открывающая круглая скобка (");
+                AddMissingAtCurrentOrAfterPrevious("Ожидалась открывающая круглая скобка (");
 
                 if (!RecoverWithinDeclaration(
                     LexerTokenCode.LeftParen,
@@ -115,6 +133,8 @@ namespace GUI.Syntax
                 _stream.Advance();
                 ParseElementsOpt();
             }
+
+            bool stopAfterMissingRightParenAtEnd = false;
 
             if (!_stream.Check(LexerTokenCode.RightParen))
             {
@@ -135,12 +155,24 @@ namespace GUI.Syntax
                     }
                 }
 
-                if (!RecoverWithinDeclaration(LexerTokenCode.RightParen, LexerTokenCode.Semicolon))
-                    return;
+                if (_stream.IsAtEnd)
+                {
+                    stopAfterMissingRightParenAtEnd = true;
+                }
+                else
+                {
+                    if (!RecoverWithinDeclaration(
+                        LexerTokenCode.RightParen,
+                        LexerTokenCode.Semicolon))
+                        return;
+                }
             }
 
             if (_stream.Check(LexerTokenCode.RightParen))
                 _stream.Advance();
+
+            if (stopAfterMissingRightParenAtEnd)
+                return;
 
             if (!_stream.Check(LexerTokenCode.Semicolon))
             {
@@ -154,6 +186,32 @@ namespace GUI.Syntax
 
             if (_stream.Check(LexerTokenCode.Semicolon))
                 _stream.Advance();
+        }
+
+        private void AddMissingAtCurrentOrAfterPrevious(string message)
+        {
+            AddMissingAtCurrentOrAfterPrevious(message, "(пропуск)");
+        }
+
+        private void AddMissingAtCurrentOrAfterPrevious(string message, string fragmentText)
+        {
+            if (_stream.IsAtEnd || _stream.Position > _declarationStartPosition)
+            {
+                AddMissingAfterPrevious(message, fragmentText);
+                return;
+            }
+
+            LexerItem token = _stream.Current;
+
+            _result.Errors.Add(new SyntaxError
+            {
+                InvalidFragment = fragmentText,
+                Line = token.Line,
+                StartColumn = token.StartColumn,
+                EndColumn = token.StartColumn,
+                AbsoluteIndex = token.AbsoluteIndex,
+                Message = message
+            });
         }
 
         private void ParseElementsOpt()
