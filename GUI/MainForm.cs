@@ -249,35 +249,35 @@ namespace GUI
             var lexer = new LexicalAnalyzer();
             var lexResult = lexer.Analyze(rtbEditor.Text);
 
-            if (lexResult.HasErrors)
-            {
-                var syntaxResult = new SyntaxResult();
-
-                foreach (var lexError in lexResult.Items.Where(x => x.IsError))
-                {
-                    syntaxResult.Errors.Add(new SyntaxError
-                    {
-                        InvalidFragment = string.IsNullOrWhiteSpace(lexError.Lexeme) ? "(пусто)" : lexError.Lexeme,
-                        Line = lexError.Line,
-                        StartColumn = lexError.StartColumn,
-                        EndColumn = lexError.EndColumn,
-                        AbsoluteIndex = lexError.AbsoluteIndex,
-                        Message = string.IsNullOrWhiteSpace(lexError.Message) ? lexError.DisplayText : lexError.Message
-                    });
-                }
-
-                RenderSyntaxResult(syntaxResult);
-                return;
-            }
-
             var tokens = lexResult.Items
                 .Where(x => !x.IsError && x.Code.HasValue)
                 .ToList();
 
             var parser = new SyntaxAnalyzer();
-            var syntaxResult2 = parser.Parse(tokens);
+            var syntaxResult = parser.Parse(tokens);
 
-            RenderSyntaxResult(syntaxResult2);
+            var lexErrors = lexResult.Items.Where(x => x.IsError).ToList();
+
+            for (int i = lexErrors.Count - 1; i >= 0; i--)
+            {
+                var lexError = lexErrors[i];
+
+                syntaxResult.Errors.Insert(0, new SyntaxError
+                {
+                    InvalidFragment = string.IsNullOrWhiteSpace(lexError.Lexeme)
+                        ? "(пусто)"
+                        : lexError.Lexeme,
+                    Line = lexError.Line,
+                    StartColumn = lexError.StartColumn,
+                    EndColumn = lexError.EndColumn,
+                    AbsoluteIndex = lexError.AbsoluteIndex,
+                    Message = string.IsNullOrWhiteSpace(lexError.Message)
+                        ? lexError.DisplayText
+                        : lexError.Message
+                });
+            }
+
+            RenderSyntaxResult(syntaxResult);
         }
 
         private void RenderSyntaxResult(SyntaxResult result)

@@ -390,20 +390,8 @@ namespace GUI.Lexer
                     return;
                 }
 
-                // Недопустимый символ внутри строки:
-                // дочитываем до закрывающей " или конца строки,
-                // чтобы не оставлять хвостовую кавычку на повторный разбор.
-                while (index < text.Length
-                       && !IsLineBreak(Peek(text, index))
-                       && Peek(text, index) != '"')
-                {
-                    Advance(text, ref index, ref line, ref column);
-                }
-
-                if (Peek(text, index) == '"')
-                {
-                    Advance(text, ref index, ref line, ref column);
-                }
+                int badIndex = index;
+                Advance(text, ref index, ref line, ref column);
 
                 string invalid = text.Substring(startIndex, index - startIndex);
 
@@ -414,7 +402,7 @@ namespace GUI.Lexer
                     startIndex,
                     startLine,
                     startColumn,
-                    Math.Max(invalid.Length, 1));
+                    invalid.Length);
 
                 return;
             }
