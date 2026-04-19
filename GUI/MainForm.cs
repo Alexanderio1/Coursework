@@ -23,6 +23,16 @@ namespace GUI
             public int Column { get; set; }
         }
 
+        private enum NumberAutomatonState
+        {
+            Start,
+            Sign,
+            Zero,
+            Integer,
+            Separator,
+            Fraction
+        }
+
         public MainForm()
         {
             InitializeComponent();
@@ -252,8 +262,7 @@ namespace GUI
                 return;
             }
 
-            string pattern = GetSelectedPattern();
-            List<SearchResultItem> results = FindMatches(text, pattern);
+            List<SearchResultItem> results = FindResultsBySelectedMode(text);
 
             FillResultsGrid(results);
 
@@ -407,6 +416,233 @@ namespace GUI
             catch
             {
                 return false;
+            }
+        }
+
+        private bool IsAsciiDigit(char ch)
+        {
+            return ch >= '0' && ch <= '9';
+        }
+
+        private bool IsNonZeroDigit(char ch)
+        {
+            return ch >= '1' && ch <= '9';
+        }
+
+        private bool IsNumberBoundaryChar(char ch)
+        {
+            return char.IsLetterOrDigit(ch)
+                   || ch == '_'
+                   || ch == '.'
+                   || ch == ','
+                   || ch == '+'
+                   || ch == '-';
+        }
+
+        private bool HasValidLeftBoundary(string text, int startIndex)
+        {
+            if (startIndex <= 0)
+                return true;
+
+            return !IsNumberBoundaryChar(text[startIndex - 1]);
+        }
+
+        private bool HasValidRightBoundary(string text, int nextIndex)
+        {
+            if (nextIndex >= text.Length)
+                return true;
+
+            return !IsNumberBoundaryChar(text[nextIndex]);
+        }
+
+        private bool TryReadNumberAutomaton(string text, int startIndex, out int length)
+        {
+            length = 0;
+
+            if (string.IsNullOrEmpty(text) || startIndex < 0 || startIndex >= text.Length)
+                return false;
+
+            if (!HasValidLeftBoundary(text, startIndex))
+                return false;
+
+            NumberAutomatonState state = NumberAutomatonState.Start;
+            int i = startIndex;
+
+            while (i < text.Length)
+            {
+                char ch = text[i];
+
+                switch (state)
+                {
+                    case NumberAutomatonState.Start:
+                        if (ch == '+' || ch == '-')
+                        {
+                            state = NumberAutomatonState.Sign;
+                            i++;
+                            continue;
+                        }
+
+                        if (ch == '0')
+                        {
+                            state = NumberAutomatonState.Zero;
+                            i++;
+                            continue;
+                        }
+
+                        if (IsNonZeroDigit(ch))
+                        {
+                            state = NumberAutomatonState.Integer;
+                            i++;
+                            continue;
+                        }
+
+                        return false;
+
+                    case NumberAutomatonState.Sign:
+                        if (ch == '0')
+                        {
+                            state = NumberAutomatonState.Zero;
+                            i++;
+                            continue;
+                        }
+
+                        if (IsNonZeroDigit(ch))
+                        {
+                            state = NumberAutomatonState.Integer;
+                            i++;
+                            continue;
+                        }
+
+                        return false;
+
+                    case NumberAutomatonState.Zero:
+                        if (ch == '.' || ch == ',')
+                        {
+                            state = NumberAutomatonState.Separator;
+                            i++;
+                            continue;
+                        }
+
+                        if (HasValidRightBoundary(text, i))
+                        {
+                            length = i - startIndex;
+                            return true;
+                        }
+
+                        return false;
+
+                    case NumberAutomatonState.Integer:
+                        if (IsAsciiDigit(ch))
+                        {
+                            i++;
+                            continue;
+                        }
+
+                        if (ch == '.' || ch == ',')
+                        {
+                            state = NumberAutomatonState.Separator;
+                            i++;
+                            continue;
+                        }
+
+                        if (HasValidRightBoundary(text, i))
+                        {
+                            length = i - startIndex;
+                            return true;
+                        }
+
+                        return false;
+
+                    case NumberAutomatonState.Separator:
+                        if (IsAsciiDigit(ch))
+                        {
+                            state = NumberAutomatonState.Fraction;
+                            i++;
+                            continue;
+                        }
+
+                        return false;
+
+                    case NumberAutomatonState.Fraction:
+                        if (IsAsciiDigit(ch))
+                        {
+                            i++;
+                            continue;
+                        }
+
+                        if (HasValidRightBoundary(text, i))
+                        {
+                            length = i - startIndex;
+                            return true;
+                        }
+
+                        return false;
+                }
+            }
+
+            if (state == NumberAutomatonState.Zero ||
+                state == NumberAutomatonState.Integer ||
+                state == NumberAutomatonState.Fraction)
+            {
+                length = i - startIndex;
+                return true;
+            }
+
+            return false;
+        }
+
+        private List<SearchResultItem> FindNumberMatchesWithAutomaton(string text)
+        {
+            var results = new List<SearchResultItem>();
+
+            if (string.IsNullOrEmpty(text))
+                return results;
+
+            int i = 0;
+
+            while (i < text.Length)
+            {
+                if (TryReadNumberAutomaton(text, i, out int length))
+                {
+                    string value = text.Substring(i, length);
+                    var position = GetLineAndColumn(i);
+
+                    results.Add(new SearchResultItem
+                    {
+                        Value = value,
+                        StartIndex = i,
+                        Length = length,
+                        Line = position.Item1,
+                        Column = position.Item2
+                    });
+
+                    i += length;
+                    continue;
+                }
+
+                i++;
+            }
+
+            return results;
+        }
+
+        private List<SearchResultItem> FindResultsBySelectedMode(string text)
+        {
+            switch (tsCmbSearchType.SelectedIndex)
+            {
+                case 0:
+                    return FindMatches(text, @"</(?:p|li|h3)>");
+
+                case 1:
+                    return FindNumberMatchesWithAutomaton(text);
+
+                case 2:
+                    return FindMatches(
+                        text,
+                        @"(?<!\w)(?:(?:[0-8]?\d)°(?:[0-5]\d)'(?:[0-5]\d)""[NS]|90°00'00""[NS])(?!\w)");
+
+                default:
+                    return new List<SearchResultItem>();
             }
         }
 
