@@ -73,7 +73,6 @@ namespace GUI
 
             _suppressDirty = true;
             rtbEditor.Clear();
-            rtbOutput.Clear();
             _suppressDirty = false;
 
             _currentFilePath = null;
@@ -139,7 +138,6 @@ namespace GUI
                 _currentFilePath = ofd.FileName;
                 _isDirty = false;
 
-                rtbOutput.Clear();
                 UpdateTitle();
                 UpdateCommandStates();
             }
@@ -212,8 +210,7 @@ namespace GUI
 
         private void CmdRun_Click(object sender, EventArgs e)
         {
-            rtbOutput.Clear();
-            rtbOutput.AppendText("Запуск языкового процессора пока не реализован." + Environment.NewLine);
+           
         }
 
         private bool ClipboardHasText()
