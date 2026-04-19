@@ -46,6 +46,7 @@ namespace GUI
             this.miDelete = new System.Windows.Forms.ToolStripMenuItem();
             this.miSelectAll = new System.Windows.Forms.ToolStripMenuItem();
             this.miRunExecute = new System.Windows.Forms.ToolStripMenuItem();
+            this.выполнитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelpContent = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
@@ -55,19 +56,12 @@ namespace GUI
             this.LeftToolStripPanel = new System.Windows.Forms.ToolStripPanel();
             this.ContentPanel = new System.Windows.Forms.ToolStripContentPanel();
             this.toolMain = new System.Windows.Forms.ToolStrip();
-            this.splitMain = new System.Windows.Forms.SplitContainer();
-            this.rtbEditor = new System.Windows.Forms.RichTextBox();
-            this.rtbOutput = new System.Windows.Forms.RichTextBox();
-            this.выполнитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnNew = new System.Windows.Forms.ToolStripButton();
             this.btnOpen = new System.Windows.Forms.ToolStripButton();
             this.btnSave = new System.Windows.Forms.ToolStripButton();
             this.btnSaveAs = new System.Windows.Forms.ToolStripButton();
             this.btnExit = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnUndo = new System.Windows.Forms.ToolStripButton();
             this.btnRedo = new System.Windows.Forms.ToolStripButton();
             this.btnCut = new System.Windows.Forms.ToolStripButton();
@@ -75,15 +69,30 @@ namespace GUI
             this.btnPaste = new System.Windows.Forms.ToolStripButton();
             this.btnDelete = new System.Windows.Forms.ToolStripButton();
             this.btnSelectAll = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRun = new System.Windows.Forms.ToolStripButton();
             this.btnAbout = new System.Windows.Forms.ToolStripButton();
             this.btnHelp = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.splitMain = new System.Windows.Forms.SplitContainer();
+            this.rtbEditor = new System.Windows.Forms.RichTextBox();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
+            this.tsLblSearchType = new System.Windows.Forms.ToolStripLabel();
+            this.tsCmbSearchType = new System.Windows.Forms.ToolStripComboBox();
+            this.tsLblMatchCount = new System.Windows.Forms.ToolStripLabel();
+            this.colMatch = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colLine = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colStartIndex = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.menuMain.SuspendLayout();
             this.toolMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
             this.splitMain.Panel1.SuspendLayout();
             this.splitMain.Panel2.SuspendLayout();
             this.splitMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).BeginInit();
             this.SuspendLayout();
             // 
             // menuMain
@@ -109,14 +118,14 @@ namespace GUI
             this.miSaveAs,
             this.miExit});
             this.miFile.Name = "miFile";
-            this.miFile.Size = new System.Drawing.Size(90, 36);
+            this.miFile.Size = new System.Drawing.Size(83, 36);
             this.miFile.Text = "Файл";
             // 
             // miNew
             // 
             this.miNew.Name = "miNew";
             this.miNew.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
-            this.miNew.Size = new System.Drawing.Size(479, 44);
+            this.miNew.Size = new System.Drawing.Size(423, 36);
             this.miNew.Text = "Создать";
             this.miNew.Click += new System.EventHandler(this.CmdNew_Click);
             // 
@@ -124,7 +133,7 @@ namespace GUI
             // 
             this.miOpen.Name = "miOpen";
             this.miOpen.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.miOpen.Size = new System.Drawing.Size(479, 44);
+            this.miOpen.Size = new System.Drawing.Size(423, 36);
             this.miOpen.Text = "Открыть";
             this.miOpen.Click += new System.EventHandler(this.CmdOpen_Click);
             // 
@@ -132,7 +141,7 @@ namespace GUI
             // 
             this.miSave.Name = "miSave";
             this.miSave.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
-            this.miSave.Size = new System.Drawing.Size(479, 44);
+            this.miSave.Size = new System.Drawing.Size(423, 36);
             this.miSave.Text = "Сохранить";
             this.miSave.Click += new System.EventHandler(this.CmdSave_Click);
             // 
@@ -141,7 +150,7 @@ namespace GUI
             this.miSaveAs.Name = "miSaveAs";
             this.miSaveAs.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
             | System.Windows.Forms.Keys.S)));
-            this.miSaveAs.Size = new System.Drawing.Size(479, 44);
+            this.miSaveAs.Size = new System.Drawing.Size(423, 36);
             this.miSaveAs.Text = "Сохранить как";
             this.miSaveAs.Click += new System.EventHandler(this.CmdSaveAs_Click);
             // 
@@ -149,7 +158,7 @@ namespace GUI
             // 
             this.miExit.Name = "miExit";
             this.miExit.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Alt | System.Windows.Forms.Keys.F4)));
-            this.miExit.Size = new System.Drawing.Size(479, 44);
+            this.miExit.Size = new System.Drawing.Size(423, 36);
             this.miExit.Text = "Выход";
             this.miExit.Click += new System.EventHandler(this.CmdExit_Click);
             // 
@@ -164,14 +173,14 @@ namespace GUI
             this.miDelete,
             this.miSelectAll});
             this.miEdit.Name = "miEdit";
-            this.miEdit.Size = new System.Drawing.Size(114, 36);
+            this.miEdit.Size = new System.Drawing.Size(107, 36);
             this.miEdit.Text = "Правка";
             // 
             // miUndo
             // 
             this.miUndo.Name = "miUndo";
             this.miUndo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.miUndo.Size = new System.Drawing.Size(395, 44);
+            this.miUndo.Size = new System.Drawing.Size(339, 36);
             this.miUndo.Text = "Отменить";
             this.miUndo.Click += new System.EventHandler(this.CmdUndo_Click);
             // 
@@ -179,7 +188,7 @@ namespace GUI
             // 
             this.miRedo.Name = "miRedo";
             this.miRedo.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.miRedo.Size = new System.Drawing.Size(395, 44);
+            this.miRedo.Size = new System.Drawing.Size(339, 36);
             this.miRedo.Text = "Вернуть";
             this.miRedo.Click += new System.EventHandler(this.CmdRedo_Click);
             // 
@@ -187,7 +196,7 @@ namespace GUI
             // 
             this.miCut.Name = "miCut";
             this.miCut.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
-            this.miCut.Size = new System.Drawing.Size(395, 44);
+            this.miCut.Size = new System.Drawing.Size(339, 36);
             this.miCut.Text = "Вырезать";
             this.miCut.Click += new System.EventHandler(this.CmdCut_Click);
             // 
@@ -195,7 +204,7 @@ namespace GUI
             // 
             this.miCopy.Name = "miCopy";
             this.miCopy.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-            this.miCopy.Size = new System.Drawing.Size(395, 44);
+            this.miCopy.Size = new System.Drawing.Size(339, 36);
             this.miCopy.Text = "Копировать";
             this.miCopy.Click += new System.EventHandler(this.CmdCopy_Click);
             // 
@@ -203,7 +212,7 @@ namespace GUI
             // 
             this.miPaste.Name = "miPaste";
             this.miPaste.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
-            this.miPaste.Size = new System.Drawing.Size(395, 44);
+            this.miPaste.Size = new System.Drawing.Size(339, 36);
             this.miPaste.Text = "Вставить";
             this.miPaste.Click += new System.EventHandler(this.CmdPaste_Click);
             // 
@@ -211,7 +220,7 @@ namespace GUI
             // 
             this.miDelete.Name = "miDelete";
             this.miDelete.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-            this.miDelete.Size = new System.Drawing.Size(395, 44);
+            this.miDelete.Size = new System.Drawing.Size(339, 36);
             this.miDelete.Text = "Удалить";
             this.miDelete.Click += new System.EventHandler(this.CmdDelete_Click);
             // 
@@ -219,7 +228,7 @@ namespace GUI
             // 
             this.miSelectAll.Name = "miSelectAll";
             this.miSelectAll.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
-            this.miSelectAll.Size = new System.Drawing.Size(395, 44);
+            this.miSelectAll.Size = new System.Drawing.Size(339, 36);
             this.miSelectAll.Text = "Выделить все";
             this.miSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
             // 
@@ -228,8 +237,15 @@ namespace GUI
             this.miRunExecute.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.выполнитьToolStripMenuItem});
             this.miRunExecute.Name = "miRunExecute";
-            this.miRunExecute.Size = new System.Drawing.Size(86, 36);
+            this.miRunExecute.Size = new System.Drawing.Size(79, 36);
             this.miRunExecute.Text = "Пуск";
+            // 
+            // выполнитьToolStripMenuItem
+            // 
+            this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
+            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(212, 36);
+            this.выполнитьToolStripMenuItem.Text = "Выполнить";
+            this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
             // 
             // miHelp
             // 
@@ -237,21 +253,21 @@ namespace GUI
             this.miHelpContent,
             this.miAbout});
             this.miHelp.Name = "miHelp";
-            this.miHelp.Size = new System.Drawing.Size(126, 36);
+            this.miHelp.Size = new System.Drawing.Size(119, 36);
             this.miHelp.Text = "Справка";
             // 
             // miHelpContent
             // 
             this.miHelpContent.Name = "miHelpContent";
             this.miHelpContent.ShortcutKeys = System.Windows.Forms.Keys.F1;
-            this.miHelpContent.Size = new System.Drawing.Size(296, 44);
+            this.miHelpContent.Size = new System.Drawing.Size(239, 36);
             this.miHelpContent.Text = "Справка";
             this.miHelpContent.Click += new System.EventHandler(this.CmdHelp_Click);
             // 
             // miAbout
             // 
             this.miAbout.Name = "miAbout";
-            this.miAbout.Size = new System.Drawing.Size(296, 44);
+            this.miAbout.Size = new System.Drawing.Size(239, 36);
             this.miAbout.Text = "О программе";
             this.miAbout.Click += new System.EventHandler(this.CmdAbout_Click);
             // 
@@ -314,17 +330,194 @@ namespace GUI
             this.btnAbout,
             this.btnHelp,
             this.toolStripSeparator2,
-            this.toolStripSeparator4});
+            this.toolStripSeparator4,
+            this.tsLblSearchType,
+            this.tsCmbSearchType,
+            this.tsLblMatchCount});
             this.toolMain.Location = new System.Drawing.Point(0, 40);
             this.toolMain.Name = "toolMain";
-            this.toolMain.Size = new System.Drawing.Size(1588, 38);
+            this.toolMain.Size = new System.Drawing.Size(1588, 40);
             this.toolMain.TabIndex = 11;
             this.toolMain.Text = "toolStrip1";
+            // 
+            // btnNew
+            // 
+            this.btnNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnNew.Image = global::GUI.Properties.Resources._new;
+            this.btnNew.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnNew.Name = "btnNew";
+            this.btnNew.Size = new System.Drawing.Size(28, 37);
+            this.btnNew.Text = "New";
+            this.btnNew.Click += new System.EventHandler(this.CmdNew_Click);
+            // 
+            // btnOpen
+            // 
+            this.btnOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnOpen.Image = global::GUI.Properties.Resources.open;
+            this.btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnOpen.Name = "btnOpen";
+            this.btnOpen.Size = new System.Drawing.Size(28, 37);
+            this.btnOpen.Text = "Open";
+            this.btnOpen.Click += new System.EventHandler(this.CmdOpen_Click);
+            // 
+            // btnSave
+            // 
+            this.btnSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSave.Image = global::GUI.Properties.Resources.save;
+            this.btnSave.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSave.Name = "btnSave";
+            this.btnSave.Size = new System.Drawing.Size(28, 37);
+            this.btnSave.Text = "Save";
+            this.btnSave.Click += new System.EventHandler(this.CmdSave_Click);
+            // 
+            // btnSaveAs
+            // 
+            this.btnSaveAs.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSaveAs.Image = global::GUI.Properties.Resources.saveas;
+            this.btnSaveAs.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSaveAs.Name = "btnSaveAs";
+            this.btnSaveAs.Size = new System.Drawing.Size(28, 37);
+            this.btnSaveAs.Text = "Save as";
+            this.btnSaveAs.Click += new System.EventHandler(this.CmdSaveAs_Click);
+            // 
+            // btnExit
+            // 
+            this.btnExit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnExit.Image = global::GUI.Properties.Resources.exit;
+            this.btnExit.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnExit.Name = "btnExit";
+            this.btnExit.Size = new System.Drawing.Size(28, 37);
+            this.btnExit.Text = "Exit";
+            this.btnExit.Click += new System.EventHandler(this.CmdExit_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 40);
+            // 
+            // btnUndo
+            // 
+            this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnUndo.Image = global::GUI.Properties.Resources.undo;
+            this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnUndo.Name = "btnUndo";
+            this.btnUndo.Size = new System.Drawing.Size(28, 37);
+            this.btnUndo.Text = "Undo";
+            this.btnUndo.Click += new System.EventHandler(this.CmdUndo_Click);
+            // 
+            // btnRedo
+            // 
+            this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRedo.Image = global::GUI.Properties.Resources.redo;
+            this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRedo.Name = "btnRedo";
+            this.btnRedo.Size = new System.Drawing.Size(28, 37);
+            this.btnRedo.Text = "Redo";
+            this.btnRedo.Click += new System.EventHandler(this.CmdRedo_Click);
+            // 
+            // btnCut
+            // 
+            this.btnCut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnCut.Image = global::GUI.Properties.Resources.cut;
+            this.btnCut.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnCut.Name = "btnCut";
+            this.btnCut.Size = new System.Drawing.Size(28, 37);
+            this.btnCut.Text = "Cut";
+            this.btnCut.Click += new System.EventHandler(this.CmdCut_Click);
+            // 
+            // btnCopy
+            // 
+            this.btnCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnCopy.Image = global::GUI.Properties.Resources.copy;
+            this.btnCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnCopy.Name = "btnCopy";
+            this.btnCopy.Size = new System.Drawing.Size(28, 37);
+            this.btnCopy.Text = "Copy";
+            this.btnCopy.Click += new System.EventHandler(this.CmdCopy_Click);
+            // 
+            // btnPaste
+            // 
+            this.btnPaste.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnPaste.Image = global::GUI.Properties.Resources.paste;
+            this.btnPaste.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnPaste.Name = "btnPaste";
+            this.btnPaste.Size = new System.Drawing.Size(28, 37);
+            this.btnPaste.Text = "Paste";
+            this.btnPaste.Click += new System.EventHandler(this.CmdPaste_Click);
+            // 
+            // btnDelete
+            // 
+            this.btnDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnDelete.Image = global::GUI.Properties.Resources.delete;
+            this.btnDelete.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(28, 37);
+            this.btnDelete.Text = "Delete";
+            this.btnDelete.Click += new System.EventHandler(this.CmdDelete_Click);
+            // 
+            // btnSelectAll
+            // 
+            this.btnSelectAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnSelectAll.Image = global::GUI.Properties.Resources.selectall;
+            this.btnSelectAll.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnSelectAll.Name = "btnSelectAll";
+            this.btnSelectAll.Size = new System.Drawing.Size(28, 37);
+            this.btnSelectAll.Text = "Select all";
+            this.btnSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
+            // 
+            // toolStripSeparator3
+            // 
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 40);
+            // 
+            // btnRun
+            // 
+            this.btnRun.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnRun.Image = global::GUI.Properties.Resources.run;
+            this.btnRun.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRun.Name = "btnRun";
+            this.btnRun.Size = new System.Drawing.Size(28, 37);
+            this.btnRun.Text = "Run (анализатор)";
+            this.btnRun.Click += new System.EventHandler(this.CmdRun_Click);
+            // 
+            // btnAbout
+            // 
+            this.btnAbout.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnAbout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnAbout.Image = global::GUI.Properties.Resources.about;
+            this.btnAbout.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnAbout.Name = "btnAbout";
+            this.btnAbout.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.btnAbout.Size = new System.Drawing.Size(28, 37);
+            this.btnAbout.Text = "About";
+            this.btnAbout.Click += new System.EventHandler(this.CmdAbout_Click);
+            // 
+            // btnHelp
+            // 
+            this.btnHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.btnHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.btnHelp.Image = global::GUI.Properties.Resources.help;
+            this.btnHelp.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnHelp.Name = "btnHelp";
+            this.btnHelp.Size = new System.Drawing.Size(28, 37);
+            this.btnHelp.Text = "Help";
+            this.btnHelp.Click += new System.EventHandler(this.CmdHelp_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 40);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 40);
             // 
             // splitMain
             // 
             this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 78);
+            this.splitMain.Location = new System.Drawing.Point(0, 80);
             this.splitMain.Name = "splitMain";
             this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -334,9 +527,9 @@ namespace GUI
             // 
             // splitMain.Panel2
             // 
-            this.splitMain.Panel2.Controls.Add(this.rtbOutput);
-            this.splitMain.Size = new System.Drawing.Size(1588, 817);
-            this.splitMain.SplitterDistance = 518;
+            this.splitMain.Panel2.Controls.Add(this.dgvResults);
+            this.splitMain.Size = new System.Drawing.Size(1588, 815);
+            this.splitMain.SplitterDistance = 499;
             this.splitMain.SplitterWidth = 6;
             this.splitMain.TabIndex = 12;
             // 
@@ -349,205 +542,87 @@ namespace GUI
             this.rtbEditor.HideSelection = false;
             this.rtbEditor.Location = new System.Drawing.Point(0, 0);
             this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 499);
             this.rtbEditor.TabIndex = 0;
             this.rtbEditor.Text = "";
             this.rtbEditor.WordWrap = false;
             // 
-            // rtbOutput
+            // dgvResults
             // 
-            this.rtbOutput.BackColor = System.Drawing.SystemColors.ControlLight;
-            this.rtbOutput.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.rtbOutput.Font = new System.Drawing.Font("Consolas", 10.125F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.rtbOutput.Location = new System.Drawing.Point(0, 0);
-            this.rtbOutput.Name = "rtbOutput";
-            this.rtbOutput.ReadOnly = true;
-            this.rtbOutput.Size = new System.Drawing.Size(1588, 293);
-            this.rtbOutput.TabIndex = 0;
-            this.rtbOutput.TabStop = false;
-            this.rtbOutput.Text = "";
-            this.rtbOutput.WordWrap = false;
+            this.dgvResults.AllowUserToAddRows = false;
+            this.dgvResults.AllowUserToDeleteRows = false;
+            this.dgvResults.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvResults.ColumnHeadersBorderStyle = System.Windows.Forms.DataGridViewHeaderBorderStyle.Single;
+            this.dgvResults.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvResults.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.colMatch,
+            this.colLine,
+            this.colColumn,
+            this.colLength,
+            this.colStartIndex});
+            this.dgvResults.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvResults.Location = new System.Drawing.Point(0, 0);
+            this.dgvResults.MultiSelect = false;
+            this.dgvResults.Name = "dgvResults";
+            this.dgvResults.ReadOnly = true;
+            this.dgvResults.RowHeadersWidth = 82;
+            this.dgvResults.RowTemplate.Height = 33;
+            this.dgvResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvResults.Size = new System.Drawing.Size(1588, 310);
+            this.dgvResults.TabIndex = 0;
             // 
-            // выполнитьToolStripMenuItem
+            // tsLblSearchType
             // 
-            this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
-            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(269, 44);
-            this.выполнитьToolStripMenuItem.Text = "Выполнить";
-            this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
+            this.tsLblSearchType.Name = "tsLblSearchType";
+            this.tsLblSearchType.Size = new System.Drawing.Size(145, 37);
+            this.tsLblSearchType.Text = "Тип поиска:";
             // 
-            // toolStripSeparator1
+            // tsCmbSearchType
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 34);
+            this.tsCmbSearchType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tsCmbSearchType.Items.AddRange(new object[] {
+            "HTML: </p>, </li>, </h3>",
+            "Числа: целые и вещественные",
+            "Широта: DD°MM\'SS\"N/S"});
+            this.tsCmbSearchType.Name = "tsCmbSearchType";
+            this.tsCmbSearchType.Size = new System.Drawing.Size(121, 40);
             // 
-            // toolStripSeparator2
+            // tsLblMatchCount
             // 
-            this.toolStripSeparator2.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 34);
+            this.tsLblMatchCount.Name = "tsLblMatchCount";
+            this.tsLblMatchCount.Size = new System.Drawing.Size(137, 37);
+            this.tsLblMatchCount.Text = "Найдено: 0";
             // 
-            // toolStripSeparator3
+            // colMatch
             // 
-            this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 34);
+            this.colMatch.HeaderText = "Найденная подстрока";
+            this.colMatch.Name = "colMatch";
+            this.colMatch.ReadOnly = true;
             // 
-            // toolStripSeparator4
+            // colLine
             // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 34);
+            this.colLine.HeaderText = "Строка";
+            this.colLine.Name = "colLine";
+            this.colLine.ReadOnly = true;
             // 
-            // btnNew
+            // colColumn
             // 
-            this.btnNew.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnNew.Image = global::GUI.Properties.Resources._new;
-            this.btnNew.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnNew.Name = "btnNew";
-            this.btnNew.Size = new System.Drawing.Size(46, 28);
-            this.btnNew.Text = "New";
-            this.btnNew.Click += new System.EventHandler(this.CmdNew_Click);
+            this.colColumn.HeaderText = "Символ";
+            this.colColumn.Name = "colColumn";
+            this.colColumn.ReadOnly = true;
             // 
-            // btnOpen
+            // colLength
             // 
-            this.btnOpen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnOpen.Image = global::GUI.Properties.Resources.open;
-            this.btnOpen.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnOpen.Name = "btnOpen";
-            this.btnOpen.Size = new System.Drawing.Size(46, 28);
-            this.btnOpen.Text = "Open";
-            this.btnOpen.Click += new System.EventHandler(this.CmdOpen_Click);
+            this.colLength.HeaderText = "Длина";
+            this.colLength.Name = "colLength";
+            this.colLength.ReadOnly = true;
             // 
-            // btnSave
+            // colStartIndex
             // 
-            this.btnSave.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSave.Image = global::GUI.Properties.Resources.save;
-            this.btnSave.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnSave.Name = "btnSave";
-            this.btnSave.Size = new System.Drawing.Size(46, 28);
-            this.btnSave.Text = "Save";
-            this.btnSave.Click += new System.EventHandler(this.CmdSave_Click);
-            // 
-            // btnSaveAs
-            // 
-            this.btnSaveAs.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSaveAs.Image = global::GUI.Properties.Resources.saveas;
-            this.btnSaveAs.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnSaveAs.Name = "btnSaveAs";
-            this.btnSaveAs.Size = new System.Drawing.Size(46, 28);
-            this.btnSaveAs.Text = "Save as";
-            this.btnSaveAs.Click += new System.EventHandler(this.CmdSaveAs_Click);
-            // 
-            // btnExit
-            // 
-            this.btnExit.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnExit.Image = global::GUI.Properties.Resources.exit;
-            this.btnExit.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnExit.Name = "btnExit";
-            this.btnExit.Size = new System.Drawing.Size(46, 28);
-            this.btnExit.Text = "Exit";
-            this.btnExit.Click += new System.EventHandler(this.CmdExit_Click);
-            // 
-            // btnUndo
-            // 
-            this.btnUndo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnUndo.Image = global::GUI.Properties.Resources.undo;
-            this.btnUndo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnUndo.Name = "btnUndo";
-            this.btnUndo.Size = new System.Drawing.Size(46, 28);
-            this.btnUndo.Text = "Undo";
-            this.btnUndo.Click += new System.EventHandler(this.CmdUndo_Click);
-            // 
-            // btnRedo
-            // 
-            this.btnRedo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnRedo.Image = global::GUI.Properties.Resources.redo;
-            this.btnRedo.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnRedo.Name = "btnRedo";
-            this.btnRedo.Size = new System.Drawing.Size(46, 28);
-            this.btnRedo.Text = "Redo";
-            this.btnRedo.Click += new System.EventHandler(this.CmdRedo_Click);
-            // 
-            // btnCut
-            // 
-            this.btnCut.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnCut.Image = global::GUI.Properties.Resources.cut;
-            this.btnCut.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnCut.Name = "btnCut";
-            this.btnCut.Size = new System.Drawing.Size(46, 28);
-            this.btnCut.Text = "Cut";
-            this.btnCut.Click += new System.EventHandler(this.CmdCut_Click);
-            // 
-            // btnCopy
-            // 
-            this.btnCopy.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnCopy.Image = global::GUI.Properties.Resources.copy;
-            this.btnCopy.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnCopy.Name = "btnCopy";
-            this.btnCopy.Size = new System.Drawing.Size(46, 28);
-            this.btnCopy.Text = "Copy";
-            this.btnCopy.Click += new System.EventHandler(this.CmdCopy_Click);
-            // 
-            // btnPaste
-            // 
-            this.btnPaste.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnPaste.Image = global::GUI.Properties.Resources.paste;
-            this.btnPaste.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnPaste.Name = "btnPaste";
-            this.btnPaste.Size = new System.Drawing.Size(46, 28);
-            this.btnPaste.Text = "Paste";
-            this.btnPaste.Click += new System.EventHandler(this.CmdPaste_Click);
-            // 
-            // btnDelete
-            // 
-            this.btnDelete.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnDelete.Image = global::GUI.Properties.Resources.delete;
-            this.btnDelete.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnDelete.Name = "btnDelete";
-            this.btnDelete.Size = new System.Drawing.Size(46, 28);
-            this.btnDelete.Text = "Delete";
-            this.btnDelete.Click += new System.EventHandler(this.CmdDelete_Click);
-            // 
-            // btnSelectAll
-            // 
-            this.btnSelectAll.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnSelectAll.Image = global::GUI.Properties.Resources.selectall;
-            this.btnSelectAll.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnSelectAll.Name = "btnSelectAll";
-            this.btnSelectAll.Size = new System.Drawing.Size(46, 28);
-            this.btnSelectAll.Text = "Select all";
-            this.btnSelectAll.Click += new System.EventHandler(this.CmdSelectAll_Click);
-            // 
-            // btnRun
-            // 
-            this.btnRun.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnRun.Image = global::GUI.Properties.Resources.run;
-            this.btnRun.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnRun.Name = "btnRun";
-            this.btnRun.Size = new System.Drawing.Size(46, 28);
-            this.btnRun.Text = "Run (анализатор)";
-            this.btnRun.Click += new System.EventHandler(this.CmdRun_Click);
-            // 
-            // btnAbout
-            // 
-            this.btnAbout.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btnAbout.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnAbout.Image = global::GUI.Properties.Resources.about;
-            this.btnAbout.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnAbout.Name = "btnAbout";
-            this.btnAbout.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.btnAbout.Size = new System.Drawing.Size(46, 28);
-            this.btnAbout.Text = "About";
-            this.btnAbout.Click += new System.EventHandler(this.CmdAbout_Click);
-            // 
-            // btnHelp
-            // 
-            this.btnHelp.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
-            this.btnHelp.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.btnHelp.Image = global::GUI.Properties.Resources.help;
-            this.btnHelp.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnHelp.Name = "btnHelp";
-            this.btnHelp.Size = new System.Drawing.Size(46, 28);
-            this.btnHelp.Text = "Help";
-            this.btnHelp.Click += new System.EventHandler(this.CmdHelp_Click);
+            this.colStartIndex.HeaderText = "StartIndex";
+            this.colStartIndex.Name = "colStartIndex";
+            this.colStartIndex.ReadOnly = true;
+            this.colStartIndex.Visible = false;
             // 
             // MainForm
             // 
@@ -570,6 +645,7 @@ namespace GUI
             this.splitMain.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).EndInit();
             this.splitMain.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvResults)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -604,7 +680,6 @@ namespace GUI
         private System.Windows.Forms.ToolStrip toolMain;
         private System.Windows.Forms.SplitContainer splitMain;
         private System.Windows.Forms.RichTextBox rtbEditor;
-        private System.Windows.Forms.RichTextBox rtbOutput;
         private System.Windows.Forms.ToolStripButton btnNew;
         private System.Windows.Forms.ToolStripButton btnOpen;
         private System.Windows.Forms.ToolStripButton btnSave;
@@ -625,6 +700,15 @@ namespace GUI
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.DataGridView dgvResults;
+        private System.Windows.Forms.ToolStripLabel tsLblSearchType;
+        private System.Windows.Forms.ToolStripComboBox tsCmbSearchType;
+        private System.Windows.Forms.ToolStripLabel tsLblMatchCount;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colMatch;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colLine;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colLength;
+        private System.Windows.Forms.DataGridViewTextBoxColumn colStartIndex;
     }
 }
 
