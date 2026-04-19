@@ -75,12 +75,12 @@ namespace GUI
             this.btnHelp = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.splitMain = new System.Windows.Forms.SplitContainer();
-            this.rtbEditor = new System.Windows.Forms.RichTextBox();
-            this.dgvResults = new System.Windows.Forms.DataGridView();
             this.tsLblSearchType = new System.Windows.Forms.ToolStripLabel();
             this.tsCmbSearchType = new System.Windows.Forms.ToolStripComboBox();
             this.tsLblMatchCount = new System.Windows.Forms.ToolStripLabel();
+            this.splitMain = new System.Windows.Forms.SplitContainer();
+            this.rtbEditor = new System.Windows.Forms.RichTextBox();
+            this.dgvResults = new System.Windows.Forms.DataGridView();
             this.colMatch = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLine = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -514,6 +514,32 @@ namespace GUI
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 40);
             // 
+            // tsLblSearchType
+            // 
+            this.tsLblSearchType.Name = "tsLblSearchType";
+            this.tsLblSearchType.Size = new System.Drawing.Size(145, 37);
+            this.tsLblSearchType.Text = "Тип поиска:";
+            // 
+            // tsCmbSearchType
+            // 
+            this.tsCmbSearchType.AutoSize = false;
+            this.tsCmbSearchType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.tsCmbSearchType.DropDownWidth = 240;
+            this.tsCmbSearchType.Items.AddRange(new object[] {
+            "HTML: </p>, </li>, </h3>",
+            "Числа: целые и вещественные",
+            "Широта: DD°MM\'SS\"N/S"});
+            this.tsCmbSearchType.Name = "tsCmbSearchType";
+            this.tsCmbSearchType.Size = new System.Drawing.Size(200, 40);
+            // 
+            // tsLblMatchCount
+            // 
+            this.tsLblMatchCount.AutoSize = false;
+            this.tsLblMatchCount.Name = "tsLblMatchCount";
+            this.tsLblMatchCount.Size = new System.Drawing.Size(137, 37);
+            this.tsLblMatchCount.Text = "Найдено: 0";
+            this.tsLblMatchCount.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
             // splitMain
             // 
             this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -570,28 +596,6 @@ namespace GUI
             this.dgvResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvResults.Size = new System.Drawing.Size(1588, 310);
             this.dgvResults.TabIndex = 0;
-            // 
-            // tsLblSearchType
-            // 
-            this.tsLblSearchType.Name = "tsLblSearchType";
-            this.tsLblSearchType.Size = new System.Drawing.Size(145, 37);
-            this.tsLblSearchType.Text = "Тип поиска:";
-            // 
-            // tsCmbSearchType
-            // 
-            this.tsCmbSearchType.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.tsCmbSearchType.Items.AddRange(new object[] {
-            "HTML: </p>, </li>, </h3>",
-            "Числа: целые и вещественные",
-            "Широта: DD°MM\'SS\"N/S"});
-            this.tsCmbSearchType.Name = "tsCmbSearchType";
-            this.tsCmbSearchType.Size = new System.Drawing.Size(121, 40);
-            // 
-            // tsLblMatchCount
-            // 
-            this.tsLblMatchCount.Name = "tsLblMatchCount";
-            this.tsLblMatchCount.Size = new System.Drawing.Size(137, 37);
-            this.tsLblMatchCount.Text = "Найдено: 0";
             // 
             // colMatch
             // 
