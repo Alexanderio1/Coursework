@@ -114,10 +114,10 @@ namespace GUI.Syntax
 
             if (_stream.Check(LexerTokenCode.Semicolon) && _parenBalance > 0)
             {
-                if (_stream.CheckNext(LexerTokenCode.RightParen))
+                if (HasRightParenAheadOnCurrentLine())
                 {
-                    AddError("Лишний символ ; внутри списка");
-                    _stream.Advance();
+                    ParseElements();
+                    return;
                 }
 
                 return;
@@ -174,23 +174,12 @@ namespace GUI.Syntax
                 {
                     if (_parenBalance > 0)
                     {
-                        if (!expectElement)
-                        {
-                            AddError("Ожидалась запятая между элементами списка");
-                            _stream.Advance();
-                            expectElement = true;
-                            commaAfterRealElement = false;
-                            continue;
-                        }
+                        AddError("Недопустимый символ ; внутри списка");
+                        _stream.Advance();
 
-                        if (commaAfterRealElement)
-                        {
-                            AddMissingAfterPrevious(
-                                "Ожидался элемент списка после запятой",
-                                "(пропущен элемент)");
-                        }
-
-                        return;
+                        expectElement = true;
+                        commaAfterRealElement = false;
+                        continue;
                     }
 
                     if (expectElement && commaAfterRealElement)
@@ -597,6 +586,29 @@ namespace GUI.Syntax
             AddMissingAfterPrevious(
                 "Ожидался символ ; в конце объявления",
                 "(пропущен ;)");
+        }
+
+        private bool HasRightParenAheadOnCurrentLine()
+        {
+            int offset = 0;
+            var current = _stream.Current;
+
+            while (true)
+            {
+                var token = _stream.Peek(offset);
+                if (token == null)
+                    return false;
+
+                if (token.Line != current.Line)
+                    return false;
+
+                var code = (LexerTokenCode)token.Code.Value;
+
+                if (code == LexerTokenCode.RightParen)
+                    return true;
+
+                offset++;
+            }
         }
     }
 }

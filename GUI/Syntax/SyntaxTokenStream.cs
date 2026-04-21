@@ -93,5 +93,15 @@ namespace GUI.Syntax
             return nextPosition < _tokens.Count &&
                    _tokens[nextPosition].Code == (int)code;
         }
+
+        public LexerItem Peek(int offset)
+        {
+            int index = _position + offset;
+
+            if (index < 0 || index >= _tokens.Count)
+                return null;
+
+            return _tokens[index];
+        }
     }
 }
