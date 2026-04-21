@@ -181,12 +181,6 @@ namespace GUI.Syntax
             if (_stream.Check(LexerTokenCode.RightParen))
                 return;
 
-            if (IsElementStart())
-            {
-                ParseElements();
-                return;
-            }
-
             if (_stream.IsAtEnd ||
                 _stream.Check(LexerTokenCode.Semicolon) ||
                 IsNextDeclarationStart() ||
@@ -195,41 +189,88 @@ namespace GUI.Syntax
                 return;
             }
 
-            AddError("Ожидался элемент списка");
-            RecoverWithinDeclaration(
-                LexerTokenCode.Comma,
-                LexerTokenCode.RightParen,
-                LexerTokenCode.Semicolon);
+            ParseElements();
         }
 
         private void ParseElements()
         {
-            ParseElement();
+            bool expectElement = true;
+            bool commaAfterRealElement = false;
 
             while (true)
             {
-                if (_stream.Match(LexerTokenCode.Comma))
+                while (TryConsumeUnexpectedOpenParen())
                 {
-                    while (TryConsumeUnexpectedOpenParen())
-                    {
-                    }
+                }
 
-                    if (_stream.IsAtEnd ||
-                        _stream.Check(LexerTokenCode.RightParen) ||
-                        _stream.Check(LexerTokenCode.Semicolon))
+                if (_stream.Check(LexerTokenCode.RightParen))
+                {
+                    if (expectElement && commaAfterRealElement)
                     {
                         AddMissingAfterPrevious(
                             "Ожидался элемент списка после запятой",
                             "(пропущен элемент)");
-                        break;
                     }
 
-                    ParseElement();
-                    continue;
+                    return;
                 }
 
-                if (TryConsumeUnexpectedOpenParen())
+                if (_stream.IsAtEnd ||
+                    _stream.Check(LexerTokenCode.Semicolon) ||
+                    IsNextDeclarationStart() ||
+                    _stream.Current.Line != _currentDeclarationLine)
+                {
+                    if (expectElement && commaAfterRealElement)
+                    {
+                        AddMissingAfterPrevious(
+                            "Ожидался элемент списка после запятой",
+                            "(пропущен элемент)");
+                    }
+
+                    return;
+                }
+
+                if (expectElement)
+                {
+                    if (IsElementStart())
+                    {
+                        ParseElement();
+                        expectElement = false;
+                        commaAfterRealElement = false;
+                        continue;
+                    }
+
+                    if (_stream.Check(LexerTokenCode.Comma))
+                    {
+                        AddError("Ожидался элемент списка");
+                        _stream.Advance();
+                        expectElement = true;
+                        commaAfterRealElement = false;
+                        continue;
+                    }
+
+                    AddError("Ожидался элемент списка");
+                    RecoverWithinDeclaration(
+                        LexerTokenCode.Comma,
+                        LexerTokenCode.RightParen,
+                        LexerTokenCode.Semicolon);
+
+                    if (_stream.Match(LexerTokenCode.Comma))
+                    {
+                        expectElement = true;
+                        commaAfterRealElement = false;
+                        continue;
+                    }
+
+                    return;
+                }
+
+                if (_stream.Match(LexerTokenCode.Comma))
+                {
+                    expectElement = true;
+                    commaAfterRealElement = true;
                     continue;
+                }
 
                 if (IsElementStart())
                 {
@@ -237,10 +278,12 @@ namespace GUI.Syntax
                         "Ожидалась запятая между элементами списка",
                         "(пропущена запятая)");
                     ParseElement();
+                    expectElement = false;
+                    commaAfterRealElement = false;
                     continue;
                 }
 
-                break;
+                return;
             }
         }
 
