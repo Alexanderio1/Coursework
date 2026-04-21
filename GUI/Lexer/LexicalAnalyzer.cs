@@ -366,7 +366,7 @@ namespace GUI.Lexer
             int startLine = line;
             int startColumn = column;
 
-            Advance(text, ref index, ref line, ref column); // открывающая "
+            Advance(text, ref index, ref line, ref column);
 
             while (index < text.Length)
             {
@@ -447,7 +447,7 @@ namespace GUI.Lexer
             int startLine = line;
             int startColumn = column;
 
-            Advance(text, ref index, ref line, ref column); // открывающая '
+            Advance(text, ref index, ref line, ref column);
 
             if (index >= text.Length || IsLineBreak(Peek(text, index)))
             {
@@ -462,7 +462,6 @@ namespace GUI.Lexer
                 return;
             }
 
-            // Пустой символьный литерал: ''
             if (Peek(text, index) == '\'')
             {
                 Advance(text, ref index, ref line, ref column);
@@ -643,7 +642,7 @@ namespace GUI.Lexer
             result.Items.Add(new LexerItem
             {
                 IsError = true,
-                Code = null,
+                Code = (int)LexerTokenCode.Invalid,
                 TypeName = "Ошибка",
                 Lexeme = lexeme,
                 Message = message,

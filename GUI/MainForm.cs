@@ -250,13 +250,13 @@ namespace GUI
             var lexResult = lexer.Analyze(rtbEditor.Text);
 
             var parserTokens = lexResult.Items
-                .Where(x => !x.IsError && x.Code.HasValue)
+                .Where(x => x.Code.HasValue)
                 .ToList();
 
             var parser = new SyntaxAnalyzer();
             var syntaxResult = parser.Parse(parserTokens);
 
-            var allErrors = lexResult.Items
+            var lexicalErrors = lexResult.Items
                 .Where(x => x.IsError)
                 .Select(x => new SyntaxError
                 {
@@ -266,7 +266,9 @@ namespace GUI
                     EndColumn = x.EndColumn,
                     AbsoluteIndex = x.AbsoluteIndex,
                     Message = string.IsNullOrWhiteSpace(x.Message) ? x.DisplayText : x.Message
-                })
+                });
+
+            var allErrors = lexicalErrors
                 .Concat(syntaxResult.Errors)
                 .OrderBy(x => x.AbsoluteIndex)
                 .ThenBy(x => x.Line)
@@ -279,6 +281,107 @@ namespace GUI
             RenderSyntaxResult(syntaxResult);
         }
 
+        private System.Collections.Generic.List<SyntaxError> MergeErrors(
+    LexerResult lexResult,
+    SyntaxResult syntaxResult)
+        {
+            var lexicalErrors = lexResult.Items
+                .Where(x => x.IsError)
+                .Select(x => new SyntaxError
+                {
+                    InvalidFragment = string.IsNullOrWhiteSpace(x.Lexeme) ? "(пусто)" : x.Lexeme,
+                    Line = x.Line,
+                    StartColumn = x.StartColumn,
+                    EndColumn = x.EndColumn,
+                    AbsoluteIndex = x.AbsoluteIndex,
+                    Message = string.IsNullOrWhiteSpace(x.Message) ? x.DisplayText : x.Message
+                })
+                .ToList();
+
+            var filteredSyntaxErrors = syntaxResult.Errors
+                .Where(x => !ShouldSuppressSyntaxError(x, lexicalErrors))
+                .ToList();
+
+            return lexicalErrors
+                .Concat(filteredSyntaxErrors)
+                .OrderBy(x => x.AbsoluteIndex)
+                .ThenBy(x => x.Line)
+                .ThenBy(x => x.StartColumn)
+                .ToList();
+        }
+
+        private bool ShouldSuppressSyntaxError(
+            SyntaxError syntaxError,
+            System.Collections.Generic.List<SyntaxError> lexicalErrors)
+        {
+            if (lexicalErrors.Any(x => RangesOverlap(x, syntaxError)))
+                return true;
+
+            if (syntaxError.Message == "Ожидалось ключевое слово val" &&
+                lexicalErrors.Any(x =>
+                    x.Line == syntaxError.Line &&
+                    GetAbsoluteEndIndex(x) < syntaxError.AbsoluteIndex))
+            {
+                return true;
+            }
+
+            if (syntaxError.Message == "Ожидалась лексема listOf" &&
+                lexicalErrors.Any(x =>
+                    x.Line == syntaxError.Line &&
+                    GetAbsoluteEndIndex(x) < syntaxError.AbsoluteIndex &&
+                    GetNextNonWhitespaceCharAfter(GetAbsoluteEndIndex(x)) == '('))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool RangesOverlap(SyntaxError left, SyntaxError right)
+        {
+            int leftStart = left.AbsoluteIndex;
+            int leftEnd = GetAbsoluteEndIndex(left);
+
+            int rightStart = right.AbsoluteIndex;
+            int rightEnd = GetAbsoluteEndIndex(right);
+
+            return leftStart <= rightEnd && rightStart <= leftEnd;
+        }
+
+        private int GetAbsoluteEndIndex(SyntaxError error)
+        {
+            int length = 1;
+
+            if (!string.IsNullOrWhiteSpace(error.InvalidFragment) &&
+                error.InvalidFragment != "(пусто)")
+            {
+                length = error.InvalidFragment.Length;
+            }
+            else if (error.EndColumn >= error.StartColumn)
+            {
+                length = error.EndColumn - error.StartColumn + 1;
+            }
+
+            return error.AbsoluteIndex + Math.Max(length, 1) - 1;
+        }
+
+        private char? GetNextNonWhitespaceCharAfter(int absoluteIndex)
+        {
+            string text = rtbEditor.Text;
+
+            for (int i = absoluteIndex + 1; i < text.Length; i++)
+            {
+                char ch = text[i];
+
+                if (ch == '\r' || ch == '\n')
+                    return null;
+
+                if (!char.IsWhiteSpace(ch))
+                    return ch;
+            }
+
+            return null;
+        }
         private void RenderSyntaxResult(SyntaxResult result)
         {
             ClearResultsGrid();
