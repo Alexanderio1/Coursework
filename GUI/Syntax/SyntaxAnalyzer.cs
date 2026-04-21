@@ -9,8 +9,7 @@ namespace GUI.Syntax
         private SyntaxResult _result;
         private int _currentDeclarationLine;
         private int _declarationStartPosition;
-        private bool _elementsExpectedReported;
-
+        private int _parenBalance;
         public SyntaxResult Parse(IReadOnlyList<LexerItem> tokens)
         {
             _stream = new SyntaxTokenStream(tokens);
@@ -39,13 +38,12 @@ namespace GUI.Syntax
 
         private void ParseDeclaration()
         {
-            _elementsExpectedReported = false;
-
             if (_stream.IsAtEnd)
                 return;
 
             _currentDeclarationLine = _stream.Current.Line;
             _declarationStartPosition = _stream.Position;
+            _parenBalance = 0;
 
             if (!_stream.Check(LexerTokenCode.Val))
             {
@@ -72,120 +70,80 @@ namespace GUI.Syntax
             }
 
             if (!_stream.Check(LexerTokenCode.Identifier))
-            {
-                AddMissingAtCurrentOrAfterPrevious(
+                AddMissingAfterPrevious(
                     "Ожидался идентификатор после val",
                     "(пропущен идентификатор)");
-
-                if (!RecoverWithinDeclaration(
-                    LexerTokenCode.Identifier,
-                    LexerTokenCode.Assign,
-                    LexerTokenCode.ListOf,
-                    LexerTokenCode.LeftParen,
-                    LexerTokenCode.RightParen))
-                    return;
-            }
-
-            if (_stream.Check(LexerTokenCode.Identifier))
+            else
                 _stream.Advance();
 
             if (!_stream.Check(LexerTokenCode.Assign))
-            {
-                AddMissingAtCurrentOrAfterPrevious("Ожидался оператор присваивания =");
-
-                if (!RecoverWithinDeclaration(
-                    LexerTokenCode.Assign,
-                    LexerTokenCode.ListOf,
-                    LexerTokenCode.LeftParen,
-                    LexerTokenCode.RightParen))
-                    return;
-            }
-
-            if (_stream.Check(LexerTokenCode.Assign))
+                AddMissingAfterPrevious(
+                    "Ожидался оператор присваивания =",
+                    "(пропущен =)");
+            else
                 _stream.Advance();
 
             if (!_stream.Check(LexerTokenCode.ListOf))
-            {
-                AddMissingAtCurrentOrAfterPrevious("Ожидалась лексема listOf");
-
-                if (!RecoverWithinDeclaration(
-                    LexerTokenCode.ListOf,
-                    LexerTokenCode.LeftParen,
-                    LexerTokenCode.RightParen))
-                    return;
-            }
-
-            if (_stream.Check(LexerTokenCode.ListOf))
+                AddMissingAfterPrevious(
+                    "Ожидалась лексема listOf",
+                    "(пропущен listOf)");
+            else
                 _stream.Advance();
 
             if (!_stream.Check(LexerTokenCode.LeftParen))
             {
-                AddMissingAtCurrentOrAfterPrevious("Ожидалась открывающая круглая скобка (");
-
-                if (!RecoverWithinDeclaration(
-                    LexerTokenCode.LeftParen,
-                    LexerTokenCode.RightParen))
-                    return;
+                AddMissingAfterPrevious(
+                    "Ожидалась открывающая круглая скобка (",
+                    "(пропущена ()");
+                _parenBalance++;
             }
-
-            if (_stream.Check(LexerTokenCode.LeftParen))
+            else
             {
                 _stream.Advance();
-                ParseElementsOpt();
+                _parenBalance++;
             }
 
-            bool stopAfterMissingRightParenAtEnd = false;
-
-            if (!_stream.Check(LexerTokenCode.RightParen))
-            {
-                if (!_elementsExpectedReported)
-                {
-                    if (_stream.IsAtEnd
-                        || IsNextDeclarationStart()
-                        || _stream.Current.Line != _currentDeclarationLine
-                        || _stream.Check(LexerTokenCode.Semicolon))
-                    {
-                        AddMissingAfterPrevious(
-                            "Ожидалась закрывающая круглая скобка )",
-                            "(пропущена ))");
-                    }
-                    else
-                    {
-                        AddError("Ожидалась закрывающая круглая скобка )");
-                    }
-                }
-
-                if (_stream.IsAtEnd)
-                {
-                    stopAfterMissingRightParenAtEnd = true;
-                }
-                else
-                {
-                    if (!RecoverWithinDeclaration(
-                        LexerTokenCode.RightParen,
-                        LexerTokenCode.Semicolon))
-                        return;
-                }
-            }
+            ParseElementsOpt();
 
             if (_stream.Check(LexerTokenCode.RightParen))
+            {
                 _stream.Advance();
+                _parenBalance--;
+            }
+            else
+            {
+                AddMissingAfterPrevious(
+                    "Ожидалась закрывающая круглая скобка )",
+                    "(пропущена ))");
+                _parenBalance--;
+            }
 
-            if (stopAfterMissingRightParenAtEnd)
-                return;
+            while (_stream.Check(LexerTokenCode.RightParen))
+            {
+                AddError("Лишняя закрывающая круглая скобка )");
+                _stream.Advance();
+            }
+
+            if (_parenBalance != 0)
+            {
+                _parenBalance = 0;
+            }
 
             if (!_stream.Check(LexerTokenCode.Semicolon))
-            {
                 AddMissingAfterPrevious(
                     "Ожидался символ ; в конце объявления",
                     "(пропущен ;)");
-
-                if (!RecoverWithinDeclaration(LexerTokenCode.Semicolon))
-                    return;
-            }
-
-            if (_stream.Check(LexerTokenCode.Semicolon))
+            else
                 _stream.Advance();
+        }
+        private bool TryConsumeUnexpectedOpenParen()
+        {
+            if (!_stream.Check(LexerTokenCode.LeftParen))
+                return false;
+
+            AddError("Лишняя открывающая круглая скобка (");
+            _stream.Advance();
+            return true;
         }
 
         private void AddMissingAtCurrentOrAfterPrevious(string message)
@@ -216,6 +174,10 @@ namespace GUI.Syntax
 
         private void ParseElementsOpt()
         {
+            while (TryConsumeUnexpectedOpenParen())
+            {
+            }
+
             if (_stream.Check(LexerTokenCode.RightParen))
                 return;
 
@@ -225,21 +187,19 @@ namespace GUI.Syntax
                 return;
             }
 
-            _elementsExpectedReported = true;
-
-            if (_stream.IsAtEnd
-                || IsNextDeclarationStart()
-                || _stream.Current.Line != _currentDeclarationLine
-                || _stream.Check(LexerTokenCode.Semicolon))
+            if (_stream.IsAtEnd ||
+                _stream.Check(LexerTokenCode.Semicolon) ||
+                IsNextDeclarationStart() ||
+                _stream.Current.Line != _currentDeclarationLine)
             {
-                AddMissingAfterPrevious(
-                    "Ожидался элемент списка или символ )",
-                    "(пропущено содержимое списка)");
                 return;
             }
 
-            AddError("Ожидался элемент списка или символ )");
-            RecoverWithinDeclaration(LexerTokenCode.RightParen, LexerTokenCode.Semicolon);
+            AddError("Ожидался элемент списка");
+            RecoverWithinDeclaration(
+                LexerTokenCode.Comma,
+                LexerTokenCode.RightParen,
+                LexerTokenCode.Semicolon);
         }
 
         private void ParseElements()
@@ -250,9 +210,26 @@ namespace GUI.Syntax
             {
                 if (_stream.Match(LexerTokenCode.Comma))
                 {
+                    while (TryConsumeUnexpectedOpenParen())
+                    {
+                    }
+
+                    if (_stream.IsAtEnd ||
+                        _stream.Check(LexerTokenCode.RightParen) ||
+                        _stream.Check(LexerTokenCode.Semicolon))
+                    {
+                        AddMissingAfterPrevious(
+                            "Ожидался элемент списка после запятой",
+                            "(пропущен элемент)");
+                        break;
+                    }
+
                     ParseElement();
                     continue;
                 }
+
+                if (TryConsumeUnexpectedOpenParen())
+                    continue;
 
                 if (IsElementStart())
                 {
@@ -281,17 +258,34 @@ namespace GUI.Syntax
             if (_stream.Match(LexerTokenCode.False))
                 return;
 
-            if (_stream.Check(LexerTokenCode.Int)
-                || _stream.Check(LexerTokenCode.Double)
-                || _stream.Check(LexerTokenCode.Plus)
-                || _stream.Check(LexerTokenCode.Minus))
+            if (_stream.Check(LexerTokenCode.Int) ||
+                _stream.Check(LexerTokenCode.Double) ||
+                _stream.Check(LexerTokenCode.Plus) ||
+                _stream.Check(LexerTokenCode.Minus))
             {
                 ParseNumberLiteral();
                 return;
             }
 
+            if (TryConsumeUnexpectedOpenParen())
+                return;
+
+            if (_stream.IsAtEnd ||
+                _stream.Check(LexerTokenCode.Comma) ||
+                _stream.Check(LexerTokenCode.RightParen) ||
+                _stream.Check(LexerTokenCode.Semicolon))
+            {
+                AddMissingAtCurrentOrAfterPrevious(
+                    "Ожидался элемент списка",
+                    "(пропущен элемент)");
+                return;
+            }
+
             AddError("Ожидался элемент списка");
-            RecoverWithinDeclaration(LexerTokenCode.Comma, LexerTokenCode.RightParen, LexerTokenCode.Semicolon);
+            RecoverWithinDeclaration(
+                LexerTokenCode.Comma,
+                LexerTokenCode.RightParen,
+                LexerTokenCode.Semicolon);
         }
 
         private void ParseNumberLiteral()
@@ -322,8 +316,22 @@ namespace GUI.Syntax
             if (_stream.Match(LexerTokenCode.Double))
                 return;
 
+            if (_stream.IsAtEnd ||
+                _stream.Check(LexerTokenCode.Comma) ||
+                _stream.Check(LexerTokenCode.RightParen) ||
+                _stream.Check(LexerTokenCode.Semicolon))
+            {
+                AddMissingAfterPrevious(
+                    "После знака ожидался int или double",
+                    "(пропущено число)");
+                return;
+            }
+
             AddError("После знака ожидался int или double");
-            RecoverWithinDeclaration(LexerTokenCode.Comma, LexerTokenCode.RightParen, LexerTokenCode.Semicolon);
+            RecoverWithinDeclaration(
+                LexerTokenCode.Comma,
+                LexerTokenCode.RightParen,
+                LexerTokenCode.Semicolon);
         }
 
         private void ParseSign()

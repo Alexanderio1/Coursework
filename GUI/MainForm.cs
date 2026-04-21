@@ -249,33 +249,32 @@ namespace GUI
             var lexer = new LexicalAnalyzer();
             var lexResult = lexer.Analyze(rtbEditor.Text);
 
-            var tokens = lexResult.Items
+            var parserTokens = lexResult.Items
                 .Where(x => !x.IsError && x.Code.HasValue)
                 .ToList();
 
             var parser = new SyntaxAnalyzer();
-            var syntaxResult = parser.Parse(tokens);
+            var syntaxResult = parser.Parse(parserTokens);
 
-            var lexErrors = lexResult.Items.Where(x => x.IsError).ToList();
-
-            for (int i = lexErrors.Count - 1; i >= 0; i--)
-            {
-                var lexError = lexErrors[i];
-
-                syntaxResult.Errors.Insert(0, new SyntaxError
+            var allErrors = lexResult.Items
+                .Where(x => x.IsError)
+                .Select(x => new SyntaxError
                 {
-                    InvalidFragment = string.IsNullOrWhiteSpace(lexError.Lexeme)
-                        ? "(пусто)"
-                        : lexError.Lexeme,
-                    Line = lexError.Line,
-                    StartColumn = lexError.StartColumn,
-                    EndColumn = lexError.EndColumn,
-                    AbsoluteIndex = lexError.AbsoluteIndex,
-                    Message = string.IsNullOrWhiteSpace(lexError.Message)
-                        ? lexError.DisplayText
-                        : lexError.Message
-                });
-            }
+                    InvalidFragment = string.IsNullOrWhiteSpace(x.Lexeme) ? "(пусто)" : x.Lexeme,
+                    Line = x.Line,
+                    StartColumn = x.StartColumn,
+                    EndColumn = x.EndColumn,
+                    AbsoluteIndex = x.AbsoluteIndex,
+                    Message = string.IsNullOrWhiteSpace(x.Message) ? x.DisplayText : x.Message
+                })
+                .Concat(syntaxResult.Errors)
+                .OrderBy(x => x.AbsoluteIndex)
+                .ThenBy(x => x.Line)
+                .ThenBy(x => x.StartColumn)
+                .ToList();
+
+            syntaxResult.Errors.Clear();
+            syntaxResult.Errors.AddRange(allErrors);
 
             RenderSyntaxResult(syntaxResult);
         }
