@@ -41,6 +41,13 @@ namespace GUI.Syntax
             if (_stream.IsAtEnd)
                 return;
 
+            if (_stream.Check(LexerTokenCode.Semicolon))
+            {
+                AddError("Ожидалось объявление списка с инициализацией.");
+                _stream.Advance();
+                return;
+            }
+
             _currentDeclarationLine = _stream.Current.Line;
             _declarationStartPosition = _stream.Position;
             _parenBalance = 0;
@@ -105,8 +112,18 @@ namespace GUI.Syntax
             if (_stream.Check(LexerTokenCode.RightParen))
                 return;
 
+            if (_stream.Check(LexerTokenCode.Semicolon) && _parenBalance > 0)
+            {
+                if (_stream.CheckNext(LexerTokenCode.RightParen))
+                {
+                    AddError("Лишний символ ; внутри списка");
+                    _stream.Advance();
+                }
+
+                return;
+            }
+
             if (_stream.IsAtEnd ||
-                _stream.Check(LexerTokenCode.Semicolon) ||
                 IsNextDeclarationStart() ||
                 _stream.Current.Line != _currentDeclarationLine)
             {
@@ -140,10 +157,42 @@ namespace GUI.Syntax
                 }
 
                 if (_stream.IsAtEnd ||
-                    _stream.Check(LexerTokenCode.Semicolon) ||
                     IsNextDeclarationStart() ||
                     _stream.Current.Line != _currentDeclarationLine)
                 {
+                    if (expectElement && commaAfterRealElement)
+                    {
+                        AddMissingAfterPrevious(
+                            "Ожидался элемент списка после запятой",
+                            "(пропущен элемент)");
+                    }
+
+                    return;
+                }
+
+                if (_stream.Check(LexerTokenCode.Semicolon))
+                {
+                    if (_parenBalance > 0)
+                    {
+                        if (!expectElement)
+                        {
+                            AddError("Ожидалась запятая между элементами списка");
+                            _stream.Advance();
+                            expectElement = true;
+                            commaAfterRealElement = false;
+                            continue;
+                        }
+
+                        if (commaAfterRealElement)
+                        {
+                            AddMissingAfterPrevious(
+                                "Ожидался элемент списка после запятой",
+                                "(пропущен элемент)");
+                        }
+
+                        return;
+                    }
+
                     if (expectElement && commaAfterRealElement)
                     {
                         AddMissingAfterPrevious(

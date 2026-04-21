@@ -268,12 +268,7 @@ namespace GUI
                     Message = string.IsNullOrWhiteSpace(x.Message) ? x.DisplayText : x.Message
                 });
 
-            var allErrors = lexicalErrors
-                .Concat(syntaxResult.Errors)
-                .OrderBy(x => x.AbsoluteIndex)
-                .ThenBy(x => x.Line)
-                .ThenBy(x => x.StartColumn)
-                .ToList();
+            var allErrors = MergeErrors(lexResult, syntaxResult);
 
             syntaxResult.Errors.Clear();
             syntaxResult.Errors.AddRange(allErrors);
