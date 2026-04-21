@@ -204,6 +204,28 @@ namespace GUI.Lexer
                 Advance(text, ref index, ref line, ref column);
             }
 
+
+            if (!IsTokenDelimiter(Peek(text, index)))
+            {
+                while (!IsTokenDelimiter(Peek(text, index)))
+                {
+                    Advance(text, ref index, ref line, ref column);
+                }
+
+                string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+                AddError(
+                    result,
+                    "Недопустимый фрагмент \"" + invalidLexeme + "\"",
+                    invalidLexeme,
+                    startIndex,
+                    startLine,
+                    startColumn,
+                    Math.Max(invalidLexeme.Length, 1));
+
+                return;
+            }
+
             string lexeme = text.Substring(startIndex, index - startIndex);
 
             LexerTokenCode code;

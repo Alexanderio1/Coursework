@@ -86,5 +86,12 @@ namespace GUI.Syntax
         {
             get { return _position; }
         }
+
+        public bool CheckNext(LexerTokenCode code)
+        {
+            int nextPosition = _position + 1;
+            return nextPosition < _tokens.Count &&
+                   _tokens[nextPosition].Code == (int)code;
+        }
     }
 }

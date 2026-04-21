@@ -58,7 +58,13 @@ namespace GUI.Syntax
                     return;
                 }
 
-                if (!_stream.Check(LexerTokenCode.Identifier))
+
+                if (_stream.Check(LexerTokenCode.Identifier) &&
+                    _stream.CheckNext(LexerTokenCode.Identifier))
+                {
+                    _stream.Advance();
+                }
+                else if (!_stream.Check(LexerTokenCode.Identifier))
                 {
                     SkipGarbageLineOrStatement();
                     return;
@@ -125,9 +131,7 @@ namespace GUI.Syntax
             }
 
             if (_parenBalance != 0)
-            {
                 _parenBalance = 0;
-            }
 
             if (!_stream.Check(LexerTokenCode.Semicolon))
                 AddMissingAfterPrevious(
