@@ -135,6 +135,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResourceHelper.cs" />
     <Compile Include="Syntax\SyntaxAnalyzer.cs" />
     <Compile Include="Syntax\SyntaxError.cs" />
     <Compile Include="Syntax\SyntaxResult.cs" />
@@ -240,6 +241,15 @@
   <ItemGroup>
     <Folder Include="ANTLR\Generated\" />
     <Folder Include="images\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Html\Classification.html" />
+    <Content Include="Html\Grammar.html" />
+    <Content Include="Html\Method.html" />
+    <Content Include="Html\References.html" />
+    <Content Include="Html\styles.css" />
+    <Content Include="Html\Task.html" />
+    <Content Include="Html\Tests.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

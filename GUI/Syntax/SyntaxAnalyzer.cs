@@ -114,12 +114,10 @@ namespace GUI.Syntax
 
             if (_stream.Check(LexerTokenCode.Semicolon) && _parenBalance > 0)
             {
-                if (HasRightParenAheadOnCurrentLine())
-                {
-                    ParseElements();
+                if (!HasRightParenAheadOnCurrentLine())
                     return;
-                }
 
+                ParseElements();
                 return;
             }
 
@@ -174,9 +172,24 @@ namespace GUI.Syntax
                 {
                     if (_parenBalance > 0)
                     {
-                        AddError("Недопустимый символ ; внутри списка");
-                        _stream.Advance();
+                        if (!HasRightParenAheadOnCurrentLine())
+                        {
+                            if (expectElement && commaAfterRealElement)
+                            {
+                                AddMissingAfterPrevious(
+                                    "Ожидался элемент списка после запятой",
+                                    "(пропущен элемент)");
+                            }
 
+                            return;
+                        }
+
+                        if (expectElement)
+                            AddError("Ожидался элемент списка");
+                        else
+                            AddError("Ожидалась запятая между элементами списка");
+
+                        _stream.Advance();
                         expectElement = true;
                         commaAfterRealElement = false;
                         continue;

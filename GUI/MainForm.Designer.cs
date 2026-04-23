@@ -47,6 +47,7 @@ namespace GUI
             this.miSelectAll = new System.Windows.Forms.ToolStripMenuItem();
             this.miRunExecute = new System.Windows.Forms.ToolStripMenuItem();
             this.выполнитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.miRunAntlr = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelp = new System.Windows.Forms.ToolStripMenuItem();
             this.miHelpContent = new System.Windows.Forms.ToolStripMenuItem();
             this.miAbout = new System.Windows.Forms.ToolStripMenuItem();
@@ -82,7 +83,14 @@ namespace GUI
             this.colType = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLexeme = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colLocation = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.miRunAntlr = new System.Windows.Forms.ToolStripMenuItem();
+            this.текстToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.постановкаЗадачиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.грамматикаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.классификацияГрамматикиToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.методАнализаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.тестовыйПримерToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.списокЛитературыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.исходныйКодПрограммыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuMain.SuspendLayout();
             this.toolMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitMain)).BeginInit();
@@ -98,11 +106,12 @@ namespace GUI
             this.menuMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.miFile,
             this.miEdit,
+            this.текстToolStripMenuItem,
             this.miRunExecute,
             this.miHelp});
             this.menuMain.Location = new System.Drawing.Point(0, 0);
             this.menuMain.Name = "menuMain";
-            this.menuMain.Size = new System.Drawing.Size(1588, 42);
+            this.menuMain.Size = new System.Drawing.Size(1588, 40);
             this.menuMain.TabIndex = 2;
             this.menuMain.Text = "menuStrip1";
             // 
@@ -115,7 +124,7 @@ namespace GUI
             this.miSaveAs,
             this.miExit});
             this.miFile.Name = "miFile";
-            this.miFile.Size = new System.Drawing.Size(90, 38);
+            this.miFile.Size = new System.Drawing.Size(90, 36);
             this.miFile.Text = "Файл";
             // 
             // miNew
@@ -170,7 +179,7 @@ namespace GUI
             this.miDelete,
             this.miSelectAll});
             this.miEdit.Name = "miEdit";
-            this.miEdit.Size = new System.Drawing.Size(114, 38);
+            this.miEdit.Size = new System.Drawing.Size(114, 36);
             this.miEdit.Text = "Правка";
             // 
             // miUndo
@@ -235,16 +244,23 @@ namespace GUI
             this.выполнитьToolStripMenuItem,
             this.miRunAntlr});
             this.miRunExecute.Name = "miRunExecute";
-            this.miRunExecute.Size = new System.Drawing.Size(86, 38);
+            this.miRunExecute.Size = new System.Drawing.Size(86, 36);
             this.miRunExecute.Text = "Пуск";
             // 
             // выполнитьToolStripMenuItem
             // 
             this.выполнитьToolStripMenuItem.Name = "выполнитьToolStripMenuItem";
             this.выполнитьToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
-            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(359, 44);
+            this.выполнитьToolStripMenuItem.Size = new System.Drawing.Size(308, 44);
             this.выполнитьToolStripMenuItem.Text = "Выполнить";
             this.выполнитьToolStripMenuItem.Click += new System.EventHandler(this.CmdRun_Click);
+            // 
+            // miRunAntlr
+            // 
+            this.miRunAntlr.Name = "miRunAntlr";
+            this.miRunAntlr.Size = new System.Drawing.Size(308, 44);
+            this.miRunAntlr.Text = "ANTLR-анализ";
+            this.miRunAntlr.Click += new System.EventHandler(this.CmdRunAntlr_Click);
             // 
             // miHelp
             // 
@@ -252,7 +268,7 @@ namespace GUI
             this.miHelpContent,
             this.miAbout});
             this.miHelp.Name = "miHelp";
-            this.miHelp.Size = new System.Drawing.Size(126, 38);
+            this.miHelp.Size = new System.Drawing.Size(126, 36);
             this.miHelp.Text = "Справка";
             // 
             // miHelpContent
@@ -330,7 +346,7 @@ namespace GUI
             this.btnHelp,
             this.toolStripSeparator2,
             this.toolStripSeparator4});
-            this.toolMain.Location = new System.Drawing.Point(0, 42);
+            this.toolMain.Location = new System.Drawing.Point(0, 40);
             this.toolMain.Name = "toolMain";
             this.toolMain.Size = new System.Drawing.Size(1588, 34);
             this.toolMain.TabIndex = 11;
@@ -513,7 +529,7 @@ namespace GUI
             // splitMain
             // 
             this.splitMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.splitMain.Location = new System.Drawing.Point(0, 76);
+            this.splitMain.Location = new System.Drawing.Point(0, 74);
             this.splitMain.Name = "splitMain";
             this.splitMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -524,8 +540,8 @@ namespace GUI
             // splitMain.Panel2
             // 
             this.splitMain.Panel2.Controls.Add(this.dgvResults);
-            this.splitMain.Size = new System.Drawing.Size(1588, 819);
-            this.splitMain.SplitterDistance = 518;
+            this.splitMain.Size = new System.Drawing.Size(1588, 821);
+            this.splitMain.SplitterDistance = 519;
             this.splitMain.SplitterWidth = 6;
             this.splitMain.TabIndex = 12;
             // 
@@ -538,7 +554,7 @@ namespace GUI
             this.rtbEditor.HideSelection = false;
             this.rtbEditor.Location = new System.Drawing.Point(0, 0);
             this.rtbEditor.Name = "rtbEditor";
-            this.rtbEditor.Size = new System.Drawing.Size(1588, 518);
+            this.rtbEditor.Size = new System.Drawing.Size(1588, 519);
             this.rtbEditor.TabIndex = 0;
             this.rtbEditor.Text = "";
             this.rtbEditor.WordWrap = false;
@@ -564,7 +580,7 @@ namespace GUI
             this.dgvResults.RowHeadersWidth = 82;
             this.dgvResults.RowTemplate.Height = 33;
             this.dgvResults.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dgvResults.Size = new System.Drawing.Size(1588, 295);
+            this.dgvResults.Size = new System.Drawing.Size(1588, 296);
             this.dgvResults.TabIndex = 0;
             this.dgvResults.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvResults_CellClick);
             // 
@@ -596,12 +612,61 @@ namespace GUI
             this.colLocation.Name = "colLocation";
             this.colLocation.ReadOnly = true;
             // 
-            // miRunAntlr
+            // текстToolStripMenuItem
             // 
-            this.miRunAntlr.Name = "miRunAntlr";
-            this.miRunAntlr.Size = new System.Drawing.Size(359, 44);
-            this.miRunAntlr.Text = "ANTLR-анализ";
-            this.miRunAntlr.Click += new System.EventHandler(this.CmdRunAntlr_Click);
+            this.текстToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.постановкаЗадачиToolStripMenuItem,
+            this.грамматикаToolStripMenuItem,
+            this.классификацияГрамматикиToolStripMenuItem,
+            this.методАнализаToolStripMenuItem,
+            this.тестовыйПримерToolStripMenuItem,
+            this.списокЛитературыToolStripMenuItem,
+            this.исходныйКодПрограммыToolStripMenuItem});
+            this.текстToolStripMenuItem.Name = "текстToolStripMenuItem";
+            this.текстToolStripMenuItem.Size = new System.Drawing.Size(93, 36);
+            this.текстToolStripMenuItem.Text = "Текст";
+            // 
+            // постановкаЗадачиToolStripMenuItem
+            // 
+            this.постановкаЗадачиToolStripMenuItem.Name = "постановкаЗадачиToolStripMenuItem";
+            this.постановкаЗадачиToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.постановкаЗадачиToolStripMenuItem.Text = "Постановка задачи";
+            // 
+            // грамматикаToolStripMenuItem
+            // 
+            this.грамматикаToolStripMenuItem.Name = "грамматикаToolStripMenuItem";
+            this.грамматикаToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.грамматикаToolStripMenuItem.Text = "Грамматика";
+            // 
+            // классификацияГрамматикиToolStripMenuItem
+            // 
+            this.классификацияГрамматикиToolStripMenuItem.Name = "классификацияГрамматикиToolStripMenuItem";
+            this.классификацияГрамматикиToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.классификацияГрамматикиToolStripMenuItem.Text = "Классификация грамматики";
+            // 
+            // методАнализаToolStripMenuItem
+            // 
+            this.методАнализаToolStripMenuItem.Name = "методАнализаToolStripMenuItem";
+            this.методАнализаToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.методАнализаToolStripMenuItem.Text = "Метод анализа";
+            // 
+            // тестовыйПримерToolStripMenuItem
+            // 
+            this.тестовыйПримерToolStripMenuItem.Name = "тестовыйПримерToolStripMenuItem";
+            this.тестовыйПримерToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.тестовыйПримерToolStripMenuItem.Text = "Тестовый пример";
+            // 
+            // списокЛитературыToolStripMenuItem
+            // 
+            this.списокЛитературыToolStripMenuItem.Name = "списокЛитературыToolStripMenuItem";
+            this.списокЛитературыToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.списокЛитературыToolStripMenuItem.Text = "Список литературы";
+            // 
+            // исходныйКодПрограммыToolStripMenuItem
+            // 
+            this.исходныйКодПрограммыToolStripMenuItem.Name = "исходныйКодПрограммыToolStripMenuItem";
+            this.исходныйКодПрограммыToolStripMenuItem.Size = new System.Drawing.Size(454, 44);
+            this.исходныйКодПрограммыToolStripMenuItem.Text = "Исходный код программы";
             // 
             // MainForm
             // 
@@ -685,6 +750,14 @@ namespace GUI
         private System.Windows.Forms.DataGridViewTextBoxColumn colLexeme;
         private System.Windows.Forms.DataGridViewTextBoxColumn colLocation;
         private System.Windows.Forms.ToolStripMenuItem miRunAntlr;
+        private System.Windows.Forms.ToolStripMenuItem текстToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem постановкаЗадачиToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem грамматикаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem классификацияГрамматикиToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem методАнализаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem тестовыйПримерToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem списокЛитературыToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem исходныйКодПрограммыToolStripMenuItem;
     }
 }
 

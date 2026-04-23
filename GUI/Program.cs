@@ -16,6 +16,7 @@ namespace GUI
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            ResourceHelper.ExtractResources();
             Application.Run(new MainForm());
         }
     }
