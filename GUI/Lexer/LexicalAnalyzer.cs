@@ -390,13 +390,7 @@ namespace GUI.Lexer
                     return;
                 }
 
-                if (IsAllowedStringChar(current))
-                {
-                    Advance(text, ref index, ref line, ref column);
-                    continue;
-                }
-
-                if (IsLineBreak(current))
+                if (IsLineBreak(current) || IsLiteralRecoveryBoundary(current))
                 {
                     string fragment = text.Substring(startIndex, index - startIndex);
 
@@ -412,8 +406,14 @@ namespace GUI.Lexer
                     return;
                 }
 
-                int badIndex = index;
+                if (IsAllowedStringChar(current))
+                {
+                    Advance(text, ref index, ref line, ref column);
+                    continue;
+                }
+
                 Advance(text, ref index, ref line, ref column);
+                SkipBrokenLiteralTail(text, ref index, ref line, ref column, '"');
 
                 string invalid = text.Substring(startIndex, index - startIndex);
 
@@ -424,7 +424,7 @@ namespace GUI.Lexer
                     startIndex,
                     startLine,
                     startColumn,
-                    invalid.Length);
+                    Math.Max(invalid.Length, 1));
 
                 return;
             }
@@ -447,56 +447,30 @@ namespace GUI.Lexer
             int startLine = line;
             int startColumn = column;
 
-            Advance(text, ref index, ref line, ref column);
+            Advance(text, ref index, ref line, ref column); // открывающая '
 
-            if (index >= text.Length || IsLineBreak(Peek(text, index)))
+            if (index >= text.Length || IsLineBreak(Peek(text, index)) || IsLiteralRecoveryBoundary(Peek(text, index)))
             {
+                string fragment = text.Substring(startIndex, index - startIndex);
+
                 AddError(
                     result,
                     "Не завершён символьный литерал",
-                    "'",
+                    fragment,
                     startIndex,
                     startLine,
                     startColumn,
-                    1);
-                return;
-            }
-
-            if (Peek(text, index) == '\'')
-            {
-                Advance(text, ref index, ref line, ref column);
-
-                string invalidLexeme = text.Substring(startIndex, index - startIndex);
-
-                AddError(
-                    result,
-                    "Символьный литерал должен содержать ровно один символ",
-                    invalidLexeme,
-                    startIndex,
-                    startLine,
-                    startColumn,
-                    Math.Max(invalidLexeme.Length, 1));
+                    Math.Max(fragment.Length, 1));
 
                 return;
             }
 
-            char current = Peek(text, index);
+            char firstChar = Peek(text, index);
 
-            if (!IsAllowedCharLiteralChar(current))
+            if (!IsAllowedCharLiteralChar(firstChar))
             {
                 Advance(text, ref index, ref line, ref column);
-
-                while (index < text.Length
-                       && !IsLineBreak(Peek(text, index))
-                       && Peek(text, index) != '\'')
-                {
-                    Advance(text, ref index, ref line, ref column);
-                }
-
-                if (Peek(text, index) == '\'')
-                {
-                    Advance(text, ref index, ref line, ref column);
-                }
+                SkipBrokenLiteralTail(text, ref index, ref line, ref column, '\'');
 
                 string invalidLexeme = text.Substring(startIndex, index - startIndex);
 
@@ -512,7 +486,7 @@ namespace GUI.Lexer
                 return;
             }
 
-            Advance(text, ref index, ref line, ref column);
+            Advance(text, ref index, ref line, ref column); // прочитали один символ
 
             if (Peek(text, index) == '\'')
             {
@@ -532,7 +506,7 @@ namespace GUI.Lexer
                 return;
             }
 
-            if (index >= text.Length || IsLineBreak(Peek(text, index)))
+            if (index >= text.Length || IsLineBreak(Peek(text, index)) || IsLiteralRecoveryBoundary(Peek(text, index)))
             {
                 string invalid = text.Substring(startIndex, index - startIndex);
 
@@ -548,17 +522,7 @@ namespace GUI.Lexer
                 return;
             }
 
-            while (index < text.Length
-                   && !IsLineBreak(Peek(text, index))
-                   && Peek(text, index) != '\'')
-            {
-                Advance(text, ref index, ref line, ref column);
-            }
-
-            if (Peek(text, index) == '\'')
-            {
-                Advance(text, ref index, ref line, ref column);
-            }
+            SkipBrokenLiteralTail(text, ref index, ref line, ref column, '\'');
 
             string invalidMulti = text.Substring(startIndex, index - startIndex);
 
@@ -570,6 +534,40 @@ namespace GUI.Lexer
                 startLine,
                 startColumn,
                 Math.Max(invalidMulti.Length, 1));
+        }
+
+        private bool IsLiteralRecoveryBoundary(char c)
+        {
+            return c == '\0'
+                || IsLineBreak(c)
+                || c == '('
+                || c == ','
+                || c == ')'
+                || c == ';';
+        }
+
+        private void SkipBrokenLiteralTail(
+            string text,
+            ref int index,
+            ref int line,
+            ref int column,
+            char closingQuote)
+        {
+            while (index < text.Length)
+            {
+                char current = Peek(text, index);
+
+                if (current == closingQuote)
+                {
+                    Advance(text, ref index, ref line, ref column);
+                    return;
+                }
+
+                if (IsLiteralRecoveryBoundary(current))
+                    return;
+
+                Advance(text, ref index, ref line, ref column);
+            }
         }
 
         private void SkipWhitespace(string text, ref int index, ref int line, ref int column)

@@ -10,6 +10,8 @@ namespace GUI.Syntax
         private int _currentDeclarationLine;
         private int _declarationStartPosition;
         private int _parenBalance;
+        private int _lastReportedAbsoluteIndex = -1;
+
         public SyntaxResult Parse(IReadOnlyList<LexerItem> tokens)
         {
             _stream = new SyntaxTokenStream(tokens);
@@ -48,19 +50,54 @@ namespace GUI.Syntax
                 return;
             }
 
+            if (IsPossibleTopLevelGarbage())
+            {
+                AddError("Лишний фрагмент вне объявления");
+                AbortCurrentDeclaration();
+                return;
+            }
+
             _currentDeclarationLine = _stream.Current.Line;
             _declarationStartPosition = _stream.Position;
             _parenBalance = 0;
 
-            ExpectValKeyword();
-            ExpectIdentifierAfterVal();
-            ExpectAssignToken();
-            ExpectListOfKeyword();
-            ExpectLeftParen();
+            if (!ExpectValKeyword())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
+
+            if (!ExpectIdentifierAfterVal())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
+
+            if (!ExpectAssignToken())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
+
+            if (!ExpectListOfKeyword())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
+
+            if (!ExpectLeftParen())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
 
             ParseElementsOpt();
 
-            ExpectRightParen();
+            if (!ExpectRightParen())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
 
             while (_stream.Check(LexerTokenCode.RightParen))
             {
@@ -69,7 +106,12 @@ namespace GUI.Syntax
             }
 
             _parenBalance = 0;
-            ExpectSemicolon();
+
+            if (!ExpectSemicolon())
+            {
+                AbortCurrentDeclaration();
+                return;
+            }
         }
 
         private bool TryConsumeUnexpectedOpenParen()
@@ -80,6 +122,108 @@ namespace GUI.Syntax
             AddError("Лишняя открывающая круглая скобка (");
             _stream.Advance();
             return true;
+        }
+
+        private void RecoverHeader(params LexerTokenCode[] anchors)
+        {
+            while (!_stream.IsAtEnd)
+            {
+                foreach (LexerTokenCode anchor in anchors)
+                {
+                    if (_stream.Check(anchor))
+                        return;
+                }
+
+                if (IsDeclarationAnchor() || _stream.Check(LexerTokenCode.Semicolon))
+                    return;
+
+                _stream.Advance();
+            }
+        }
+
+        private bool CanReportCurrentTokenError()
+        {
+            if (_stream.IsAtEnd)
+                return true;
+
+            if (_stream.Current.AbsoluteIndex == _lastReportedAbsoluteIndex)
+                return false;
+
+            _lastReportedAbsoluteIndex = _stream.Current.AbsoluteIndex;
+            return true;
+        }
+
+        private void AddUnexpectedCurrent(string message)
+        {
+            if (!CanReportCurrentTokenError())
+                return;
+
+            AddError(message);
+        }
+
+        private bool CanStartElement(LexerItem token)
+        {
+            if (token == null || !token.Code.HasValue)
+                return false;
+
+            int code = token.Code.Value;
+
+            return code == (int)LexerTokenCode.String
+                || code == (int)LexerTokenCode.Char
+                || code == (int)LexerTokenCode.True
+                || code == (int)LexerTokenCode.False
+                || code == (int)LexerTokenCode.Int
+                || code == (int)LexerTokenCode.Double
+                || code == (int)LexerTokenCode.Plus
+                || code == (int)LexerTokenCode.Minus;
+        }
+
+        private bool IsDeclarationAnchor()
+        {
+            return !_stream.IsAtEnd
+                && _stream.Check(LexerTokenCode.Val)
+                && _stream.Position != _declarationStartPosition;
+        }
+
+        private bool CanAssumeMissingListOf()
+        {
+            if (HasTokenAheadOnCurrentLine(LexerTokenCode.ListOf))
+                return false;
+
+            if (!_stream.Check(LexerTokenCode.LeftParen))
+                return false;
+
+            LexerItem next = _stream.Peek(1);
+            return CanStartElement(next) ||
+                   (next != null && next.Code == (int)LexerTokenCode.RightParen);
+        }
+
+        private bool CanAssumeMissingLeftParen()
+        {
+            return IsElementStart() || _stream.Check(LexerTokenCode.RightParen);
+        }
+
+        private bool CanAssumeMissingRightParen()
+        {
+            return _stream.IsAtEnd
+                || _stream.Check(LexerTokenCode.Semicolon)
+                || IsDeclarationAnchor()
+                || (!_stream.IsAtEnd && _stream.Current.Line != _currentDeclarationLine);
+        }
+
+        private bool CanAssumeMissingSemicolon()
+        {
+            return _stream.IsAtEnd
+                || IsDeclarationAnchor()
+                || (!_stream.IsAtEnd && _stream.Current.Line != _currentDeclarationLine);
+        }
+
+        private void AbortCurrentDeclaration()
+        {
+            RecoverHeader(LexerTokenCode.Semicolon, LexerTokenCode.Val);
+
+            if (_stream.Match(LexerTokenCode.Semicolon))
+                return;
         }
 
         private void AddMissingAtCurrentOrAfterPrevious(string message, string fragmentText)
@@ -224,6 +368,11 @@ namespace GUI.Syntax
                         continue;
                     }
 
+                    if (ConsumeInvalidToken())
+                    {
+                        continue;
+                    }
+
                     AddError("Ожидался элемент списка");
                     RecoverWithinDeclaration(
                         LexerTokenCode.Comma,
@@ -247,6 +396,11 @@ namespace GUI.Syntax
                     continue;
                 }
 
+                if (ConsumeInvalidToken())
+                {
+                    continue;
+                }
+
                 if (IsElementStart())
                 {
                     AddMissingAfterPrevious(
@@ -258,7 +412,20 @@ namespace GUI.Syntax
                     continue;
                 }
 
-                return;
+                AddError("Ожидалась запятая между элементами списка");
+                RecoverWithinDeclaration(
+                    LexerTokenCode.Comma,
+                    LexerTokenCode.RightParen,
+                    LexerTokenCode.Semicolon);
+
+                if (_stream.Match(LexerTokenCode.Comma))
+                {
+                    expectElement = true;
+                    commaAfterRealElement = true;
+                    continue;
+                }
+
+                continue;
             }
         }
 
@@ -406,11 +573,6 @@ namespace GUI.Syntax
                 || _stream.Check(LexerTokenCode.Minus);
         }
 
-        private void AddMissingAfterPrevious(string message)
-        {
-            AddMissingAfterPrevious(message, "(пропуск)");
-        }
-
         private int CurrentCodeOrMinusOne()
         {
             return !_stream.IsAtEnd && _stream.Current.Code.HasValue
@@ -420,28 +582,7 @@ namespace GUI.Syntax
 
         private bool IsNextDeclarationStart()
         {
-            return !_stream.IsAtEnd
-                && _stream.Check(LexerTokenCode.Val)
-                && _stream.Current.Line != _currentDeclarationLine;
-        }
-
-        private void SkipGarbageLineOrStatement()
-        {
-            int startLine = !_stream.IsAtEnd ? _stream.Current.Line : _currentDeclarationLine;
-
-            while (!_stream.IsAtEnd)
-            {
-                if (_stream.Check(LexerTokenCode.Semicolon))
-                {
-                    _stream.Advance();
-                    return;
-                }
-
-                if (_stream.Current.Line != startLine)
-                    return;
-
-                _stream.Advance();
-            }
+            return IsDeclarationAnchor();
         }
 
         private bool RecoverWithinDeclaration(params LexerTokenCode[] anchors)
@@ -500,105 +641,271 @@ namespace GUI.Syntax
             return true;
         }
 
-        private void ExpectValKeyword()
+        private bool ExpectValKeyword()
         {
             if (_stream.Match(LexerTokenCode.Val))
-                return;
+                return true;
 
             if (ConsumeInvalidToken())
-                return;
-
-            if (_stream.Check(LexerTokenCode.Identifier) &&
-                _stream.CheckNext(LexerTokenCode.Identifier))
             {
-                AddError("Ожидалось ключевое слово val");
-                _stream.Advance();
-                return;
+                RecoverHeader(
+                    LexerTokenCode.Val,
+                    LexerTokenCode.Identifier,
+                    LexerTokenCode.Assign,
+                    LexerTokenCode.ListOf,
+                    LexerTokenCode.LeftParen,
+                    LexerTokenCode.Semicolon);
+
+                if (_stream.Match(LexerTokenCode.Val))
+                    return true;
+
+                return CanContinueAfterValPhase();
             }
 
-            AddError("Ожидалось ключевое слово val");
+            if (_stream.Check(LexerTokenCode.Identifier))
+            {
+                AddMissingAtCurrentOrAfterPrevious(
+                    "Ожидалось ключевое слово val",
+                    "(пропущен val)");
+                return true;
+            }
+
+            AddUnexpectedCurrent("Ожидалось ключевое слово val");
+            RecoverHeader(
+                LexerTokenCode.Val,
+                LexerTokenCode.Identifier,
+                LexerTokenCode.Assign,
+                LexerTokenCode.ListOf,
+                LexerTokenCode.LeftParen,
+                LexerTokenCode.Semicolon);
+
+            if (_stream.Match(LexerTokenCode.Val))
+                return true;
+
+            return CanContinueAfterValPhase();
         }
 
-        private void ExpectIdentifierAfterVal()
+        private bool ExpectIdentifierAfterVal()
         {
             if (_stream.Match(LexerTokenCode.Identifier))
-                return;
+                return true;
 
             if (ConsumeInvalidToken())
-                return;
-
-            AddMissingAfterPrevious(
-                "Ожидался идентификатор после val",
-                "(пропущен идентификатор)");
-        }
-
-        private void ExpectAssignToken()
-        {
-            if (_stream.Match(LexerTokenCode.Assign))
-                return;
-
-            AddMissingAfterPrevious(
-                "Ожидался оператор присваивания =",
-                "(пропущен =)");
-        }
-
-        private void ExpectListOfKeyword()
-        {
-            if (_stream.Match(LexerTokenCode.ListOf))
-                return;
-
-            if (ConsumeInvalidToken())
-                return;
-
-            if (_stream.Check(LexerTokenCode.Identifier) &&
-                _stream.CheckNext(LexerTokenCode.LeftParen))
             {
-                AddError("Ожидалась лексема listOf");
-                _stream.Advance();
-                return;
+                RecoverHeader(
+                    LexerTokenCode.Identifier,
+                    LexerTokenCode.Assign,
+                    LexerTokenCode.ListOf,
+                    LexerTokenCode.LeftParen,
+                    LexerTokenCode.Semicolon,
+                    LexerTokenCode.Val);
+
+                if (_stream.Match(LexerTokenCode.Identifier))
+                    return true;
+
+                return CanContinueAfterIdentifierPhase();
             }
 
-            AddMissingAfterPrevious(
-                "Ожидалась лексема listOf",
-                "(пропущен listOf)");
+            if (_stream.Check(LexerTokenCode.Assign))
+            {
+                AddMissingAfterPrevious(
+                    "Ожидался идентификатор после val",
+                    "(пропущен идентификатор)");
+                return true;
+            }
+
+            AddUnexpectedCurrent("Ожидался идентификатор после val");
+            RecoverHeader(
+                LexerTokenCode.Identifier,
+                LexerTokenCode.Assign,
+                LexerTokenCode.ListOf,
+                LexerTokenCode.LeftParen,
+                LexerTokenCode.Semicolon,
+                LexerTokenCode.Val);
+
+            if (_stream.Match(LexerTokenCode.Identifier))
+                return true;
+
+            return CanContinueAfterIdentifierPhase();
         }
 
-        private void ExpectLeftParen()
+        private bool ExpectAssignToken()
+        {
+            if (_stream.Match(LexerTokenCode.Assign))
+                return true;
+
+            if (_stream.Check(LexerTokenCode.ListOf))
+            {
+                AddMissingAfterPrevious(
+                    "Ожидался оператор присваивания =",
+                    "(пропущен =)");
+                return true;
+            }
+
+            AddUnexpectedCurrent("Ожидался оператор присваивания =");
+            RecoverHeader(
+                LexerTokenCode.Assign,
+                LexerTokenCode.ListOf,
+                LexerTokenCode.LeftParen,
+                LexerTokenCode.Semicolon,
+                LexerTokenCode.Val);
+
+            if (_stream.Match(LexerTokenCode.Assign))
+                return true;
+
+            return CanContinueAfterAssignPhase();
+        }
+
+        private bool ExpectListOfKeyword()
+        {
+            if (_stream.Match(LexerTokenCode.ListOf))
+                return true;
+
+            if (ConsumeInvalidToken())
+            {
+                if (RecoverToTokenOnCurrentLine(LexerTokenCode.ListOf) &&
+                    _stream.Match(LexerTokenCode.ListOf))
+                    return true;
+
+                return false;
+            }
+
+            if (HasTokenAheadOnCurrentLine(LexerTokenCode.ListOf))
+            {
+                AddUnexpectedCurrent("Неожиданный фрагмент перед listOf");
+
+                if (RecoverToTokenOnCurrentLine(LexerTokenCode.ListOf) &&
+                    _stream.Match(LexerTokenCode.ListOf))
+                    return true;
+
+                return false;
+            }
+
+            if (CanAssumeMissingListOf())
+            {
+                AddMissingAfterPrevious(
+                    "Ожидалась лексема listOf",
+                    "(пропущен listOf)");
+                return true;
+            }
+
+            AddUnexpectedCurrent("Ожидалась лексема listOf");
+            RecoverHeader(
+                LexerTokenCode.ListOf,
+                LexerTokenCode.Semicolon,
+                LexerTokenCode.Val);
+
+            if (_stream.Match(LexerTokenCode.ListOf))
+                return true;
+
+            return false;
+        }
+
+        private bool ExpectLeftParen()
         {
             if (_stream.Match(LexerTokenCode.LeftParen))
             {
                 _parenBalance++;
-                return;
+                return true;
             }
 
-            AddMissingAfterPrevious(
-                "Ожидалась открывающая круглая скобка (",
-                "(пропущена ()");
-            _parenBalance++;
+            if (CanAssumeMissingLeftParen())
+            {
+                AddMissingAfterPrevious(
+                    "Ожидалась открывающая круглая скобка (",
+                    "(пропущена ()");
+                _parenBalance++;
+                return true;
+            }
+
+            AddUnexpectedCurrent("Ожидалась открывающая круглая скобка (");
+            RecoverHeader(
+                LexerTokenCode.LeftParen,
+                LexerTokenCode.RightParen,
+                LexerTokenCode.Semicolon,
+                LexerTokenCode.Val);
+
+            return TryContinueAfterRecovery(
+                LexerTokenCode.LeftParen,
+                () => _parenBalance++,
+                () =>
+                {
+                    if (CanAssumeMissingLeftParen())
+                    {
+                        _parenBalance++;
+                        return true;
+                    }
+
+                    return false;
+                });
         }
 
-        private void ExpectRightParen()
+        private bool ExpectRightParen()
         {
             if (_stream.Match(LexerTokenCode.RightParen))
             {
                 _parenBalance--;
-                return;
+                return true;
+            }
+
+            if (CanAssumeMissingRightParen())
+            {
+                AddMissingAfterPrevious(
+                    "Ожидалась закрывающая круглая скобка )",
+                    "(пропущена ))");
+                _parenBalance--;
+                return true;
+            }
+
+            if (HasTokenAheadOnCurrentLine(LexerTokenCode.RightParen))
+            {
+                AddUnexpectedCurrent("Неожиданный фрагмент перед закрывающей круглой скобкой )");
+
+                if (RecoverToTokenOnCurrentLine(LexerTokenCode.RightParen) &&
+                    _stream.Match(LexerTokenCode.RightParen))
+                {
+                    _parenBalance--;
+                    return true;
+                }
             }
 
             AddMissingAfterPrevious(
                 "Ожидалась закрывающая круглая скобка )",
                 "(пропущена ))");
             _parenBalance--;
+            return true;
         }
 
-        private void ExpectSemicolon()
+        private bool ExpectSemicolon()
         {
             if (_stream.Match(LexerTokenCode.Semicolon))
-                return;
+                return true;
+
+            if (CanAssumeMissingSemicolon())
+            {
+                AddMissingAfterPrevious(
+                    "Ожидался символ ; в конце объявления",
+                    "(пропущен ;)");
+                return true;
+            }
+
+            if (HasTokenAheadOnCurrentLine(LexerTokenCode.Semicolon))
+            {
+                AddUnexpectedCurrent("Неожиданный фрагмент перед символом ;");
+
+                if (RecoverToTokenOnCurrentLine(LexerTokenCode.Semicolon) &&
+                    _stream.Match(LexerTokenCode.Semicolon))
+                {
+                    return true;
+                }
+            }
+
+            RecoverHeader(LexerTokenCode.Semicolon, LexerTokenCode.Val);
 
             AddMissingAfterPrevious(
                 "Ожидался символ ; в конце объявления",
                 "(пропущен ;)");
+            return true;
         }
 
         private bool HasRightParenAheadOnCurrentLine()
@@ -622,6 +929,113 @@ namespace GUI.Syntax
 
                 offset++;
             }
+        }
+
+        private bool TryContinueAfterRecovery(
+            LexerTokenCode expected,
+            System.Action onMatched,
+            System.Func<bool> canSilentlyInsert)
+        {
+            if (_stream.Match(expected))
+            {
+                onMatched?.Invoke();
+                return true;
+            }
+
+            if (canSilentlyInsert != null && canSilentlyInsert())
+                return true;
+
+            return false;
+        }
+
+        private bool HasTokenAheadOnCurrentLine(LexerTokenCode code)
+        {
+            if (_stream.IsAtEnd)
+                return false;
+
+            int currentLine = _stream.Current.Line;
+            int offset = 0;
+
+            while (true)
+            {
+                LexerItem token = _stream.Peek(offset);
+                if (token == null)
+                    return false;
+
+                if (token.Line != currentLine)
+                    return false;
+
+                if (token.Code == (int)code)
+                    return true;
+
+                if (token.Code == (int)LexerTokenCode.Semicolon)
+                    return false;
+
+                offset++;
+            }
+        }
+
+        private bool RecoverToTokenOnCurrentLine(LexerTokenCode code)
+        {
+            if (_stream.IsAtEnd)
+                return false;
+
+            int currentLine = _stream.Current.Line;
+
+            while (!_stream.IsAtEnd)
+            {
+                if (_stream.Check(code))
+                    return true;
+
+                if (_stream.Check(LexerTokenCode.Semicolon))
+                    return false;
+
+                if (IsDeclarationAnchor())
+                    return false;
+
+                if (_stream.Current.Line != currentLine)
+                    return false;
+
+                _stream.Advance();
+            }
+
+            return false;
+        }
+
+        private bool CanContinueAfterValPhase()
+        {
+            return !_stream.IsAtEnd &&
+                   (_stream.Check(LexerTokenCode.Identifier)
+                    || _stream.Check(LexerTokenCode.Assign)
+                    || _stream.Check(LexerTokenCode.ListOf)
+                    || _stream.Check(LexerTokenCode.LeftParen)
+                    || _stream.Check(LexerTokenCode.Semicolon));
+        }
+
+        private bool CanContinueAfterIdentifierPhase()
+        {
+            return !_stream.IsAtEnd &&
+                   (_stream.Check(LexerTokenCode.Assign)
+                    || _stream.Check(LexerTokenCode.ListOf)
+                    || _stream.Check(LexerTokenCode.LeftParen)
+                    || _stream.Check(LexerTokenCode.Semicolon));
+        }
+
+        private bool CanContinueAfterAssignPhase()
+        {
+            return !_stream.IsAtEnd &&
+                   (_stream.Check(LexerTokenCode.ListOf)
+                    || _stream.Check(LexerTokenCode.LeftParen)
+                    || _stream.Check(LexerTokenCode.Semicolon));
+        }
+
+        private bool IsPossibleTopLevelGarbage()
+        {
+            return !_stream.IsAtEnd
+                   && !_stream.Check(LexerTokenCode.Val)
+                   && !_stream.Check(LexerTokenCode.Identifier)
+                   && !_stream.Check(LexerTokenCode.Invalid)
+                   && !_stream.Check(LexerTokenCode.Semicolon);
         }
     }
 }
