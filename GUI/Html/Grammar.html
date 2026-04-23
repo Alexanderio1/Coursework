@@ -1,1 +1,103 @@
-﻿
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Грамматика</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Грамматика</h1>
+
+    <p>
+        Определим грамматику объявления списка с инициализацией на языке Kotlin
+        G[Z] в нотации Хомского с продукциями P:
+    </p>
+
+    <pre>
+&lt;declaration&gt; -&gt; "val" &lt;identifier&gt; "=" "listOf" "(" &lt;elements_opt&gt; ")" ";"
+
+&lt;elements_opt&gt; -&gt; &lt;elements&gt;
+&lt;elements_opt&gt; -&gt; ε
+
+&lt;elements&gt; -&gt; &lt;element&gt;
+&lt;elements&gt; -&gt; &lt;element&gt; "," &lt;elements&gt;
+
+&lt;element&gt; -&gt; &lt;string&gt;
+&lt;element&gt; -&gt; &lt;char&gt;
+&lt;element&gt; -&gt; "true"
+&lt;element&gt; -&gt; "false"
+&lt;element&gt; -&gt; &lt;number&gt;
+
+&lt;number&gt; -&gt; &lt;int&gt;
+&lt;number&gt; -&gt; &lt;double&gt;
+&lt;number&gt; -&gt; &lt;signed_number&gt;
+
+&lt;signed_number&gt; -&gt; &lt;sign&gt; &lt;int&gt;
+&lt;signed_number&gt; -&gt; &lt;sign&gt; &lt;double&gt;
+
+&lt;sign&gt; -&gt; "+"
+&lt;sign&gt; -&gt; "-"
+
+&lt;identifier&gt; -&gt; &lt;letter&gt; &lt;identifier_tail&gt;
+&lt;identifier&gt; -&gt; "_" &lt;identifier_tail&gt;
+
+&lt;identifier_tail&gt; -&gt; &lt;letter&gt; &lt;identifier_tail&gt;
+&lt;identifier_tail&gt; -&gt; &lt;digit&gt; &lt;identifier_tail&gt;
+&lt;identifier_tail&gt; -&gt; "_" &lt;identifier_tail&gt;
+&lt;identifier_tail&gt; -&gt; ε
+
+&lt;string&gt; -&gt; "\"" &lt;string_body&gt; "\""
+
+&lt;string_body&gt; -&gt; &lt;string_char&gt; &lt;string_body&gt;
+&lt;string_body&gt; -&gt; ε
+
+&lt;string_char&gt; -&gt; &lt;letter&gt;
+&lt;string_char&gt; -&gt; &lt;digit&gt;
+&lt;string_char&gt; -&gt; "_"
+&lt;string_char&gt; -&gt; " "
+
+&lt;char&gt; -&gt; "'" &lt;char_symbol&gt; "'"
+
+&lt;char_symbol&gt; -&gt; &lt;letter&gt;
+&lt;char_symbol&gt; -&gt; &lt;digit&gt;
+&lt;char_symbol&gt; -&gt; "_"
+&lt;char_symbol&gt; -&gt; " "
+
+&lt;int&gt; -&gt; &lt;digit&gt; &lt;digits&gt;
+
+&lt;double&gt; -&gt; &lt;digit&gt; &lt;digits&gt; "." &lt;digit&gt; &lt;digits&gt;
+
+&lt;digits&gt; -&gt; &lt;digit&gt; &lt;digits&gt;
+&lt;digits&gt; -&gt; ε
+
+&lt;digit&gt; -&gt; "0"
+&lt;digit&gt; -&gt; "1"
+&lt;digit&gt; -&gt; "2"
+&lt;digit&gt; -&gt; "3"
+&lt;digit&gt; -&gt; "4"
+&lt;digit&gt; -&gt; "5"
+&lt;digit&gt; -&gt; "6"
+&lt;digit&gt; -&gt; "7"
+&lt;digit&gt; -&gt; "8"
+&lt;digit&gt; -&gt; "9"
+
+&lt;letter&gt; -&gt; "A" | "B" | ... | "Z" | "a" | "b" | ... | "z"
+    </pre>
+
+    <p>
+        Следуя введенному формальному определению грамматики, представим G[Z]
+        ее составляющими:
+    </p>
+
+    <pre>
+Z = &lt;declaration&gt;
+
+V_T = {=, (, ), ,, ;, +, -, ., ", ', _, " ", A...Z, a...z, 0...9}
+
+V_N = {&lt;declaration&gt;, &lt;elements_opt&gt;, &lt;elements&gt;, &lt;element&gt;, &lt;number&gt;,
+&lt;signed_number&gt;, &lt;sign&gt;, &lt;identifier&gt;, &lt;identifier_tail&gt;, &lt;string&gt;,
+&lt;string_body&gt;, &lt;string_char&gt;, &lt;char&gt;, &lt;char_symbol&gt;, &lt;int&gt;, &lt;double&gt;,
+&lt;digits&gt;, &lt;digit&gt;, &lt;letter&gt;}
+    </pre>
+</body>
+</html>

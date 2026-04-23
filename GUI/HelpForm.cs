@@ -1,70 +1,127 @@
 ﻿using System;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace GUI
 {
     public partial class HelpForm : Form
     {
+        private SplitContainer splitContainer;
+        private TreeView treeView;
+        private RichTextBox richTextBox;
+
         public HelpForm()
         {
-            InitializeComponent();
-            LoadHelpText();
+            InitializeUi();
+            InitializeHelpTree();
         }
 
-        private void LoadHelpText()
+        private void InitializeUi()
         {
-            rtbHelp.Text =
-                "СПРАВКА ПО ПРОГРАММЕ\n\n" +
-                "Назначение:\n" +
-                "Приложение представляет собой специализированный текстовый редактор, " +
-                "предназначенный для ввода, редактирования и подготовки текста. " +
-                "В дальнейшем программа будет расширена до языкового процессора для анализа исходного кода.\n\n" +
+            Text = "Справка";
+            StartPosition = FormStartPosition.CenterParent;
+            Size = new Size(900, 550);
+            MinimumSize = new Size(700, 400);
 
-                "Основные элементы интерфейса:\n" +
-                "1. Главное меню программы.\n" +
-                "2. Панель инструментов для быстрого вызова основных команд.\n" +
-                "3. Верхняя область — окно ввода и редактирования текста.\n" +
-                "4. Нижняя область — окно вывода результатов работы программы.\n\n" +
+            splitContainer = new SplitContainer();
+            splitContainer.Dock = DockStyle.Fill;
+            splitContainer.SplitterDistance = 240;
+            splitContainer.BorderStyle = BorderStyle.FixedSingle;
 
-                "Меню «Файл»:\n" +
-                "- Создать (Ctrl+N) — создание нового документа.\n" +
-                "- Открыть (Ctrl+O) — открытие существующего текстового файла.\n" +
-                "- Сохранить (Ctrl+S) — сохранение текущего документа.\n" +
-                "- Сохранить как (Ctrl+Shift+S) — сохранение документа под новым именем.\n" +
-                "- Выход (Alt+F4) — завершение работы программы с подтверждением сохранения изменений.\n\n" +
+            treeView = new TreeView();
+            treeView.Dock = DockStyle.Fill;
+            treeView.Font = new Font("Times New Roman", 11F, FontStyle.Regular);
+            treeView.AfterSelect += TreeView_AfterSelect;
 
-                "Меню «Правка»:\n" +
-                "- Отменить (Ctrl+Z) — отмена последнего действия.\n" +
-                "- Повторить (Ctrl+Y) — повтор отменённого действия.\n" +
-                "- Вырезать (Ctrl+X) — перенос выделенного фрагмента в буфер обмена.\n" +
-                "- Копировать (Ctrl+C) — копирование выделенного фрагмента в буфер обмена.\n" +
-                "- Вставить (Ctrl+V) — вставка содержимого буфера обмена.\n" +
-                "- Удалить (Delete) — удаление выделенного фрагмента.\n" +
-                "- Выделить всё (Ctrl+A) — выделение всего текста в окне редактирования.\n\n" +
+            richTextBox = new RichTextBox();
+            richTextBox.Dock = DockStyle.Fill;
+            richTextBox.ReadOnly = true;
+            richTextBox.BorderStyle = BorderStyle.None;
+            richTextBox.BackColor = Color.White;
+            richTextBox.Font = new Font("Times New Roman", 12F, FontStyle.Regular);
 
-                "Меню «Пуск»:\n" +
-                "- Выполнить (F5) — запуск обработки введённого текста.\n" +
-                "На текущем этапе функция реализована в виде заглушки и предназначена для последующего " +
-                "подключения языкового процессора.\n\n" +
+            splitContainer.Panel1.Controls.Add(treeView);
+            splitContainer.Panel2.Controls.Add(richTextBox);
 
-                "Меню «Справка»:\n" +
-                "- Справка (F1) — вывод описания интерфейса и реализованных функций.\n" +
-                "- О программе — вывод сведений о приложении и его авторе.\n\n" +
+            Controls.Add(splitContainer);
+        }
 
-                "Панель инструментов:\n" +
-                "Основные команды меню «Файл», «Правка», «Пуск» и «Справка» продублированы " +
-                "на панели инструментов для быстрого доступа.\n\n" +
+        private void InitializeHelpTree()
+        {
+            treeView.Nodes.Clear();
 
-                "Область результатов:\n" +
-                "Нижняя область предназначена для отображения результатов работы языкового процессора. " +
-                "Редактирование текста в этой области запрещено.\n\n" +
+            TreeNode root = new TreeNode("Справка");
+            root.Nodes.Add("Файл");
+            root.Nodes.Add("Правка");
+            root.Nodes.Add("Текст");
+            root.Nodes.Add("Пуск");
+            root.Nodes.Add("Панель инструментов");
+            root.Nodes.Add("О программе");
 
-                "Примечание:\n" +
-                "Текущая версия программы реализует графический интерфейс текстового редактора " +
-                "и подготовлена для дальнейшего расширения функциональности.";
+            treeView.Nodes.Add(root);
+            root.Expand();
 
-            rtbHelp.SelectionStart = 0;
-            rtbHelp.SelectionLength = 0;
+            treeView.SelectedNode = root;
+            ShowSection("Справка", "Выберите раздел в дереве слева.");
+        }
+
+        private void TreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            switch (e.Node.Text)
+            {
+                case "Файл":
+                    ShowSection(
+                        "Пункт \"Файл\"",
+                        "В пункте \"Файл\" доступны команды создания документа, открытия документа, сохранения текущих изменений, сохранения документа в новый файл и выхода из программы.");
+                    break;
+
+                case "Правка":
+                    ShowSection(
+                        "Пункт \"Правка\"",
+                        "В пункте \"Правка\" доступны команды отмены изменений, повтора последнего изменения, вырезания, копирования, вставки, удаления текстового фрагмента и выделения всего содержимого документа.");
+                    break;
+
+                case "Текст":
+                    ShowSection(
+                        "Пункт \"Текст\"",
+                        "Пункт меню \"Текст\" содержит справочную информацию по курсовой работе: постановку задачи, грамматику, классификацию грамматики, метод анализа, тестовые примеры, список литературы и исходный код программы.");
+                    break;
+
+                case "Пуск":
+                    ShowSection(
+                        "Пункт \"Пуск\"",
+                        "При выборе пункта \"Пуск\" выполняется запуск лексического и синтаксического анализа текста.");
+                    break;
+
+                case "Панель инструментов":
+                    ShowSection(
+                        "Панель инструментов",
+                        "Панель инструментов содержит кнопки быстрого доступа к основным командам: создание, открытие, сохранение, редактирование текста, запуск анализа и вызов справочной информации.");
+                    break;
+
+                case "О программе":
+                    ShowSection(
+                        "О программе",
+                        "Программа предназначена для лексического и синтаксического анализа конструкции объявления списка с инициализацией на языке Kotlin.");
+                    break;
+
+                default:
+                    ShowSection("Справка", "Выберите раздел в дереве слева.");
+                    break;
+            }
+        }
+
+        private void ShowSection(string title, string text)
+        {
+            richTextBox.Clear();
+
+            richTextBox.SelectionFont = new Font("Times New Roman", 15F, FontStyle.Bold);
+            richTextBox.SelectionColor = Color.DarkBlue;
+            richTextBox.AppendText(title + Environment.NewLine + Environment.NewLine);
+
+            richTextBox.SelectionFont = new Font("Times New Roman", 12F, FontStyle.Regular);
+            richTextBox.SelectionColor = Color.Black;
+            richTextBox.AppendText(text);
         }
     }
 }

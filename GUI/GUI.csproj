@@ -243,13 +243,22 @@
     <Folder Include="images\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Html\Classification.html" />
-    <Content Include="Html\Grammar.html" />
-    <Content Include="Html\Method.html" />
-    <Content Include="Html\References.html" />
-    <Content Include="Html\styles.css" />
-    <Content Include="Html\Task.html" />
-    <Content Include="Html\Tests.html" />
+    <EmbeddedResource Include="Html\Classification.html" />
+    <EmbeddedResource Include="Html\Grammar.html" />
+    <EmbeddedResource Include="Html\Method.html" />
+    <EmbeddedResource Include="Html\References.html" />
+    <EmbeddedResource Include="Html\styles.css" />
+    <EmbeddedResource Include="Html\Task.html" />
+    <EmbeddedResource Include="Html\Tests.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Html\Graph.png" />
+    <EmbeddedResource Include="Html\Test1.png" />
+    <EmbeddedResource Include="Html\Test2.png" />
+    <EmbeddedResource Include="Html\Test3.png" />
+    <EmbeddedResource Include="Html\Test4.png" />
+    <EmbeddedResource Include="Html\Test5.png" />
+    <EmbeddedResource Include="Html\Test6.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

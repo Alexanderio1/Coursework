@@ -632,6 +632,54 @@ namespace GUI
             totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
             totalRow.Tag = null;
         }
+
+        private void miTask_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenHtml("Task.html");
+        }
+
+        private void miGrammar_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenHtml("Grammar.html");
+        }
+
+        private void miClassification_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenHtml("Classification.html");
+        }
+
+        private void miMethod_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenHtml("Method.html");
+        }
+
+        private void miTests_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenHtml("Tests.html");
+        }
+
+        private void miReferences_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenHtml("References.html");
+        }
+
+        private void miHelp_Click(object sender, EventArgs e)
+        {
+            using (var form = new HelpForm())
+            {
+                form.ShowDialog(this);
+            }
+        }
+
+        private void miSourceCode_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenUrl("https://github.com/Alexanderio1/Coursework/tree/ANTLR");
+        }
+
+        private void miCourseWork_Click(object sender, EventArgs e)
+        {
+            ResourceHelper.OpenUrl("https://docs.google.com/document/d/1gpVHHhTqDziBp-66MiW5A9liITRxQU-9/edit?usp=sharing");
+        }
     }
 
 }

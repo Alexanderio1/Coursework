@@ -1,1 +1,47 @@
-﻿
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <title>Постановка задачи</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Постановка задачи</h1>
+
+    <p>
+        Списки в языке Kotlin являются структурой данных, предназначенной
+        для хранения набора значений в определённой последовательности.
+    </p>
+
+    <p>
+        Для объявления списка с инициализацией в языке Kotlin используется
+        ключевое слово <b>val</b>, имя переменной, оператор присваивания
+        и вызов функции <b>listOf</b>.
+    </p>
+
+    <p><b>Формат записи:</b></p>
+
+    <pre>val имя_переменной = listOf(элемент1, элемент2, ...);</pre>
+
+    <p><b>Примеры:</b></p>
+
+    <pre>
+val animals = listOf("Dog", "Cat", "Cow");
+val empty = listOf();
+    </pre>
+
+    <p>
+        В связи с разработанной контекстно-свободной грамматикой G[Z]
+        синтаксический анализатор объявления списка с инициализацией
+        на языке Kotlin будет считать верными следующие специфические записи:
+    </p>
+
+    <pre>
+val animals = listOf("Dog", "Cat", "Cow");
+val nums = listOf(1, -2, +3.5, 0);
+val flags = listOf(true, false, true);
+val letters = listOf('a', 'b', 'c');
+val empty = listOf();
+    </pre>
+</body>
+</html>

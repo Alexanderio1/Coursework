@@ -9,7 +9,7 @@ namespace GUI
         {
             InitializeComponent();
             lblTitle.Text = "GUI";
-            lblDescription.Text = "Специализированный текстовый редактор\nдля будущего языкового процессора";
+            lblDescription.Text = "Специализированный текстовый редактор\nдля языкового процессора";
             lblAuthor.Text = "Автор: Костоломов А.Е.";
             lblGroup.Text = "Группа: АВТ-314";
             lblTech.Text = ".NET Framework 4.8, Windows Forms";

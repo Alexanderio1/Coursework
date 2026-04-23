@@ -10,10 +10,7 @@ namespace GUI
     {
         public static string TempFolder
         {
-            get
-            {
-                return Path.Combine(Path.GetTempPath(), "KotlinListCompiler");
-            }
+            get { return Path.Combine(Path.GetTempPath(), "KotlinListCompiler"); }
         }
 
         public static void ExtractResources()
@@ -26,12 +23,16 @@ namespace GUI
             ExtractFile("GUI.Html.Method.html", "Method.html");
             ExtractFile("GUI.Html.Tests.html", "Tests.html");
             ExtractFile("GUI.Html.References.html", "References.html");
+
             ExtractFile("GUI.Html.styles.css", "styles.css");
 
-            // Примеры картинок
-            // ExtractFile("GUI.Html.Test1.png", "Test1.png");
-            // ExtractFile("GUI.Html.Test2.png", "Test2.png");
-            // ExtractFile("GUI.Html.Graph.png", "Graph.png");
+            ExtractFile("GUI.Html.Graph.png", "Graph.png");
+            ExtractFile("GUI.Html.Test1.png", "Test1.png");
+            ExtractFile("GUI.Html.Test2.png", "Test2.png");
+            ExtractFile("GUI.Html.Test3.png", "Test3.png");
+            ExtractFile("GUI.Html.Test4.png", "Test4.png");
+            ExtractFile("GUI.Html.Test5.png", "Test5.png");
+            ExtractFile("GUI.Html.Test6.png", "Test6.png");
         }
 
         private static void ExtractFile(string resourceName, string outputFileName)
@@ -58,7 +59,7 @@ namespace GUI
 
             if (!File.Exists(path))
             {
-                MessageBox.Show("Файл не найден: " + path);
+                MessageBox.Show("Файл не найден: " + path, "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -67,6 +68,25 @@ namespace GUI
                 FileName = path,
                 UseShellExecute = true
             });
+        }
+
+        public static void OpenUrl(string url)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = url,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Не удалось открыть ссылку.\n" + ex.Message,
+                    "Ошибка",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
     }
 }
