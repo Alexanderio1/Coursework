@@ -447,7 +447,7 @@ namespace GUI.Lexer
             int startLine = line;
             int startColumn = column;
 
-            Advance(text, ref index, ref line, ref column); // открывающая '
+            Advance(text, ref index, ref line, ref column);
 
             if (index >= text.Length || IsLineBreak(Peek(text, index)) || IsLiteralRecoveryBoundary(Peek(text, index)))
             {
@@ -486,7 +486,7 @@ namespace GUI.Lexer
                 return;
             }
 
-            Advance(text, ref index, ref line, ref column); // прочитали один символ
+            Advance(text, ref index, ref line, ref column);
 
             if (Peek(text, index) == '\'')
             {
