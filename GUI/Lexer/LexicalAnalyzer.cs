@@ -390,7 +390,7 @@ namespace GUI.Lexer
                     return;
                 }
 
-                if (IsLineBreak(current) || IsLiteralRecoveryBoundary(current))
+                if (IsLiteralRecoveryBoundary(current))
                 {
                     string fragment = text.Substring(startIndex, index - startIndex);
 
@@ -401,7 +401,7 @@ namespace GUI.Lexer
                         startIndex,
                         startLine,
                         startColumn,
-                        Math.Max(fragment.Length, 1));
+                        System.Math.Max(fragment.Length, 1));
 
                     return;
                 }
@@ -413,7 +413,22 @@ namespace GUI.Lexer
                 }
 
                 Advance(text, ref index, ref line, ref column);
-                SkipBrokenLiteralTail(text, ref index, ref line, ref column, '"');
+
+                while (index < text.Length)
+                {
+                    current = Peek(text, index);
+
+                    if (current == '"')
+                    {
+                        Advance(text, ref index, ref line, ref column);
+                        break;
+                    }
+
+                    if (IsLiteralRecoveryBoundary(current))
+                        break;
+
+                    Advance(text, ref index, ref line, ref column);
+                }
 
                 string invalid = text.Substring(startIndex, index - startIndex);
 
@@ -424,7 +439,7 @@ namespace GUI.Lexer
                     startIndex,
                     startLine,
                     startColumn,
-                    Math.Max(invalid.Length, 1));
+                    System.Math.Max(invalid.Length, 1));
 
                 return;
             }
@@ -438,7 +453,7 @@ namespace GUI.Lexer
                 startIndex,
                 startLine,
                 startColumn,
-                Math.Max(unfinished.Length, 1));
+                System.Math.Max(unfinished.Length, 1));
         }
 
         private void ReadChar(string text, LexerResult result, ref int index, ref int line, ref int column)
@@ -540,6 +555,7 @@ namespace GUI.Lexer
         {
             return c == '\0'
                 || IsLineBreak(c)
+                || c == '='
                 || c == '('
                 || c == ','
                 || c == ')'
