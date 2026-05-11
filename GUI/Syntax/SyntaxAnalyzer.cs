@@ -756,7 +756,19 @@ namespace GUI.Syntax
                 return true;
             }
 
+            if (HasTokenAheadOnCurrentLine(LexerTokenCode.Assign))
+            {
+                AddUnexpectedCurrent("Неожиданный фрагмент перед оператором присваивания =");
+
+                if (RecoverToTokenOnCurrentLine(LexerTokenCode.Assign) &&
+                    _stream.Match(LexerTokenCode.Assign))
+                {
+                    return true;
+                }
+            }
+
             AddUnexpectedCurrent("Ожидался оператор присваивания =");
+
             RecoverHeader(
                 LexerTokenCode.Assign,
                 LexerTokenCode.ListOf,
@@ -838,35 +850,24 @@ namespace GUI.Syntax
                 return true;
             }
 
-            if (CanAssumeMissingLeftParen())
+            if (HasTokenAheadOnCurrentLine(LexerTokenCode.LeftParen))
             {
-                AddMissingAfterPrevious(
-                    "Ожидалась открывающая круглая скобка (",
-                    "(пропущена ()");
-                _parenBalance++;
-                return true;
+                AddUnexpectedCurrent("Неожиданный фрагмент перед открывающей круглой скобкой (");
+
+                if (RecoverToTokenOnCurrentLine(LexerTokenCode.LeftParen) &&
+                    _stream.Match(LexerTokenCode.LeftParen))
+                {
+                    _parenBalance++;
+                    return true;
+                }
             }
 
-            AddUnexpectedCurrent("Ожидалась открывающая круглая скобка (");
-            RecoverHeader(
-                LexerTokenCode.LeftParen,
-                LexerTokenCode.RightParen,
-                LexerTokenCode.Semicolon,
-                LexerTokenCode.Val);
+            AddMissingAfterPrevious(
+                "Ожидалась открывающая круглая скобка (",
+                "(пропущена ()");
 
-            return TryContinueAfterRecovery(
-                LexerTokenCode.LeftParen,
-                () => _parenBalance++,
-                () =>
-                {
-                    if (CanAssumeMissingLeftParen())
-                    {
-                        _parenBalance++;
-                        return true;
-                    }
-
-                    return false;
-                });
+            _parenBalance++;
+            return true;
         }
 
         private bool ExpectRightParen()

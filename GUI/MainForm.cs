@@ -16,9 +16,31 @@ namespace GUI
         private bool _isDirty = false;
         private bool _suppressDirty = false;
 
+        private ToolStripMenuItem miFormat;
+        private ToolStripMenuItem miFontDialog;
+        private ToolStripMenuItem miIncreaseFont;
+        private ToolStripMenuItem miDecreaseFont;
+        private ToolStripMenuItem miResetFont;
+        private ToolStripMenuItem miWordWrap;
+
+        private ToolStripButton btnFontDialog;
+        private ToolStripButton btnIncreaseFont;
+        private ToolStripButton btnDecreaseFont;
+        private ToolStripComboBox cmbFontSize;
+
+        private float _defaultEditorFontSize;
+
+        private bool _suppressFontSizeComboChanged = false;
+
         public MainForm()
         {
             InitializeComponent();
+
+            InitializeEditorFormattingControls();
+
+            this.KeyPreview = true;
+            this.KeyDown += MainForm_KeyDown;
+
             this.FormClosing += MainForm_FormClosing;
             this.Activated += MainForm_Activated;
             rtbEditor.TextChanged += rtbEditor_TextChanged;
@@ -556,10 +578,12 @@ namespace GUI
             dgvResults.Columns[2].HeaderText = "Лексема / Сообщение";
             dgvResults.Columns[3].HeaderText = "Местоположение";
 
-            dgvResults.Columns[0].Width = 120;
-            dgvResults.Columns[1].Width = 220;
-            dgvResults.Columns[2].Width = 420;
-            dgvResults.Columns[3].Width = 180;
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 15;
+            dgvResults.Columns[1].FillWeight = 25;
+            dgvResults.Columns[2].FillWeight = 40;
+            dgvResults.Columns[3].FillWeight = 20;
         }
 
         private void ConfigureResultsGridForSyntax()
@@ -576,9 +600,11 @@ namespace GUI
             dgvResults.Columns[1].HeaderText = "Местоположение";
             dgvResults.Columns[2].HeaderText = "Описание";
 
-            dgvResults.Columns[0].Width = 220;
-            dgvResults.Columns[1].Width = 220;
-            dgvResults.Columns[2].Width = 520;
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 35;
+            dgvResults.Columns[1].FillWeight = 25;
+            dgvResults.Columns[2].FillWeight = 40;
         }
 
         private void CmdRunAntlr_Click(object sender, EventArgs e)
@@ -679,6 +705,245 @@ namespace GUI
         private void miCourseWork_Click(object sender, EventArgs e)
         {
             ResourceHelper.OpenUrl("https://docs.google.com/document/d/1gpVHHhTqDziBp-66MiW5A9liITRxQU-9/edit?usp=sharing");
+        }
+
+
+        private void InitializeEditorFormattingControls()
+        {
+            _defaultEditorFontSize = rtbEditor.Font.SizeInPoints;
+
+            miFormat = new ToolStripMenuItem("Формат");
+
+            miFontDialog = new ToolStripMenuItem("Шрифт...");
+            miFontDialog.Click += (sender, e) => ShowEditorFontDialog();
+
+            miIncreaseFont = new ToolStripMenuItem("Увеличить шрифт");
+            miIncreaseFont.ShortcutKeyDisplayString = "Ctrl++";
+            miIncreaseFont.Click += (sender, e) => ChangeWorkspaceFontSize(1.0f);
+
+            miDecreaseFont = new ToolStripMenuItem("Уменьшить шрифт");
+            miDecreaseFont.ShortcutKeyDisplayString = "Ctrl+-";
+            miDecreaseFont.Click += (sender, e) => ChangeWorkspaceFontSize(-1.0f);
+
+            miResetFont = new ToolStripMenuItem("Сбросить размер шрифта");
+            miResetFont.ShortcutKeyDisplayString = "Ctrl+0";
+            miResetFont.Click += (sender, e) => SetWorkspaceFontSize(_defaultEditorFontSize);
+
+            miWordWrap = new ToolStripMenuItem("Перенос строк");
+            miWordWrap.CheckOnClick = true;
+            miWordWrap.Checked = rtbEditor.WordWrap;
+            miWordWrap.Click += (sender, e) =>
+            {
+                rtbEditor.WordWrap = miWordWrap.Checked;
+            };
+
+            miFormat.DropDownItems.AddRange(new ToolStripItem[]
+            {
+        miFontDialog,
+        new ToolStripSeparator(),
+        miIncreaseFont,
+        miDecreaseFont,
+        miResetFont,
+        new ToolStripSeparator(),
+        miWordWrap
+            });
+
+            int formatMenuIndex = menuMain.Items.IndexOf(текстToolStripMenuItem);
+            if (formatMenuIndex < 0)
+                formatMenuIndex = menuMain.Items.Count;
+
+            menuMain.Items.Insert(formatMenuIndex, miFormat);
+
+            btnFontDialog = new ToolStripButton("Шрифт");
+            btnFontDialog.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnFontDialog.ToolTipText = "Выбрать шрифт";
+            btnFontDialog.Click += (sender, e) => ShowEditorFontDialog();
+
+            btnIncreaseFont = new ToolStripButton("A+");
+            btnIncreaseFont.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnIncreaseFont.ToolTipText = "Увеличить шрифт";
+            btnIncreaseFont.Click += (sender, e) => ChangeWorkspaceFontSize(1.0f);
+
+            btnDecreaseFont = new ToolStripButton("A-");
+            btnDecreaseFont.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnDecreaseFont.ToolTipText = "Уменьшить шрифт";
+            btnDecreaseFont.Click += (sender, e) => ChangeWorkspaceFontSize(-1.0f);
+
+            cmbFontSize = new ToolStripComboBox();
+            cmbFontSize.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbFontSize.Width = 70;
+            cmbFontSize.ToolTipText = "Размер шрифта";
+
+            string[] sizes = { "8", "9", "10", "11", "12", "14", "16", "18", "20", "22", "24", "28", "32", "36" };
+            cmbFontSize.Items.AddRange(sizes);
+            cmbFontSize.SelectedItem = Math.Round(rtbEditor.Font.SizeInPoints).ToString();
+            cmbFontSize.SelectedIndexChanged += cmbFontSize_SelectedIndexChanged;
+
+            int insertIndex = toolMain.Items.IndexOf(toolStripSeparator3);
+            if (insertIndex < 0)
+                insertIndex = toolMain.Items.Count;
+            else
+                insertIndex++;
+
+            toolMain.Items.Insert(insertIndex++, new ToolStripSeparator());
+            toolMain.Items.Insert(insertIndex++, btnFontDialog);
+            toolMain.Items.Insert(insertIndex++, btnDecreaseFont);
+            toolMain.Items.Insert(insertIndex++, cmbFontSize);
+            toolMain.Items.Insert(insertIndex++, btnIncreaseFont);
+
+            SetResultsGridFont(rtbEditor.Font);
+        }
+
+        private void ShowEditorFontDialog()
+        {
+            using (var dialog = new FontDialog())
+            {
+                dialog.Font = rtbEditor.Font;
+                dialog.ShowColor = false;
+                dialog.ShowEffects = true;
+
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                SetWorkspaceFont(dialog.Font);
+            }
+        }
+
+        private void SetWorkspaceFont(Font font)
+        {
+            SetWholeEditorFont(font);
+            SetResultsGridFont(font);
+        }
+
+        private void ChangeWorkspaceFontSize(float delta)
+        {
+            float currentSize = rtbEditor.Font.SizeInPoints;
+            float newSize = currentSize + delta;
+
+            if (newSize < 8.0f)
+                newSize = 8.0f;
+
+            if (newSize > 36.0f)
+                newSize = 36.0f;
+
+            SetWorkspaceFontSize(newSize);
+        }
+
+        private void SetWorkspaceFontSize(float size)
+        {
+            Font currentFont = rtbEditor.Font;
+
+            Font newFont = new Font(
+                currentFont.FontFamily,
+                size,
+                currentFont.Style,
+                GraphicsUnit.Point
+            );
+
+            SetWorkspaceFont(newFont);
+        }
+
+        private void SetResultsGridFont(Font editorFont)
+        {
+            Font gridFont = new Font(
+                editorFont.FontFamily,
+                editorFont.SizeInPoints,
+                FontStyle.Regular,
+                GraphicsUnit.Point
+            );
+
+            Font headerFont = new Font(
+                editorFont.FontFamily,
+                editorFont.SizeInPoints,
+                FontStyle.Bold,
+                GraphicsUnit.Point
+            );
+
+            dgvResults.Font = gridFont;
+            dgvResults.DefaultCellStyle.Font = gridFont;
+            dgvResults.ColumnHeadersDefaultCellStyle.Font = headerFont;
+
+            dgvResults.RowTemplate.Height = (int)(editorFont.SizeInPoints * 2.2f);
+            dgvResults.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+
+            dgvResults.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvResults.ColumnHeadersDefaultCellStyle.WrapMode = DataGridViewTriState.True;
+
+            dgvResults.Invalidate();
+        }
+
+        private void SetWholeEditorFont(Font font)
+        {
+            int selectionStart = rtbEditor.SelectionStart;
+            int selectionLength = rtbEditor.SelectionLength;
+
+            rtbEditor.SelectAll();
+            rtbEditor.SelectionFont = font;
+
+            rtbEditor.Font = font;
+
+            rtbEditor.Select(selectionStart, selectionLength);
+            rtbEditor.Focus();
+
+            UpdateFontSizeCombo();
+        }
+
+        private void UpdateFontSizeCombo()
+        {
+            if (cmbFontSize == null)
+                return;
+
+            string sizeText = Math.Round(rtbEditor.Font.SizeInPoints).ToString();
+
+            _suppressFontSizeComboChanged = true;
+
+            if (cmbFontSize.Items.Contains(sizeText))
+                cmbFontSize.SelectedItem = sizeText;
+            else
+                cmbFontSize.Text = sizeText;
+
+            _suppressFontSizeComboChanged = false;
+        }
+
+        private void cmbFontSize_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (_suppressFontSizeComboChanged)
+                return;
+
+            if (cmbFontSize.SelectedItem == null)
+                return;
+
+            float size;
+            if (!float.TryParse(cmbFontSize.SelectedItem.ToString(), out size))
+                return;
+
+            SetWorkspaceFontSize(size);
+        }
+
+        private void MainForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!e.Control)
+                return;
+
+            if (e.KeyCode == Keys.Oemplus || e.KeyCode == Keys.Add)
+            {
+                ChangeWorkspaceFontSize(1.0f);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.KeyCode == Keys.OemMinus || e.KeyCode == Keys.Subtract)
+            {
+                ChangeWorkspaceFontSize(-1.0f);
+                e.Handled = true;
+                return;
+            }
+
+            if (e.KeyCode == Keys.D0 || e.KeyCode == Keys.NumPad0)
+            {
+                SetWorkspaceFontSize(_defaultEditorFontSize);
+                e.Handled = true;
+            }
         }
     }
 
