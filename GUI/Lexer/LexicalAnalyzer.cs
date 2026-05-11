@@ -193,7 +193,12 @@ namespace GUI.Lexer
                 || c == '\'';
         }
 
-        private void ReadIdentifierOrKeyword(string text, LexerResult result, ref int index, ref int line, ref int column)
+        private void ReadIdentifierOrKeyword(
+    string text,
+    LexerResult result,
+    ref int index,
+    ref int line,
+    ref int column)
         {
             int startIndex = index;
             int startLine = line;
@@ -204,10 +209,10 @@ namespace GUI.Lexer
                 Advance(text, ref index, ref line, ref column);
             }
 
-
             if (!IsTokenDelimiter(Peek(text, index)))
             {
-                while (!IsTokenDelimiter(Peek(text, index)))
+
+                while (!IsIdentifierRecoveryBoundary(Peek(text, index)))
                 {
                     Advance(text, ref index, ref line, ref column);
                 }
@@ -221,7 +226,7 @@ namespace GUI.Lexer
                     startIndex,
                     startLine,
                     startColumn,
-                    Math.Max(invalidLexeme.Length, 1));
+                    System.Math.Max(invalidLexeme.Length, 1));
 
                 return;
             }
@@ -258,6 +263,19 @@ namespace GUI.Lexer
             }
 
             AddToken(result, code, typeName, lexeme, startIndex, startLine, startColumn);
+        }
+
+        private bool IsIdentifierRecoveryBoundary(char c)
+        {
+            return c == '\0'
+                || char.IsWhiteSpace(c)
+                || c == '='
+                || c == '('
+                || c == ','
+                || c == ')'
+                || c == ';'
+                || c == '+'
+                || c == '-';
         }
 
         private void ReadNumber(string text, LexerResult result, ref int index, ref int line, ref int column)

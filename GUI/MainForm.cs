@@ -328,9 +328,17 @@ namespace GUI
         }
 
         private bool ShouldSuppressSyntaxError(
-            SyntaxError syntaxError,
-            System.Collections.Generic.List<SyntaxError> lexicalErrors)
+    SyntaxError syntaxError,
+    System.Collections.Generic.List<SyntaxError> lexicalErrors)
         {
+
+            if (IsInsertedSyntaxError(syntaxError))
+                return false;
+
+
+            if (IsListSeparatorSyntaxError(syntaxError))
+                return false;
+
             if (lexicalErrors.Any(x => RangesOverlap(x, syntaxError)))
                 return true;
 
@@ -352,6 +360,23 @@ namespace GUI
             }
 
             return false;
+        }
+
+        private bool IsInsertedSyntaxError(SyntaxError error)
+        {
+            if (error == null || string.IsNullOrWhiteSpace(error.InvalidFragment))
+                return false;
+
+            return error.InvalidFragment.StartsWith("(пропущ");
+        }
+
+        private bool IsListSeparatorSyntaxError(SyntaxError error)
+        {
+            if (error == null || string.IsNullOrWhiteSpace(error.Message))
+                return false;
+
+            return error.Message == "Ожидалась запятая между элементами списка"
+                || error.Message == "Ожидалась запятая или закрывающая круглая скобка )";
         }
 
         private bool RangesOverlap(SyntaxError left, SyntaxError right)
