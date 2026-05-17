@@ -764,6 +764,9 @@ namespace GUI.Syntax
             if (_stream.Match(LexerTokenCode.False))
                 return;
 
+            if (_stream.Match(LexerTokenCode.Identifier)) 
+                return;
+
             if (_stream.Check(LexerTokenCode.Int) ||
                 _stream.Check(LexerTokenCode.Double) ||
                 _stream.Check(LexerTokenCode.Plus) ||
@@ -916,6 +919,7 @@ namespace GUI.Syntax
                 || _stream.Check(LexerTokenCode.Char)
                 || _stream.Check(LexerTokenCode.True)
                 || _stream.Check(LexerTokenCode.False)
+                || _stream.Check(LexerTokenCode.Identifier)
                 || _stream.Check(LexerTokenCode.Int)
                 || _stream.Check(LexerTokenCode.Double)
                 || _stream.Check(LexerTokenCode.Plus)

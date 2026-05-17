@@ -113,6 +113,7 @@
     <Compile Include="ANTLR\AntlrLexerErrorListener.cs" />
     <Compile Include="ANTLR\AntlrSyntaxError.cs" />
     <Compile Include="ANTLR\AntlrSyntaxResult.cs" />
+    <Compile Include="Ast\AstNode.cs" />
     <Compile Include="HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -136,10 +137,14 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResourceHelper.cs" />
+    <Compile Include="Semantics\SemanticAnalyzer.cs" />
     <Compile Include="Syntax\SyntaxAnalyzer.cs" />
     <Compile Include="Syntax\SyntaxError.cs" />
     <Compile Include="Syntax\SyntaxResult.cs" />
     <Compile Include="Syntax\SyntaxTokenStream.cs" />
+    <Compile Include="Visualization\AstVisualizerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <EmbeddedResource Include="AboutForm.resx">
       <DependentUpon>AboutForm.cs</DependentUpon>
     </EmbeddedResource>

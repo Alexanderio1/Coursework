@@ -7,6 +7,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using GUI.Ast;
+using GUI.Semantics;
+using GUI.Visualization;
 
 namespace GUI
 {
@@ -32,11 +35,16 @@ namespace GUI
 
         private bool _suppressFontSizeComboChanged = false;
 
+        private ProgramNode _lastAst;
+        private ToolStripButton btnShowAst;
+
         public MainForm()
         {
             InitializeComponent();
 
             InitializeEditorFormattingControls();
+
+            InitializeAstControls();
 
             this.KeyPreview = true;
             this.KeyDown += MainForm_KeyDown;
@@ -52,6 +60,8 @@ namespace GUI
         private void rtbEditor_TextChanged(object sender, EventArgs e)
         {
             if (_suppressDirty) return;
+
+            _lastAst = null;
 
             _isDirty = true;
             UpdateTitle();
@@ -130,6 +140,7 @@ namespace GUI
             _suppressDirty = true;
             rtbEditor.Clear();
             ClearResultsGrid();
+            _lastAst = null;
             _suppressDirty = false;
 
             _currentFilePath = null;
@@ -196,6 +207,7 @@ namespace GUI
                 _isDirty = false;
 
                 ClearResultsGrid();
+                _lastAst = null;
                 UpdateTitle();
                 UpdateCommandStates();
             }
@@ -268,6 +280,8 @@ namespace GUI
 
         private void CmdRun_Click(object sender, EventArgs e)
         {
+            _lastAst = null;
+
             var lexer = new LexicalAnalyzer();
             var lexResult = lexer.Analyze(rtbEditor.Text);
 
@@ -278,24 +292,162 @@ namespace GUI
             var parser = new SyntaxAnalyzer();
             var syntaxResult = parser.Parse(parserTokens);
 
-            var lexicalErrors = lexResult.Items
-                .Where(x => x.IsError)
-                .Select(x => new SyntaxError
-                {
-                    InvalidFragment = string.IsNullOrWhiteSpace(x.Lexeme) ? "(пусто)" : x.Lexeme,
-                    Line = x.Line,
-                    StartColumn = x.StartColumn,
-                    EndColumn = x.EndColumn,
-                    AbsoluteIndex = x.AbsoluteIndex,
-                    Message = string.IsNullOrWhiteSpace(x.Message) ? x.DisplayText : x.Message
-                });
-
             var allErrors = MergeErrors(lexResult, syntaxResult);
 
-            syntaxResult.Errors.Clear();
-            syntaxResult.Errors.AddRange(allErrors);
+            if (allErrors.Count > 0)
+            {
+                syntaxResult.Errors.Clear();
+                syntaxResult.Errors.AddRange(allErrors);
+                RenderSyntaxResult(syntaxResult);
+                UpdateCommandStates();
+                return;
+            }
 
-            RenderSyntaxResult(syntaxResult);
+            try
+            {
+                var astBuilder = new AstBuilder();
+                _lastAst = astBuilder.Build(parserTokens);
+
+                var semanticAnalyzer = new SemanticAnalyzer();
+                var semanticResult = semanticAnalyzer.Analyze(_lastAst);
+
+                RenderAstAndSemanticResult(_lastAst, semanticResult);
+            }
+            catch (Exception ex)
+            {
+                ClearResultsGrid();
+                ConfigureResultsGridForSyntax();
+
+                int rowIndex = dgvResults.Rows.Add(
+                    "AST",
+                    "-",
+                    "Ошибка построения AST: " + ex.Message,
+                    string.Empty);
+
+                var row = dgvResults.Rows[rowIndex];
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+
+            UpdateCommandStates();
+        }
+
+        private void InitializeAstControls()
+        {
+            btnShowAst = new ToolStripButton("Показать AST");
+            btnShowAst.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnShowAst.ToolTipText = "Показать AST в графическом виде";
+            btnShowAst.Enabled = false;
+            btnShowAst.Click += BtnShowAst_Click;
+
+            toolMain.Items.Add(new ToolStripSeparator());
+            toolMain.Items.Add(btnShowAst);
+        }
+
+        private void BtnShowAst_Click(object sender, EventArgs e)
+        {
+            if (_lastAst == null)
+            {
+                MessageBox.Show(
+                    "AST ещё не построено. Сначала выполните анализ корректной программы.",
+                    "AST",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                return;
+            }
+
+            using (var form = new AstVisualizerForm(_lastAst))
+            {
+                form.ShowDialog(this);
+            }
+        }
+
+        private void RenderAstAndSemanticResult(
+            ProgramNode ast,
+            SemanticResult semanticResult)
+        {
+            ClearResultsGrid();
+            ConfigureResultsGridForSemantic();
+
+            int astRowIndex = dgvResults.Rows.Add(
+                "AST",
+                "-",
+                ast.ToTreeString(),
+                string.Empty);
+
+            var astRow = dgvResults.Rows[astRowIndex];
+            astRow.Cells[2].Style.Font = new Font("Consolas", dgvResults.Font.Size);
+            astRow.Cells[2].Style.WrapMode = DataGridViewTriState.True;
+            astRow.DefaultCellStyle.BackColor = Color.WhiteSmoke;
+            astRow.DefaultCellStyle.ForeColor = Color.Black;
+            astRow.Tag = null;
+
+            if (!semanticResult.HasErrors)
+            {
+                int successRowIndex = dgvResults.Rows.Add(
+                    "-",
+                    "-",
+                    "Синтаксический и семантический анализ завершены успешно. Ошибок не обнаружено.",
+                    string.Empty);
+
+                var successRow = dgvResults.Rows[successRowIndex];
+                successRow.DefaultCellStyle.BackColor = Color.Honeydew;
+                successRow.DefaultCellStyle.ForeColor = Color.DarkGreen;
+            }
+            else
+            {
+                foreach (var error in semanticResult.Errors)
+                {
+                    int rowIndex = dgvResults.Rows.Add(
+                        string.IsNullOrWhiteSpace(error.InvalidFragment)
+                            ? "(пусто)"
+                            : error.InvalidFragment,
+                        error.LocationText,
+                        error.Message,
+                        string.Empty);
+
+                    var row = dgvResults.Rows[rowIndex];
+                    row.Tag = error;
+                    row.DefaultCellStyle.BackColor = Color.MistyRose;
+                    row.DefaultCellStyle.ForeColor = Color.DarkRed;
+                }
+            }
+
+            int totalRowIndex = dgvResults.Rows.Add(
+                "Общее количество семантических ошибок",
+                "-",
+                semanticResult.ErrorCount.ToString(),
+                string.Empty);
+
+            var totalRow = dgvResults.Rows[totalRowIndex];
+            totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+            totalRow.Tag = null;
+        }
+
+        private void ConfigureResultsGridForSemantic()
+        {
+            if (dgvResults.Columns.Count < 4)
+                return;
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = false;
+
+            dgvResults.Columns[0].HeaderText = "Фрагмент / AST";
+            dgvResults.Columns[1].HeaderText = "Местоположение";
+            dgvResults.Columns[2].HeaderText = "Описание";
+
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 25;
+            dgvResults.Columns[1].FillWeight = 20;
+            dgvResults.Columns[2].FillWeight = 55;
+
+            dgvResults.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
+            dgvResults.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
         }
 
         private System.Collections.Generic.List<SyntaxError> MergeErrors(
@@ -494,6 +646,17 @@ namespace GUI
                     syntaxError.EndColumn);
             }
 
+            if (row.Tag is SemanticError semanticError)
+            {
+                HighlightRange(
+                    semanticError.Line,
+                    semanticError.StartColumn,
+                    semanticError.Line,
+                    semanticError.EndColumn);
+
+                return;
+            }
+
             if (row.Tag is AntlrSyntaxError antlrError)
             {
                 HighlightRange(
@@ -581,6 +744,9 @@ namespace GUI
 
             miRunExecute.Enabled = hasText;
             btnRun.Enabled = hasText;
+
+            if (btnShowAst != null)
+                btnShowAst.Enabled = _lastAst != null;
         }
 
         private void MainForm_Activated(object sender, EventArgs e)
