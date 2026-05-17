@@ -87,9 +87,6 @@ namespace GUI.Syntax
                 if (_stream.Check(LexerTokenCode.Val))
                     break;
 
-                if (_stream.Check(LexerTokenCode.Semicolon))
-                    break;
-
                 if (_stream.Current.Line != first.Line)
                     break;
 
@@ -98,17 +95,29 @@ namespace GUI.Syntax
                 if (!string.IsNullOrEmpty(_stream.Current.Lexeme))
                     fragment.Append(_stream.Current.Lexeme);
 
+                if (_stream.Check(LexerTokenCode.Semicolon))
+                {
+                    _stream.Advance();
+                    break;
+                }
+
                 _stream.Advance();
             }
 
+            string text = fragment.ToString();
+
+            string message = text.Contains("listOf") || text.Contains("listof")
+                ? "Некорректная структура объявления списка"
+                : "Лишний фрагмент вне объявления";
+
             _result.Errors.Add(new SyntaxError
             {
-                InvalidFragment = fragment.ToString(),
+                InvalidFragment = text,
                 Line = first.Line,
                 StartColumn = first.StartColumn,
                 EndColumn = last.EndColumn,
                 AbsoluteIndex = first.AbsoluteIndex,
-                Message = "Лишний фрагмент вне объявления"
+                Message = message
             });
         }
 
@@ -435,7 +444,6 @@ namespace GUI.Syntax
                     return true;
                 }
 
-
                 if (IsNearListOf(text))
                 {
                     AddError("Ожидалась лексема listOf");
@@ -489,7 +497,6 @@ namespace GUI.Syntax
                     "(пропущен listOf)");
                 return true;
             }
-
 
             if (IsElementStart() || _stream.Check(LexerTokenCode.RightParen))
             {
@@ -669,9 +676,21 @@ namespace GUI.Syntax
 
                 if (_stream.Check(LexerTokenCode.Invalid))
                 {
-                    AddMissingAfterPrevious(
-                        "Ожидалась запятая между элементами списка",
-                        "(пропущена запятая)");
+                    LexerItem next = _stream.Peek(1);
+
+
+                    if (CanStartElement(next))
+                    {
+                        AddMissingAfterPrevious(
+                            "Ожидалась запятая между элементами списка",
+                            "(пропущена запятая)");
+
+                        _stream.Advance();
+
+                        expectElement = true;
+                        commaAfterRealElement = false;
+                        continue;
+                    }
 
                     _stream.Advance();
 
@@ -901,6 +920,21 @@ namespace GUI.Syntax
                 || _stream.Check(LexerTokenCode.Double)
                 || _stream.Check(LexerTokenCode.Plus)
                 || _stream.Check(LexerTokenCode.Minus);
+        }
+
+        private bool CanStartElement(LexerItem token)
+        {
+            if (token == null || !token.Code.HasValue)
+                return false;
+
+            return token.Code.Value == (int)LexerTokenCode.String
+                || token.Code.Value == (int)LexerTokenCode.Char
+                || token.Code.Value == (int)LexerTokenCode.True
+                || token.Code.Value == (int)LexerTokenCode.False
+                || token.Code.Value == (int)LexerTokenCode.Int
+                || token.Code.Value == (int)LexerTokenCode.Double
+                || token.Code.Value == (int)LexerTokenCode.Plus
+                || token.Code.Value == (int)LexerTokenCode.Minus;
         }
 
         private bool IsNextDeclarationStart()
