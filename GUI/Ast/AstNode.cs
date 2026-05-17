@@ -7,6 +7,8 @@ namespace GUI.Ast
 {
     public abstract class AstNode
     {
+        private readonly Dictionary<AstNode, string> _childRoles;
+
         public string NodeType { get; private set; }
         public int Line { get; private set; }
         public int Column { get; private set; }
@@ -19,8 +21,10 @@ namespace GUI.Ast
             NodeType = nodeType;
             Line = line;
             Column = column;
+
             Attributes = new Dictionary<string, string>();
             Children = new List<AstNode>();
+            _childRoles = new Dictionary<AstNode, string>();
         }
 
         public void AddAttribute(string name, string value)
@@ -33,8 +37,29 @@ namespace GUI.Ast
 
         public void AddChild(AstNode child)
         {
-            if (child != null)
-                Children.Add(child);
+            AddChild(child, null);
+        }
+
+        public void AddChild(AstNode child, string role)
+        {
+            if (child == null)
+                return;
+
+            Children.Add(child);
+
+            if (!string.IsNullOrWhiteSpace(role))
+                _childRoles[child] = role;
+        }
+
+        public string GetChildRole(AstNode child)
+        {
+            if (child == null)
+                return null;
+
+            if (_childRoles.ContainsKey(child))
+                return _childRoles[child];
+
+            return null;
         }
 
         public string GetOneLineLabel()
@@ -54,7 +79,8 @@ namespace GUI.Ast
 
                     builder.Append(pair.Key);
                     builder.Append("=");
-                    builder.Append(pair.Value);
+                    builder.Append(FormatAttributeValue(pair.Key, pair.Value));
+
                     first = false;
                 }
 
@@ -73,7 +99,7 @@ namespace GUI.Ast
             {
                 builder.Append(pair.Key);
                 builder.Append(": ");
-                builder.AppendLine(pair.Value);
+                builder.AppendLine(FormatAttributeValue(pair.Key, pair.Value));
             }
 
             return builder.ToString().TrimEnd();
@@ -82,25 +108,26 @@ namespace GUI.Ast
         public string ToTreeString()
         {
             StringBuilder builder = new StringBuilder();
-            AppendTree(builder, "", true, true);
+            AppendAstTree(builder, "", true, true, null);
             return builder.ToString();
         }
 
-        private void AppendTree(
+        private void AppendAstTree(
             StringBuilder builder,
             string prefix,
             bool isLast,
-            bool isRoot)
+            bool isRoot,
+            string role)
         {
             if (isRoot)
             {
-                builder.AppendLine(GetOneLineLabel());
+                builder.AppendLine(BuildNodeHeader(role));
             }
             else
             {
                 builder.Append(prefix);
                 builder.Append(isLast ? "└── " : "├── ");
-                builder.AppendLine(GetOneLineLabel());
+                builder.AppendLine(BuildNodeHeader(role));
             }
 
             string childPrefix;
@@ -114,11 +141,66 @@ namespace GUI.Ast
                 childPrefix = prefix + (isLast ? "    " : "│   ");
             }
 
-            for (int i = 0; i < Children.Count; i++)
+            int totalItems = Attributes.Count + Children.Count;
+            int itemIndex = 0;
+
+            foreach (KeyValuePair<string, string> attribute in Attributes)
             {
-                bool childIsLast = i == Children.Count - 1;
-                Children[i].AppendTree(builder, childPrefix, childIsLast, false);
+                itemIndex++;
+
+                bool attributeIsLast = itemIndex == totalItems;
+
+                builder.Append(childPrefix);
+                builder.Append(attributeIsLast ? "└── " : "├── ");
+                builder.Append(attribute.Key);
+                builder.Append(": ");
+                builder.AppendLine(FormatAttributeValue(attribute.Key, attribute.Value));
             }
+
+            foreach (AstNode child in Children)
+            {
+                itemIndex++;
+
+                bool childIsLast = itemIndex == totalItems;
+                string childRole = GetChildRole(child);
+
+                child.AppendAstTree(
+                    builder,
+                    childPrefix,
+                    childIsLast,
+                    false,
+                    childRole);
+            }
+        }
+
+        private string BuildNodeHeader(string role)
+        {
+            if (string.IsNullOrWhiteSpace(role))
+                return NodeType;
+
+            return role + ": " + NodeType;
+        }
+
+        private string FormatAttributeValue(string key, string value)
+        {
+            if (value == null)
+                return "null";
+
+            if (key == "name" || key == "keyword")
+                return QuoteIfNeeded(value);
+
+            return value;
+        }
+
+        private string QuoteIfNeeded(string value)
+        {
+            if (value.StartsWith("\"") && value.EndsWith("\""))
+                return value;
+
+            if (value.StartsWith("'") && value.EndsWith("'"))
+                return value;
+
+            return "\"" + value + "\"";
         }
     }
 
@@ -151,6 +233,7 @@ namespace GUI.Ast
             : base("ListDeclarationNode", line, column)
         {
             Name = name;
+
             AddAttribute("name", name);
             AddAttribute("keyword", "val");
         }
@@ -158,27 +241,41 @@ namespace GUI.Ast
         public void SetInitializer(ListOfNode initializer)
         {
             Initializer = initializer;
-            AddChild(initializer);
+            AddChild(initializer, "value");
         }
     }
 
     public sealed class ListOfNode : AstNode
     {
-        public List<AstNode> Elements { get; private set; }
+        public ElementsNode ElementsContainer { get; private set; }
+
+        public List<AstNode> Elements
+        {
+            get { return ElementsContainer.Children; }
+        }
 
         public ListOfNode(int line, int column)
             : base("ListOfNode", line, column)
         {
-            Elements = new List<AstNode>();
-            AddAttribute("call", "listOf");
+            ElementsContainer = new ElementsNode(line, column);
+            AddChild(ElementsContainer);
         }
 
         public void AddElement(AstNode element)
         {
-            if (element == null)
-                return;
+            ElementsContainer.AddElement(element);
+        }
+    }
 
-            Elements.Add(element);
+    public sealed class ElementsNode : AstNode
+    {
+        public ElementsNode(int line, int column)
+            : base("elements:", line, column)
+        {
+        }
+
+        public void AddElement(AstNode element)
+        {
             AddChild(element);
         }
     }
@@ -189,12 +286,11 @@ namespace GUI.Ast
         public string RawValue { get; private set; }
 
         public LiteralNode(string valueType, string rawValue, int line, int column)
-            : base("LiteralNode", line, column)
+            : base(valueType + "LiteralNode", line, column)
         {
             ValueType = valueType;
             RawValue = rawValue;
 
-            AddAttribute("type", valueType);
             AddAttribute("value", rawValue);
         }
     }

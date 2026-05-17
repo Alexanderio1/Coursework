@@ -30,9 +30,9 @@ namespace GUI.Visualization
         private readonly Dictionary<AstNode, RectangleF> _bounds;
         private readonly Dictionary<AstNode, float> _subtreeWidths;
 
-        private const float HorizontalGap = 40.0f;
-        private const float VerticalGap = 90.0f;
-        private const float Padding = 25.0f;
+        private const float HorizontalGap = 45.0f;
+        private const float VerticalGap = 95.0f;
+        private const float Padding = 30.0f;
 
         public AstCanvas(AstNode root)
         {
@@ -168,10 +168,10 @@ namespace GUI.Visualization
             SizeF textSize = graphics.MeasureString(
                 text,
                 Font,
-                new SizeF(260.0f, 1000.0f));
+                new SizeF(280.0f, 1000.0f));
 
-            float width = Math.Max(150.0f, textSize.Width + 24.0f);
-            float height = Math.Max(55.0f, textSize.Height + 18.0f);
+            float width = Math.Max(150.0f, textSize.Width + 28.0f);
+            float height = Math.Max(55.0f, textSize.Height + 20.0f);
 
             return new SizeF(width, height);
         }
@@ -204,7 +204,44 @@ namespace GUI.Visualization
                     graphics.DrawLine(pen, start, end);
                 }
 
+                string role = node.GetChildRole(child);
+
+                if (!string.IsNullOrWhiteSpace(role))
+                    DrawEdgeLabel(graphics, role, start, end);
+
                 DrawEdges(graphics, child);
+            }
+        }
+
+        private void DrawEdgeLabel(
+            Graphics graphics,
+            string text,
+            PointF start,
+            PointF end)
+        {
+            PointF center = new PointF(
+                (start.X + end.X) / 2.0f,
+                (start.Y + end.Y) / 2.0f);
+
+            SizeF textSize = graphics.MeasureString(text, Font);
+
+            RectangleF background = new RectangleF(
+                center.X - textSize.Width / 2.0f - 4.0f,
+                center.Y - textSize.Height / 2.0f - 2.0f,
+                textSize.Width + 8.0f,
+                textSize.Height + 4.0f);
+
+            using (SolidBrush backgroundBrush = new SolidBrush(Color.White))
+            using (SolidBrush textBrush = new SolidBrush(Color.DimGray))
+            {
+                graphics.FillRectangle(backgroundBrush, background);
+
+                graphics.DrawString(
+                    text,
+                    Font,
+                    textBrush,
+                    background.Left + 4.0f,
+                    background.Top + 2.0f);
             }
         }
 

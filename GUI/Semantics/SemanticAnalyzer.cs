@@ -136,8 +136,8 @@ namespace GUI.Semantics
         }
 
         private void AnalyzeDeclaration(
-            ListDeclarationNode declaration,
-            SemanticResult result)
+    ListDeclarationNode declaration,
+    SemanticResult result)
         {
             string elementType = AnalyzeInitializer(declaration, result);
             string listType = "List<" + elementType + ">";
@@ -169,51 +169,37 @@ namespace GUI.Semantics
         }
 
         private string AnalyzeInitializer(
-            ListDeclarationNode declaration,
-            SemanticResult result)
+    ListDeclarationNode declaration,
+    SemanticResult result)
         {
-            if (declaration.Initializer == null ||
-                declaration.Initializer.Elements.Count == 0)
-            {
-                result.AddError(
-                    declaration,
-                    declaration.Name,
-                    "Невозможно вывести тип пустого списка. Добавьте хотя бы один элемент.");
-
+            if (declaration.Initializer == null)
                 return "Unknown";
-            }
 
-            string expectedType = null;
+            if (declaration.Initializer.Elements.Count == 0)
+                return "Any";
+
+            List<string> elementTypes = new List<string>();
 
             foreach (AstNode element in declaration.Initializer.Elements)
             {
                 string currentType = ResolveElementType(element, result);
 
-                if (string.IsNullOrEmpty(currentType))
-                    continue;
-
-                if (expectedType == null)
-                {
-                    expectedType = currentType;
-                    continue;
-                }
-
-                if (expectedType != currentType)
-                {
-                    string fragment = GetFragment(element);
-
-                    result.AddError(
-                        element,
-                        fragment,
-                        "Несовместимый тип элемента списка. Ожидался тип " +
-                        expectedType +
-                        ", но получен тип " +
-                        currentType +
-                        ".");
-                }
+                if (!string.IsNullOrEmpty(currentType))
+                    elementTypes.Add(currentType);
             }
 
-            return expectedType ?? "Unknown";
+            if (elementTypes.Count == 0)
+                return "Unknown";
+
+            string firstType = elementTypes[0];
+
+            for (int i = 1; i < elementTypes.Count; i++)
+            {
+                if (elementTypes[i] != firstType)
+                    return "Any";
+            }
+
+            return firstType;
         }
 
         private string ResolveElementType(AstNode element, SemanticResult result)
