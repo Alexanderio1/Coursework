@@ -28,9 +28,13 @@ namespace GUI.Semantics
     {
         public List<SemanticError> Errors { get; private set; }
 
+
+        public ProgramNode ValidAst { get; private set; }
+
         public SemanticResult()
         {
             Errors = new List<SemanticError>();
+            ValidAst = new ProgramNode();
         }
 
         public bool HasErrors
@@ -54,6 +58,11 @@ namespace GUI.Semantics
                 EndColumn = node.Column + Math.Max(fragment == null ? 1 : fragment.Length, 1) - 1,
                 AbsoluteIndex = 0
             });
+        }
+
+        public void AddValidDeclaration(ListDeclarationNode declaration)
+        {
+            ValidAst.AddDeclaration(declaration);
         }
     }
 
@@ -127,6 +136,9 @@ namespace GUI.Semantics
 
             SemanticResult result = new SemanticResult();
 
+            if (program == null)
+                return result;
+
             foreach (ListDeclarationNode declaration in program.Declarations)
             {
                 AnalyzeDeclaration(declaration, result);
@@ -136,9 +148,26 @@ namespace GUI.Semantics
         }
 
         private void AnalyzeDeclaration(
-    ListDeclarationNode declaration,
-    SemanticResult result)
+            ListDeclarationNode declaration,
+            SemanticResult result)
         {
+
+            SymbolEntry existing = _symbols.Lookup(declaration.Name);
+
+            if (existing != null)
+            {
+                result.AddError(
+                    declaration,
+                    declaration.Name,
+                    "Повторное объявление идентификатора \"" +
+                    declaration.Name +
+                    "\". Первое объявление находится в строке " +
+                    existing.Line +
+                    ".");
+
+                return;
+            }
+
             string elementType = AnalyzeInitializer(declaration, result);
             string listType = "List<" + elementType + ">";
 
@@ -154,26 +183,22 @@ namespace GUI.Semantics
                 declaration.Line,
                 declaration.Column);
 
-            SymbolEntry existing;
-            if (!_symbols.Declare(entry, out existing))
-            {
-                result.AddError(
-                    declaration,
-                    declaration.Name,
-                    "Повторное объявление идентификатора \"" +
-                    declaration.Name +
-                    "\". Первое объявление находится в строке " +
-                    existing.Line +
-                    ".");
-            }
+            SymbolEntry duplicate;
+            _symbols.Declare(entry, out duplicate);
+
+
+            result.AddValidDeclaration(declaration);
         }
 
         private string AnalyzeInitializer(
-    ListDeclarationNode declaration,
-    SemanticResult result)
+            ListDeclarationNode declaration,
+            SemanticResult result)
         {
+
+
             if (declaration.Initializer == null)
                 return "Unknown";
+
 
             if (declaration.Initializer.Elements.Count == 0)
                 return "Any";
@@ -297,19 +322,6 @@ namespace GUI.Semantics
                         "Символьный литерал должен содержать ровно один символ.");
                 }
             }
-        }
-
-        private string GetFragment(AstNode node)
-        {
-            LiteralNode literal = node as LiteralNode;
-            if (literal != null)
-                return literal.RawValue;
-
-            IdentifierNode identifier = node as IdentifierNode;
-            if (identifier != null)
-                return identifier.Name;
-
-            return node.NodeType;
         }
     }
 }

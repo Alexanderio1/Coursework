@@ -306,15 +306,21 @@ namespace GUI
             try
             {
                 var astBuilder = new AstBuilder();
-                _lastAst = astBuilder.Build(parserTokens);
+
+
+                ProgramNode rawAst = astBuilder.Build(parserTokens);
 
                 var semanticAnalyzer = new SemanticAnalyzer();
-                var semanticResult = semanticAnalyzer.Analyze(_lastAst);
+                var semanticResult = semanticAnalyzer.Analyze(rawAst);
+
+                _lastAst = semanticResult.ValidAst;
 
                 RenderAstAndSemanticResult(_lastAst, semanticResult);
             }
             catch (Exception ex)
             {
+                _lastAst = null;
+
                 ClearResultsGrid();
                 ConfigureResultsGridForSyntax();
 
@@ -346,10 +352,10 @@ namespace GUI
 
         private void BtnShowAst_Click(object sender, EventArgs e)
         {
-            if (_lastAst == null)
+            if (_lastAst == null || _lastAst.Declarations.Count == 0)
             {
                 MessageBox.Show(
-                    "AST ещё не построено. Сначала выполните анализ корректной программы.",
+                    "AST ещё не построено или отсутствуют семантически корректные объявления.",
                     "AST",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -364,24 +370,40 @@ namespace GUI
         }
 
         private void RenderAstAndSemanticResult(
-            ProgramNode ast,
-            SemanticResult semanticResult)
+    ProgramNode ast,
+    SemanticResult semanticResult)
         {
             ClearResultsGrid();
             ConfigureResultsGridForSemantic();
 
-            int astRowIndex = dgvResults.Rows.Add(
-                "AST",
-                "-",
-                ast.ToTreeString(),
-                string.Empty);
+            if (ast != null && ast.Declarations.Count > 0)
+            {
+                int astRowIndex = dgvResults.Rows.Add(
+                    "AST",
+                    "-",
+                    ast.ToTreeString(),
+                    string.Empty);
 
-            var astRow = dgvResults.Rows[astRowIndex];
-            astRow.Cells[2].Style.Font = new Font("Consolas", dgvResults.Font.Size);
-            astRow.Cells[2].Style.WrapMode = DataGridViewTriState.True;
-            astRow.DefaultCellStyle.BackColor = Color.WhiteSmoke;
-            astRow.DefaultCellStyle.ForeColor = Color.Black;
-            astRow.Tag = null;
+                var astRow = dgvResults.Rows[astRowIndex];
+                astRow.Cells[2].Style.Font = new Font("Consolas", dgvResults.Font.Size);
+                astRow.Cells[2].Style.WrapMode = DataGridViewTriState.True;
+                astRow.DefaultCellStyle.BackColor = Color.WhiteSmoke;
+                astRow.DefaultCellStyle.ForeColor = Color.Black;
+                astRow.Tag = null;
+            }
+            else
+            {
+                int astRowIndex = dgvResults.Rows.Add(
+                    "AST",
+                    "-",
+                    "AST не сформировано, так как отсутствуют семантически корректные объявления.",
+                    string.Empty);
+
+                var astRow = dgvResults.Rows[astRowIndex];
+                astRow.DefaultCellStyle.BackColor = Color.WhiteSmoke;
+                astRow.DefaultCellStyle.ForeColor = Color.DarkSlateGray;
+                astRow.Tag = null;
+            }
 
             if (!semanticResult.HasErrors)
             {
@@ -746,7 +768,7 @@ namespace GUI
             btnRun.Enabled = hasText;
 
             if (btnShowAst != null)
-                btnShowAst.Enabled = _lastAst != null;
+                btnShowAst.Enabled = _lastAst != null && _lastAst.Declarations.Count > 0;
         }
 
         private void MainForm_Activated(object sender, EventArgs e)
