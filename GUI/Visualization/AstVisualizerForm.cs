@@ -13,8 +13,8 @@ namespace GUI.Visualization
         {
             Text = "Визуализация AST";
             StartPosition = FormStartPosition.CenterParent;
-            Width = 1100;
-            Height = 750;
+            Width = 1200;
+            Height = 800;
 
             AstCanvas canvas = new AstCanvas(root);
             canvas.Dock = DockStyle.Fill;
@@ -23,22 +23,51 @@ namespace GUI.Visualization
         }
     }
 
+    internal sealed class VisualAstNode
+    {
+        public string Label { get; private set; }
+        public bool IsAttribute { get; private set; }
+        public List<VisualAstNode> Children { get; private set; }
+
+        public VisualAstNode(string label, bool isAttribute)
+        {
+            Label = label;
+            IsAttribute = isAttribute;
+            Children = new List<VisualAstNode>();
+        }
+
+        public void AddChild(VisualAstNode child)
+        {
+            if (child != null)
+                Children.Add(child);
+        }
+
+        public void AddRolePrefix(string role)
+        {
+            if (string.IsNullOrWhiteSpace(role))
+                return;
+
+            Label = role + ": " + Label;
+        }
+    }
+
     internal sealed class AstCanvas : Panel
     {
-        private readonly AstNode _root;
+        private readonly VisualAstNode _root;
 
-        private readonly Dictionary<AstNode, RectangleF> _bounds;
-        private readonly Dictionary<AstNode, float> _subtreeWidths;
+        private readonly Dictionary<VisualAstNode, RectangleF> _bounds;
+        private readonly Dictionary<VisualAstNode, float> _subtreeWidths;
 
         private const float HorizontalGap = 45.0f;
-        private const float VerticalGap = 95.0f;
+        private const float VerticalGap = 90.0f;
         private const float Padding = 30.0f;
 
         public AstCanvas(AstNode root)
         {
-            _root = root;
-            _bounds = new Dictionary<AstNode, RectangleF>();
-            _subtreeWidths = new Dictionary<AstNode, float>();
+            _root = BuildVisualTree(root);
+
+            _bounds = new Dictionary<VisualAstNode, RectangleF>();
+            _subtreeWidths = new Dictionary<VisualAstNode, float>();
 
             AutoScroll = true;
             BackColor = Color.White;
@@ -49,6 +78,60 @@ namespace GUI.Visualization
                 ControlStyles.ResizeRedraw |
                 ControlStyles.UserPaint,
                 true);
+        }
+
+        private VisualAstNode BuildVisualTree(AstNode node)
+        {
+            if (node == null)
+                return null;
+
+            VisualAstNode visualNode = new VisualAstNode(node.NodeType, false);
+
+            foreach (KeyValuePair<string, string> attribute in node.Attributes)
+            {
+                visualNode.AddChild(
+                    new VisualAstNode(
+                        attribute.Key + ": " + FormatAttributeValue(attribute.Key, attribute.Value),
+                        true));
+            }
+
+            foreach (AstNode child in node.Children)
+            {
+                string role = node.GetChildRole(child);
+
+                VisualAstNode visualChild = BuildVisualTree(child);
+
+                if (visualChild == null)
+                    continue;
+
+                visualChild.AddRolePrefix(role);
+
+                visualNode.AddChild(visualChild);
+            }
+
+            return visualNode;
+        }
+
+        private string FormatAttributeValue(string key, string value)
+        {
+            if (value == null)
+                return "null";
+
+            if (key == "name" || key == "keyword")
+                return QuoteIfNeeded(value);
+
+            return value;
+        }
+
+        private string QuoteIfNeeded(string value)
+        {
+            if (value.StartsWith("\"") && value.EndsWith("\""))
+                return value;
+
+            if (value.StartsWith("'") && value.EndsWith("'"))
+                return value;
+
+            return "\"" + value + "\"";
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -97,7 +180,7 @@ namespace GUI.Visualization
                 (int)(maxY + Padding));
         }
 
-        private float ComputeSubtreeWidth(Graphics graphics, AstNode node)
+        private float ComputeSubtreeWidth(Graphics graphics, VisualAstNode node)
         {
             SizeF nodeSize = MeasureNode(graphics, node);
 
@@ -123,7 +206,7 @@ namespace GUI.Visualization
             return subtreeWidth;
         }
 
-        private void PlaceNode(Graphics graphics, AstNode node, float x, float y)
+        private void PlaceNode(Graphics graphics, VisualAstNode node, float x, float y)
         {
             SizeF nodeSize = MeasureNode(graphics, node);
             float subtreeWidth = _subtreeWidths[node];
@@ -154,36 +237,36 @@ namespace GUI.Visualization
             float childX = x + (subtreeWidth - childrenWidth) / 2.0f;
             float childY = y + nodeRect.Height + VerticalGap;
 
-            foreach (AstNode child in node.Children)
+            foreach (VisualAstNode child in node.Children)
             {
                 PlaceNode(graphics, child, childX, childY);
                 childX += _subtreeWidths[child] + HorizontalGap;
             }
         }
 
-        private SizeF MeasureNode(Graphics graphics, AstNode node)
+        private SizeF MeasureNode(Graphics graphics, VisualAstNode node)
         {
-            string text = node.GetMultiLineLabel();
-
             SizeF textSize = graphics.MeasureString(
-                text,
+                node.Label,
                 Font,
-                new SizeF(280.0f, 1000.0f));
+                new SizeF(260.0f, 1000.0f));
 
-            float width = Math.Max(150.0f, textSize.Width + 28.0f);
-            float height = Math.Max(55.0f, textSize.Height + 20.0f);
+            float minWidth = node.IsAttribute ? 120.0f : 150.0f;
+
+            float width = Math.Max(minWidth, textSize.Width + 24.0f);
+            float height = Math.Max(45.0f, textSize.Height + 18.0f);
 
             return new SizeF(width, height);
         }
 
-        private void DrawEdges(Graphics graphics, AstNode node)
+        private void DrawEdges(Graphics graphics, VisualAstNode node)
         {
             if (!_bounds.ContainsKey(node))
                 return;
 
             RectangleF parentRect = _bounds[node];
 
-            foreach (AstNode child in node.Children)
+            foreach (VisualAstNode child in node.Children)
             {
                 if (!_bounds.ContainsKey(child))
                     continue;
@@ -204,56 +287,27 @@ namespace GUI.Visualization
                     graphics.DrawLine(pen, start, end);
                 }
 
-                string role = node.GetChildRole(child);
-
-                if (!string.IsNullOrWhiteSpace(role))
-                    DrawEdgeLabel(graphics, role, start, end);
-
                 DrawEdges(graphics, child);
             }
         }
 
-        private void DrawEdgeLabel(
-            Graphics graphics,
-            string text,
-            PointF start,
-            PointF end)
-        {
-            PointF center = new PointF(
-                (start.X + end.X) / 2.0f,
-                (start.Y + end.Y) / 2.0f);
-
-            SizeF textSize = graphics.MeasureString(text, Font);
-
-            RectangleF background = new RectangleF(
-                center.X - textSize.Width / 2.0f - 4.0f,
-                center.Y - textSize.Height / 2.0f - 2.0f,
-                textSize.Width + 8.0f,
-                textSize.Height + 4.0f);
-
-            using (SolidBrush backgroundBrush = new SolidBrush(Color.White))
-            using (SolidBrush textBrush = new SolidBrush(Color.DimGray))
-            {
-                graphics.FillRectangle(backgroundBrush, background);
-
-                graphics.DrawString(
-                    text,
-                    Font,
-                    textBrush,
-                    background.Left + 4.0f,
-                    background.Top + 2.0f);
-            }
-        }
-
-        private void DrawNodes(Graphics graphics, AstNode node)
+        private void DrawNodes(Graphics graphics, VisualAstNode node)
         {
             if (!_bounds.ContainsKey(node))
                 return;
 
             RectangleF rect = _bounds[node];
 
-            using (SolidBrush brush = new SolidBrush(Color.FromArgb(235, 246, 255)))
-            using (Pen pen = new Pen(Color.SteelBlue, 1.5f))
+            Color fillColor = node.IsAttribute
+                ? Color.FromArgb(250, 250, 250)
+                : Color.FromArgb(235, 246, 255);
+
+            Color borderColor = node.IsAttribute
+                ? Color.Gray
+                : Color.SteelBlue;
+
+            using (SolidBrush brush = new SolidBrush(fillColor))
+            using (Pen pen = new Pen(borderColor, 1.5f))
             {
                 graphics.FillRectangle(brush, rect);
                 graphics.DrawRectangle(
@@ -271,14 +325,14 @@ namespace GUI.Visualization
                 format.LineAlignment = StringAlignment.Center;
 
                 graphics.DrawString(
-                    node.GetMultiLineLabel(),
+                    node.Label,
                     Font,
                     textBrush,
                     rect,
                     format);
             }
 
-            foreach (AstNode child in node.Children)
+            foreach (VisualAstNode child in node.Children)
             {
                 DrawNodes(graphics, child);
             }
