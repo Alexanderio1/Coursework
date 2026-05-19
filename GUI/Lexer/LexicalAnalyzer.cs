@@ -132,14 +132,53 @@ namespace GUI.Lexer
                         break;
 
                     default:
-                        ReadInvalidSequence(text, result, ref index, ref line, ref column);
+                        if (LooksLikeBrokenIdentifierStart(text, index))
+                            ReadBrokenIdentifier(text, result, ref index, ref line, ref column);
+                        else
+                            ReadInvalidSequence(text, result, ref index, ref line, ref column);
                         break;
                 }
             }
 
             return result;
         }
+        private bool LooksLikeBrokenIdentifierStart(string text, int index)
+        {
+            char current = Peek(text, index);
+            char next = Peek(text, index + 1);
 
+            return !char.IsWhiteSpace(current)
+                   && !IsTokenDelimiter(current)
+                   && IsIdentifierPart(next);
+        }
+
+        private void ReadBrokenIdentifier(
+            string text,
+            LexerResult result,
+            ref int index,
+            ref int line,
+            ref int column)
+        {
+            int startIndex = index;
+            int startLine = line;
+            int startColumn = column;
+
+            while (index < text.Length && !IsIdentifierRecoveryBoundary(Peek(text, index)))
+            {
+                Advance(text, ref index, ref line, ref column);
+            }
+
+            string invalidLexeme = text.Substring(startIndex, index - startIndex);
+
+            AddError(
+                result,
+                "Недопустимый идентификатор \"" + invalidLexeme + "\"",
+                invalidLexeme,
+                startIndex,
+                startLine,
+                startColumn,
+                Math.Max(invalidLexeme.Length, 1));
+        }
         private void ReadInvalidSequence(string text, LexerResult result, ref int index, ref int line, ref int column)
         {
             int startIndex = index;

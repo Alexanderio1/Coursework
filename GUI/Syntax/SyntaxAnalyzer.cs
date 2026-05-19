@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using GUI.Lexer;
+﻿using GUI.Lexer;
+using System;
+using System.Collections.Generic;
 
 namespace GUI.Syntax
 {
@@ -252,8 +253,10 @@ namespace GUI.Syntax
 
             if (_stream.Check(LexerTokenCode.Invalid))
             {
-                LexerItem next = _stream.Peek(1);
+                if (CurrentInvalidLooksLikeVal())
+                    return true;
 
+                LexerItem next = _stream.Peek(1);
                 if (next != null && next.Code == (int)LexerTokenCode.Identifier)
                     return true;
             }
@@ -370,6 +373,18 @@ namespace GUI.Syntax
                 _stream.Advance();
                 return true;
             }
+            if (expected == LexerTokenCode.Val && _stream.Check(LexerTokenCode.Invalid) && CurrentInvalidLooksLikeVal())
+            {
+                AddError("Ожидалось ключевое слово val");
+                _stream.Advance();
+                return true;
+            }
+            if (expected == LexerTokenCode.ListOf && _stream.Check(LexerTokenCode.Invalid) && CurrentInvalidLooksLikeListOf())
+            {
+                AddError("Ожидалась лексема listOf");
+                _stream.Advance();
+                return true;
+            }
 
             if (_stream.IsAtEnd)
             {
@@ -420,7 +435,101 @@ namespace GUI.Syntax
 
             return _stream.IsAtEnd || IsCurrentOneOf(followers);
         }
+        private bool CurrentInvalidLooksLikeVal()
+        {
+            if (!_stream.Check(LexerTokenCode.Invalid))
+                return false;
 
+            return InvalidLexemeLooksLikeVal(_stream.Current.Lexeme);
+        }
+        private bool CurrentInvalidLooksLikeListOf()
+        {
+            if (!_stream.Check(LexerTokenCode.Invalid))
+                return false;
+
+            return InvalidLexemeLooksLikeListOf(_stream.Current.Lexeme);
+        }
+
+        private bool InvalidLexemeLooksLikeListOf(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+
+            System.Text.StringBuilder normalized = new System.Text.StringBuilder();
+
+            foreach (char c in text)
+            {
+                if (char.IsLetterOrDigit(c))
+                    normalized.Append(char.ToLowerInvariant(c));
+            }
+
+            string value = normalized.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            return IsNearListOf(value);
+        }
+
+        private bool IsNearListOf(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            value = value.ToLowerInvariant();
+
+            if (value == "listof")
+                return true;
+
+            return LevenshteinDistance(value, "listof") <= 1;
+        }
+        private int LevenshteinDistance(string a, string b)
+        {
+            if (a == null) a = string.Empty;
+            if (b == null) b = string.Empty;
+
+            int[,] d = new int[a.Length + 1, b.Length + 1];
+
+            for (int i = 0; i <= a.Length; i++)
+                d[i, 0] = i;
+
+            for (int j = 0; j <= b.Length; j++)
+                d[0, j] = j;
+
+            for (int i = 1; i <= a.Length; i++)
+            {
+                for (int j = 1; j <= b.Length; j++)
+                {
+                    int cost = a[i - 1] == b[j - 1] ? 0 : 1;
+
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+
+            return d[a.Length, b.Length];
+        }
+        private bool InvalidLexemeLooksLikeVal(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+
+            System.Text.StringBuilder normalized = new System.Text.StringBuilder();
+
+            foreach (char c in text)
+            {
+                if (char.IsLetterOrDigit(c))
+                    normalized.Append(char.ToLowerInvariant(c));
+            }
+
+            string value = normalized.ToString();
+
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            return IsNearVal(value);
+        }
         private bool ExpectListOf()
         {
             if (_stream.Match(LexerTokenCode.ListOf))
@@ -539,34 +648,6 @@ namespace GUI.Syntax
                 || _stream.Check(LexerTokenCode.RightParen);
         }
 
-        private bool IsNearListOf(string text)
-        {
-            if (string.IsNullOrEmpty(text))
-                return false;
-
-            if (text == "listOf")
-                return false;
-
-            string lower = text.ToLowerInvariant();
-
-            if (lower == "listof")
-                return true;
-
-            if (lower == "lisof")
-                return true;
-
-            if (lower == "lstof")
-                return true;
-
-            if (lower == "listo")
-                return true;
-
-            if (lower == "listoff")
-                return true;
-
-            return EditDistanceOne(lower, "listof");
-        }
-
         private void ParseElementsOpt()
         {
             if (_stream.IsAtEnd)
@@ -678,13 +759,9 @@ namespace GUI.Syntax
                 {
                     LexerItem next = _stream.Peek(1);
 
-
                     if (CanStartElement(next))
                     {
-                        AddMissingAfterPrevious(
-                            "Ожидалась запятая между элементами списка",
-                            "(пропущена запятая)");
-
+                        AddError("Ожидалась запятая между элементами списка");
                         _stream.Advance();
 
                         expectElement = true;
@@ -693,7 +770,6 @@ namespace GUI.Syntax
                     }
 
                     _stream.Advance();
-
                     expectElement = false;
                     commaAfterRealElement = false;
                     continue;

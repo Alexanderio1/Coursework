@@ -315,6 +315,14 @@ namespace GUI
                 })
                 .ToList();
 
+            var contextualSyntaxErrors = syntaxResult.Errors
+                .Where(IsContextualReplacementSyntaxError)
+                .ToList();
+
+            lexicalErrors = lexicalErrors
+                .Where(x => !contextualSyntaxErrors.Any(s => RangesOverlap(x, s)))
+                .ToList();
+
             var filteredSyntaxErrors = syntaxResult.Errors
                 .Where(x => !ShouldSuppressSyntaxError(x, lexicalErrors))
                 .ToList();
@@ -325,6 +333,23 @@ namespace GUI
                 .ThenBy(x => x.Line)
                 .ThenBy(x => x.StartColumn)
                 .ToList();
+        }
+
+        private bool IsContextualReplacementSyntaxError(SyntaxError error)
+        {
+            if (error == null)
+                return false;
+
+            if (IsInsertedSyntaxError(error))
+                return false;
+
+            return error.Message == "Ожидалась запятая между элементами списка"
+                || error.Message == "Ожидался идентификатор после val"
+                || error.Message == "Ожидалось ключевое слово val"
+                || error.Message == "Ожидалась лексема listOf"
+                || error.Message == "Ожидался оператор присваивания ="
+                || error.Message == "Ожидалась закрывающая круглая скобка )"
+                || error.Message == "Ожидался символ ; в конце объявления";
         }
 
         private bool ShouldSuppressSyntaxError(
@@ -379,15 +404,21 @@ namespace GUI
                 || error.Message == "Ожидалась запятая или закрывающая круглая скобка )";
         }
 
-        private bool RangesOverlap(SyntaxError left, SyntaxError right)
+        private bool RangesOverlap(SyntaxError a, SyntaxError b)
         {
-            int leftStart = left.AbsoluteIndex;
-            int leftEnd = GetAbsoluteEndIndex(left);
+            if (a == null || b == null)
+                return false;
 
-            int rightStart = right.AbsoluteIndex;
-            int rightEnd = GetAbsoluteEndIndex(right);
+            if (a.Line != b.Line)
+                return false;
 
-            return leftStart <= rightEnd && rightStart <= leftEnd;
+            int aStart = a.StartColumn;
+            int aEnd = Math.Max(a.StartColumn, a.EndColumn);
+
+            int bStart = b.StartColumn;
+            int bEnd = Math.Max(b.StartColumn, b.EndColumn);
+
+            return aStart <= bEnd && bStart <= aEnd;
         }
 
         private int GetAbsoluteEndIndex(SyntaxError error)
