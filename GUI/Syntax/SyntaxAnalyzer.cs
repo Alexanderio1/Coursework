@@ -393,7 +393,61 @@ namespace GUI.Syntax
                     missingFragment);
                 return true;
             }
+            if (expected == LexerTokenCode.LeftParen && IsCurrentQuoteLikeInvalid())
+            {
+                AddMissingAfterPrevious(
+                    "Ожидалась открывающая круглая скобка (",
+                    missingFragment);
 
+                return true;
+            }
+            if (expected != LexerTokenCode.LeftParen &&
+                _stream.Check(LexerTokenCode.LeftParen) &&
+                CheckNext(expected))
+            {
+                AddError("Лишняя открывающая круглая скобка (");
+                _stream.Advance();
+
+                _stream.Match(expected);
+                return true;
+            }
+            if (expected == LexerTokenCode.Semicolon && IsCurrentQuoteLikeInvalid())
+            {
+                AddError("Ожидался " + expectedText);
+
+                _stream.Advance();
+
+                _stream.Match(LexerTokenCode.Semicolon);
+
+                return true;
+            }
+            if (_stream.Check(LexerTokenCode.Invalid) && !IsCurrentQuoteLikeInvalid())
+            {
+                if (CheckNext(expected))
+                {
+                    AddError("Лишний фрагмент перед " + expectedText);
+                    _stream.Advance();
+
+                    _stream.Match(expected);
+                    return true;
+                }
+
+                if (NextIsOneOf(followers))
+                {
+                    if (expected == LexerTokenCode.LeftParen)
+                        AddError("Ожидалась открывающая круглая скобка (");
+                    else if (expected == LexerTokenCode.RightParen)
+                        AddError("Ожидалась закрывающая круглая скобка )");
+                    else if (expected == LexerTokenCode.Semicolon)
+                        AddError("Ожидался символ ; в конце объявления");
+                    else
+                        AddError("Ожидался " + expectedText);
+
+                    _stream.Advance();
+
+                    return _stream.IsAtEnd || IsCurrentOneOf(followers);
+                }
+            }
             if (ConsumeInvalidToken())
             {
                 if (_stream.Match(expected))
@@ -434,6 +488,36 @@ namespace GUI.Syntax
                 return true;
 
             return _stream.IsAtEnd || IsCurrentOneOf(followers);
+        }
+        private bool NextIsOneOf(params LexerTokenCode[] codes)
+        {
+            LexerItem next = _stream.Peek(1);
+
+            if (next == null || !next.Code.HasValue)
+                return false;
+
+            foreach (LexerTokenCode code in codes)
+            {
+                if (next.Code.Value == (int)code)
+                    return true;
+            }
+
+            return false;
+        }
+        private bool IsCurrentQuoteLikeInvalid()
+        {
+            if (!_stream.Check(LexerTokenCode.Invalid))
+                return false;
+
+            string lexeme = _stream.Current.Lexeme ?? string.Empty;
+            string message = _stream.Current.Message ?? string.Empty;
+
+            return lexeme == "\""
+                || lexeme == "'"
+                || lexeme.StartsWith("\"")
+                || lexeme.StartsWith("'")
+                || message.Contains("строковый литерал")
+                || message.Contains("символьный литерал");
         }
         private bool CurrentInvalidLooksLikeVal()
         {
@@ -540,6 +624,30 @@ namespace GUI.Syntax
                 AddMissingAfterPrevious(
                     "Ожидалась лексема listOf",
                     "(пропущен listOf)");
+                return true;
+            }
+            if (_stream.Check(LexerTokenCode.LeftParen) &&
+                CheckNext(LexerTokenCode.ListOf))
+            {
+                AddError("Лишняя открывающая круглая скобка (");
+                _stream.Advance();
+
+                _stream.Match(LexerTokenCode.ListOf);
+                return true;
+            }
+
+            if (_stream.Check(LexerTokenCode.Invalid) && CurrentInvalidLooksLikeListOf())
+            {
+                AddError("Ожидалась лексема listOf");
+                _stream.Advance();
+                return true;
+            }
+
+            if (_stream.Check(LexerTokenCode.Invalid) &&
+                CheckNext(LexerTokenCode.LeftParen))
+            {
+                AddError("Ожидалась лексема listOf");
+                _stream.Advance();
                 return true;
             }
 
@@ -695,6 +803,18 @@ namespace GUI.Syntax
 
                 if (_stream.Check(LexerTokenCode.Semicolon))
                 {
+                    LexerItem next = _stream.Peek(1);
+
+                    if (!expectElement && CanStartElement(next))
+                    {
+                        AddError("Ожидалась запятая между элементами списка");
+                        _stream.Advance();
+
+                        expectElement = true;
+                        commaAfterRealElement = false;
+                        continue;
+                    }
+
                     if (expectElement && commaAfterRealElement)
                     {
                         AddMissingAfterPrevious(
@@ -707,6 +827,16 @@ namespace GUI.Syntax
 
                 if (expectElement)
                 {
+                    if (_stream.Check(LexerTokenCode.LeftParen) &&
+                        CanStartElement(_stream.Peek(1)))
+                    {
+                        AddError("Лишняя открывающая круглая скобка (");
+                        _stream.Advance();
+
+                        expectElement = true;
+                        commaAfterRealElement = false;
+                        continue;
+                    }
                     if (ConsumeInvalidToken())
                     {
                         expectElement = false;
