@@ -38,6 +38,9 @@ namespace GUI
         private ToolStripMenuItem miLab6ExpressionQuadruples;
         private ToolStripButton btnLab6ExpressionQuadruples;
 
+        private ToolStripMenuItem miLab6ExpressionPoliz;
+        private ToolStripButton btnLab6ExpressionPoliz;
+
         private float _defaultEditorFontSize;
 
         private bool _suppressFontSizeComboChanged = false;
@@ -74,9 +77,14 @@ namespace GUI
             miLab6ExpressionQuadruples.ShortcutKeys = Keys.Control | Keys.Shift | Keys.Q;
             miLab6ExpressionQuadruples.Click += CmdRunExpressionQuadruples_Click;
 
+            miLab6ExpressionPoliz = new ToolStripMenuItem("Построить ПОЛИЗ");
+            miLab6ExpressionPoliz.ShortcutKeys = Keys.Control | Keys.Shift | Keys.R;
+            miLab6ExpressionPoliz.Click += CmdRunExpressionPoliz_Click;
+
             lab6Menu.DropDownItems.Add(miLab6ExpressionLexer);
             lab6Menu.DropDownItems.Add(miLab6ExpressionSyntax);
             lab6Menu.DropDownItems.Add(miLab6ExpressionQuadruples);
+            lab6Menu.DropDownItems.Add(miLab6ExpressionPoliz);
 
             menuMain.Items.Add(lab6Menu);
 
@@ -95,12 +103,148 @@ namespace GUI
             btnLab6ExpressionQuadruples.ToolTipText = "Построение тетрад для арифметического выражения";
             btnLab6ExpressionQuadruples.Click += CmdRunExpressionQuadruples_Click;
 
+            btnLab6ExpressionPoliz = new ToolStripButton("ЛР6 ПОЛИЗ");
+            btnLab6ExpressionPoliz.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnLab6ExpressionPoliz.ToolTipText = "Построение ПОЛИЗ и вычисление выражения";
+            btnLab6ExpressionPoliz.Click += CmdRunExpressionPoliz_Click;
+
             toolMain.Items.Add(new ToolStripSeparator());
             toolMain.Items.Add(btnLab6ExpressionLexer);
             toolMain.Items.Add(btnLab6ExpressionSyntax);
             toolMain.Items.Add(btnLab6ExpressionQuadruples);
+            toolMain.Items.Add(btnLab6ExpressionPoliz);
         }
 
+        private void CmdRunExpressionPoliz_Click(object sender, EventArgs e)
+        {
+            var lexer = new ExpressionLexer();
+            var lexicalResult = lexer.Analyze(rtbEditor.Text);
+
+            if (lexicalResult.HasErrors)
+            {
+                RenderExpressionLexicalResult(lexicalResult);
+                return;
+            }
+
+            var parser = new ExpressionParser();
+            var parseResult = parser.Analyze(lexicalResult.Tokens);
+
+            if (parseResult.HasErrors)
+            {
+                RenderExpressionSyntaxResult(parseResult);
+                return;
+            }
+
+            var polizBuilder = new PolizBuilder();
+            var polizResult = polizBuilder.Build(parseResult.Root);
+
+            var evaluator = new PolizEvaluator();
+            var evaluationResult = evaluator.Evaluate(polizResult.Items);
+
+            RenderExpressionPolizResult(polizResult, evaluationResult);
+        }
+
+        private void ConfigureResultsGridForPoliz()
+        {
+            if (dgvResults.Columns.Count < 4)
+            {
+                return;
+            }
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = true;
+
+            dgvResults.Columns[0].HeaderText = "№";
+            dgvResults.Columns[1].HeaderText = "Элемент";
+            dgvResults.Columns[2].HeaderText = "Действие";
+            dgvResults.Columns[3].HeaderText = "Стек / Результат";
+
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 10;
+            dgvResults.Columns[1].FillWeight = 20;
+            dgvResults.Columns[2].FillWeight = 40;
+            dgvResults.Columns[3].FillWeight = 30;
+        }
+
+        private void RenderExpressionPolizResult(
+    PolizGenerationResult polizResult,
+    PolizEvaluationResult evaluationResult)
+        {
+            ClearResultsGrid();
+            ConfigureResultsGridForPoliz();
+
+            int polizRowIndex = dgvResults.Rows.Add(
+                "ПОЛИЗ",
+                "-",
+                "Сформированная польская инверсная запись",
+                string.IsNullOrEmpty(polizResult.PolizText) ? "(пусто)" : polizResult.PolizText);
+
+            var polizRow = dgvResults.Rows[polizRowIndex];
+            polizRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            polizRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+
+            if (!evaluationResult.CanEvaluate)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    "Вычисление",
+                    "-",
+                    "Вычисление не выполняется",
+                    evaluationResult.Errors.Count > 0
+                        ? evaluationResult.Errors[0]
+                        : "Выражение содержит идентификаторы");
+
+                var row = dgvResults.Rows[rowIndex];
+                row.DefaultCellStyle.BackColor = Color.LightYellow;
+                row.DefaultCellStyle.ForeColor = Color.DarkGoldenrod;
+
+                return;
+            }
+
+            foreach (var step in evaluationResult.Steps)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    step.Number.ToString(),
+                    step.Token,
+                    step.Action,
+                    step.StackState);
+
+                dgvResults.Rows[rowIndex].Tag = step;
+            }
+
+            if (evaluationResult.HasErrors)
+            {
+                foreach (var error in evaluationResult.Errors)
+                {
+                    int rowIndex = dgvResults.Rows.Add(
+                        "Ошибка",
+                        "-",
+                        "Ошибка вычисления ПОЛИЗ",
+                        error);
+
+                    var row = dgvResults.Rows[rowIndex];
+                    row.DefaultCellStyle.BackColor = Color.MistyRose;
+                    row.DefaultCellStyle.ForeColor = Color.DarkRed;
+                }
+
+                return;
+            }
+
+            if (evaluationResult.Success)
+            {
+                int totalRowIndex = dgvResults.Rows.Add(
+                    "Итог",
+                    "-",
+                    "Вычисление завершено успешно",
+                    evaluationResult.Value.ToString());
+
+                var totalRow = dgvResults.Rows[totalRowIndex];
+                totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+                totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+            }
+        }
         private void CmdRunExpressionQuadruples_Click(object sender, EventArgs e)
         {
             var lexer = new ExpressionLexer();
@@ -987,6 +1131,16 @@ namespace GUI
             if (btnLab6ExpressionQuadruples != null)
             {
                 btnLab6ExpressionQuadruples.Enabled = hasText;
+            }
+
+            if (miLab6ExpressionPoliz != null)
+            {
+                miLab6ExpressionPoliz.Enabled = hasText;
+            }
+
+            if (btnLab6ExpressionPoliz != null)
+            {
+                btnLab6ExpressionPoliz.Enabled = hasText;
             }
         }
 

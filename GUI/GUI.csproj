@@ -122,6 +122,11 @@
     <Compile Include="Expressions\ExpressionSyntaxError.cs" />
     <Compile Include="Expressions\ExpressionToken.cs" />
     <Compile Include="Expressions\ExpressionTokenCode.cs" />
+    <Compile Include="Expressions\PolizBuilder.cs" />
+    <Compile Include="Expressions\PolizEvaluationResult.cs" />
+    <Compile Include="Expressions\PolizEvaluationStep.cs" />
+    <Compile Include="Expressions\PolizEvaluator.cs" />
+    <Compile Include="Expressions\PolizGenerationResult.cs" />
     <Compile Include="Expressions\Quadruple.cs" />
     <Compile Include="Expressions\QuadrupleGenerationResult.cs" />
     <Compile Include="Expressions\QuadrupleGenerator.cs" />
