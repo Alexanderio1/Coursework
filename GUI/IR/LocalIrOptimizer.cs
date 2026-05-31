@@ -15,7 +15,7 @@ namespace GUI.IR
 
             foreach (IrInstruction instruction in result.Instructions)
             {
-                if (instruction.Arguments.Count == 0)
+                if (instruction == null || instruction.Arguments.Count == 0)
                     continue;
 
                 if (instruction.Operation == "const_int")
@@ -43,6 +43,9 @@ namespace GUI.IR
 
             foreach (IrInstruction instruction in source.Instructions)
             {
+                if (instruction == null)
+                    continue;
+
                 if (instruction.Operation != "listof")
                     continue;
 
@@ -64,6 +67,9 @@ namespace GUI.IR
 
             foreach (IrInstruction instruction in source.Instructions)
             {
+                if (instruction == null)
+                    continue;
+
                 if (tempsToInline.Contains(instruction.Result) && IsLiteralConstant(instruction.Operation))
                     continue;
 
@@ -117,8 +123,14 @@ namespace GUI.IR
         {
             Dictionary<string, int> result = new Dictionary<string, int>();
 
+            if (source == null)
+                return result;
+
             foreach (IrInstruction instruction in source.Instructions)
             {
+                if (instruction == null)
+                    continue;
+
                 foreach (string argument in instruction.Arguments)
                 {
                     if (!result.ContainsKey(argument))
@@ -156,12 +168,15 @@ namespace GUI.IR
 
         private string NormalizeInteger(string rawValue)
         {
+            if (string.IsNullOrWhiteSpace(rawValue))
+                return rawValue;
+
             int value;
 
             if (int.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
                 return value.ToString(CultureInfo.InvariantCulture);
 
-            if (!string.IsNullOrWhiteSpace(rawValue) && rawValue.StartsWith("+"))
+            if (rawValue.StartsWith("+"))
                 return rawValue.Substring(1);
 
             return rawValue;
