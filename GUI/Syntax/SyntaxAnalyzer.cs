@@ -295,6 +295,9 @@ namespace GUI.Syntax
             if (text == "val")
                 return true;
 
+            if (text == "v")
+                return true;
+
             if (text == "vl")
                 return true;
 
