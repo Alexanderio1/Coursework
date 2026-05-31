@@ -1,4 +1,4 @@
-﻿# Лабораторная работа 7. Анализ и преобразование кода с использованием Clang и LLVM
+﻿сщву# Лабораторная работа 7. Анализ и преобразование кода с использованием Clang и LLVM
 
 ## Цель работы.
 
@@ -198,7 +198,7 @@ attributes #2 = { nofree nounwind "no-trapping-math"="true" "stack-protector-buf
 
 
 5. Сравненение оптимизаций
-(images/code6.png)
+![--](images/code6.png)
 
 Изменения после оптимизации:
 - Переменные типа alloca были удалены;
@@ -206,18 +206,18 @@ attributes #2 = { nofree nounwind "no-trapping-math"="true" "stack-protector-buf
 - Оптимизация улучшила читаемость и упростила поток управления.
 
 6. Построение CFG для оптимизированного LLVM IR
-(images/code7.png)
-(images/code8.png)
+![--](images/code7.png)
+![--](images/code8.png)
 
 ## Индивидуальное задание
 
 1. Исходный код
-(images/code9.png)
+![Исходный код](images/code9.png)
 
 2. Оптимизация IR
-(images/code10.png)
+![Оптимизация IR](images/code10.png)
 
-(images/code11.png)
+![LLVM IR после оптимизации](images/code11.png)
 
 ### Листинг нулевой оптимизации IR
 
@@ -356,7 +356,7 @@ attributes #6 = { cold noreturn nounwind }
 !7 = !{!"llvm.loop.mustprogress"}
 ```
 
-(images/code12.png)
+![--](images/code12.png)
 
 ### Листинг комплексной оптимизации среднего уровня IR
 
@@ -484,17 +484,17 @@ attributes #3 = { cold noreturn }
 
 -O0
 
-(images/code13.png)
+![--](images/code13.png)
 
 -O2
 
-(images/code14.png)
+![--](images/code14.png)
 
  Присутствующие на графе разветвления и блоки относятся к обеспечению работы std::endl и системной локали стандартной библиотеки STL
 
 5. Применение дополнительно -loop-rotate, -licm и описание изменений
 
-(images/code15.png)
+![--](images/code15.png)
 
 ### Листинг дополнительных оптимизаций
 
