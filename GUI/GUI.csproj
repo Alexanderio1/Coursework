@@ -116,8 +116,15 @@
     <Compile Include="Expressions\ExpressionLexer.cs" />
     <Compile Include="Expressions\ExpressionLexicalError.cs" />
     <Compile Include="Expressions\ExpressionLexicalResult.cs" />
+    <Compile Include="Expressions\ExpressionNode.cs" />
+    <Compile Include="Expressions\ExpressionParser.cs" />
+    <Compile Include="Expressions\ExpressionParseResult.cs" />
+    <Compile Include="Expressions\ExpressionSyntaxError.cs" />
     <Compile Include="Expressions\ExpressionToken.cs" />
     <Compile Include="Expressions\ExpressionTokenCode.cs" />
+    <Compile Include="Expressions\Quadruple.cs" />
+    <Compile Include="Expressions\QuadrupleGenerationResult.cs" />
+    <Compile Include="Expressions\QuadrupleGenerator.cs" />
     <Compile Include="HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>

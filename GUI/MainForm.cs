@@ -1,4 +1,5 @@
 ﻿using GUI.ANTLR;
+using GUI.Expressions;
 using GUI.Lexer;
 using GUI.Syntax;
 using System;
@@ -28,6 +29,15 @@ namespace GUI
         private ToolStripButton btnDecreaseFont;
         private ToolStripComboBox cmbFontSize;
 
+        private ToolStripMenuItem miLab6ExpressionLexer;
+        private ToolStripButton btnLab6ExpressionLexer;
+
+        private ToolStripMenuItem miLab6ExpressionSyntax;
+        private ToolStripButton btnLab6ExpressionSyntax;
+
+        private ToolStripMenuItem miLab6ExpressionQuadruples;
+        private ToolStripButton btnLab6ExpressionQuadruples;
+
         private float _defaultEditorFontSize;
 
         private bool _suppressFontSizeComboChanged = false;
@@ -35,18 +45,320 @@ namespace GUI
         public MainForm()
         {
             InitializeComponent();
-
             InitializeEditorFormattingControls();
+            InitializeExpressionLabControls();
 
             this.KeyPreview = true;
             this.KeyDown += MainForm_KeyDown;
-
             this.FormClosing += MainForm_FormClosing;
             this.Activated += MainForm_Activated;
             rtbEditor.TextChanged += rtbEditor_TextChanged;
             rtbEditor.SelectionChanged += rtbEditor_SelectionChanged;
             UpdateTitle();
             UpdateCommandStates();
+        }
+
+        private void InitializeExpressionLabControls()
+        {
+            var lab6Menu = new ToolStripMenuItem("ЛР6");
+
+            miLab6ExpressionLexer = new ToolStripMenuItem("Лексический анализ выражения");
+            miLab6ExpressionLexer.ShortcutKeys = Keys.Control | Keys.Shift | Keys.L;
+            miLab6ExpressionLexer.Click += CmdRunExpressionLexer_Click;
+
+            miLab6ExpressionSyntax = new ToolStripMenuItem("Синтаксический анализ выражения");
+            miLab6ExpressionSyntax.ShortcutKeys = Keys.Control | Keys.Shift | Keys.P;
+            miLab6ExpressionSyntax.Click += CmdRunExpressionSyntax_Click;
+
+            miLab6ExpressionQuadruples = new ToolStripMenuItem("Построить тетрады");
+            miLab6ExpressionQuadruples.ShortcutKeys = Keys.Control | Keys.Shift | Keys.Q;
+            miLab6ExpressionQuadruples.Click += CmdRunExpressionQuadruples_Click;
+
+            lab6Menu.DropDownItems.Add(miLab6ExpressionLexer);
+            lab6Menu.DropDownItems.Add(miLab6ExpressionSyntax);
+            lab6Menu.DropDownItems.Add(miLab6ExpressionQuadruples);
+
+            menuMain.Items.Add(lab6Menu);
+
+            btnLab6ExpressionLexer = new ToolStripButton("ЛР6 Лексер");
+            btnLab6ExpressionLexer.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnLab6ExpressionLexer.ToolTipText = "Лексический анализ арифметического выражения";
+            btnLab6ExpressionLexer.Click += CmdRunExpressionLexer_Click;
+
+            btnLab6ExpressionSyntax = new ToolStripButton("ЛР6 Парсер");
+            btnLab6ExpressionSyntax.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnLab6ExpressionSyntax.ToolTipText = "Синтаксический анализ арифметического выражения";
+            btnLab6ExpressionSyntax.Click += CmdRunExpressionSyntax_Click;
+
+            btnLab6ExpressionQuadruples = new ToolStripButton("ЛР6 Тетрады");
+            btnLab6ExpressionQuadruples.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnLab6ExpressionQuadruples.ToolTipText = "Построение тетрад для арифметического выражения";
+            btnLab6ExpressionQuadruples.Click += CmdRunExpressionQuadruples_Click;
+
+            toolMain.Items.Add(new ToolStripSeparator());
+            toolMain.Items.Add(btnLab6ExpressionLexer);
+            toolMain.Items.Add(btnLab6ExpressionSyntax);
+            toolMain.Items.Add(btnLab6ExpressionQuadruples);
+        }
+
+        private void CmdRunExpressionQuadruples_Click(object sender, EventArgs e)
+        {
+            var lexer = new ExpressionLexer();
+            var lexicalResult = lexer.Analyze(rtbEditor.Text);
+
+            if (lexicalResult.HasErrors)
+            {
+                RenderExpressionLexicalResult(lexicalResult);
+                return;
+            }
+
+            var parser = new ExpressionParser();
+            var parseResult = parser.Analyze(lexicalResult.Tokens);
+
+            if (parseResult.HasErrors)
+            {
+                RenderExpressionSyntaxResult(parseResult);
+                return;
+            }
+
+            var generator = new QuadrupleGenerator();
+            var quadrupleResult = generator.Generate(parseResult.Root);
+
+            RenderExpressionQuadruplesResult(quadrupleResult);
+        }
+
+        private void ConfigureResultsGridForQuadruples()
+        {
+            if (dgvResults.Columns.Count < 4)
+            {
+                return;
+            }
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = true;
+
+            dgvResults.Columns[0].HeaderText = "№";
+            dgvResults.Columns[1].HeaderText = "Операция";
+            dgvResults.Columns[2].HeaderText = "Аргументы";
+            dgvResults.Columns[3].HeaderText = "Результат";
+
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 10;
+            dgvResults.Columns[1].FillWeight = 20;
+            dgvResults.Columns[2].FillWeight = 45;
+            dgvResults.Columns[3].FillWeight = 25;
+        }
+
+        private void RenderExpressionQuadruplesResult(QuadrupleGenerationResult result)
+        {
+            ClearResultsGrid();
+            ConfigureResultsGridForQuadruples();
+
+            if (result.Quadruples.Count == 0)
+            {
+                int emptyRowIndex = dgvResults.Rows.Add(
+                    "-",
+                    "-",
+                    "Операции отсутствуют",
+                    "Выражение является одиночным операндом");
+
+                var emptyRow = dgvResults.Rows[emptyRowIndex];
+                emptyRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+                emptyRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+                return;
+            }
+
+            foreach (var quadruple in result.Quadruples)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    quadruple.Number.ToString(),
+                    quadruple.Operator,
+                    string.Format("arg1 = {0}; arg2 = {1}", quadruple.Arg1, quadruple.Arg2),
+                    quadruple.Result);
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = quadruple;
+            }
+
+            int totalRowIndex = dgvResults.Rows.Add(
+                "Итог",
+                "-",
+                string.Format("Количество тетрад: {0}", result.Quadruples.Count),
+                string.Format("Результат выражения: {0}", result.ResultName));
+
+            var totalRow = dgvResults.Rows[totalRowIndex];
+            totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+        }
+        private void CmdRunExpressionSyntax_Click(object sender, EventArgs e)
+        {
+            var lexer = new ExpressionLexer();
+            var lexicalResult = lexer.Analyze(rtbEditor.Text);
+
+            if (lexicalResult.HasErrors)
+            {
+                RenderExpressionLexicalResult(lexicalResult);
+                return;
+            }
+
+            var parser = new ExpressionParser();
+            var parseResult = parser.Analyze(lexicalResult.Tokens);
+
+            RenderExpressionSyntaxResult(parseResult);
+        }
+
+        private void RenderExpressionSyntaxResult(ExpressionParseResult result)
+        {
+            ClearResultsGrid();
+            ConfigureResultsGridForExpressionSyntax();
+
+            foreach (var error in result.Errors)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    "Ошибка",
+                    "Синтаксическая ошибка",
+                    string.IsNullOrEmpty(error.Fragment) ? "(пусто)" : error.Fragment,
+                    string.Format("строка {0}, столбец {1}: {2}", error.Line, error.Column, error.Message)
+                );
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = error;
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+
+            int totalRowIndex = dgvResults.Rows.Add(
+                "Итог",
+                "-",
+                result.HasErrors
+                    ? "Синтаксический анализ завершён с ошибками"
+                    : "Синтаксический анализ завершён успешно",
+                result.HasErrors
+                    ? string.Format("Количество ошибок: {0}. Тетрады и ПОЛИЗ не формируются.", result.Errors.Count)
+                    : "Выражение соответствует грамматике E → T A"
+            );
+
+            var totalRow = dgvResults.Rows[totalRowIndex];
+            totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+            totalRow.Tag = null;
+        }
+
+        private void ConfigureResultsGridForExpressionSyntax()
+        {
+            if (dgvResults.Columns.Count < 4)
+            {
+                return;
+            }
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = true;
+
+            dgvResults.Columns[0].HeaderText = "Код";
+            dgvResults.Columns[1].HeaderText = "Тип";
+            dgvResults.Columns[2].HeaderText = "Фрагмент";
+            dgvResults.Columns[3].HeaderText = "Описание";
+
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 20;
+            dgvResults.Columns[1].FillWeight = 25;
+            dgvResults.Columns[2].FillWeight = 25;
+            dgvResults.Columns[3].FillWeight = 30;
+        }
+        private void CmdRunExpressionLexer_Click(object sender, EventArgs e)
+        {
+            var lexer = new ExpressionLexer();
+            var result = lexer.Analyze(rtbEditor.Text);
+
+            RenderExpressionLexicalResult(result);
+        }
+
+        private void RenderExpressionLexicalResult(ExpressionLexicalResult result)
+        {
+            ClearResultsGrid();
+            ConfigureResultsGridForExpressionLexer();
+
+            foreach (var token in result.Tokens)
+            {
+                if (token.Code == ExpressionTokenCode.EndOfInput)
+                {
+                    continue;
+                }
+
+                int rowIndex = dgvResults.Rows.Add(
+                    token.Code.ToString(),
+                    "Токен",
+                    string.IsNullOrEmpty(token.Text) ? "(пусто)" : token.Text,
+                    string.Format("строка {0}, столбец {1}", token.Line, token.Column)
+                );
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = token;
+
+                if (token.Code == ExpressionTokenCode.Unknown)
+                {
+                    row.DefaultCellStyle.BackColor = Color.MistyRose;
+                    row.DefaultCellStyle.ForeColor = Color.DarkRed;
+                }
+            }
+
+            foreach (var error in result.Errors)
+            {
+                int rowIndex = dgvResults.Rows.Add(
+                    "Ошибка",
+                    "Лексическая ошибка",
+                    string.IsNullOrEmpty(error.Fragment) ? "(пусто)" : error.Fragment,
+                    string.Format("строка {0}, столбец {1}: {2}", error.Line, error.Column, error.Message)
+                );
+
+                var row = dgvResults.Rows[rowIndex];
+                row.Tag = error;
+                row.DefaultCellStyle.BackColor = Color.MistyRose;
+                row.DefaultCellStyle.ForeColor = Color.DarkRed;
+            }
+
+            int totalRowIndex = dgvResults.Rows.Add(
+                "Итог",
+                "-",
+                result.HasErrors ? "Лексический анализ завершён с ошибками" : "Лексический анализ завершён успешно",
+                string.Format("Количество ошибок: {0}", result.Errors.Count)
+            );
+
+            var totalRow = dgvResults.Rows[totalRowIndex];
+            totalRow.DefaultCellStyle.BackColor = Color.AliceBlue;
+            totalRow.DefaultCellStyle.ForeColor = Color.DarkBlue;
+            totalRow.Tag = null;
+        }
+
+        private void ConfigureResultsGridForExpressionLexer()
+        {
+            if (dgvResults.Columns.Count < 4)
+            {
+                return;
+            }
+
+            dgvResults.Columns[0].Visible = true;
+            dgvResults.Columns[1].Visible = true;
+            dgvResults.Columns[2].Visible = true;
+            dgvResults.Columns[3].Visible = true;
+
+            dgvResults.Columns[0].HeaderText = "Код";
+            dgvResults.Columns[1].HeaderText = "Тип";
+            dgvResults.Columns[2].HeaderText = "Лексема / Фрагмент";
+            dgvResults.Columns[3].HeaderText = "Местоположение / Описание";
+
+            dgvResults.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
+            dgvResults.Columns[0].FillWeight = 20;
+            dgvResults.Columns[1].FillWeight = 25;
+            dgvResults.Columns[2].FillWeight = 25;
+            dgvResults.Columns[3].FillWeight = 30;
         }
 
         private void rtbEditor_TextChanged(object sender, EventArgs e)
@@ -506,6 +818,39 @@ namespace GUI
 
             var row = dgvResults.Rows[e.RowIndex];
 
+            if (row.Tag is ExpressionToken expressionToken)
+            {
+                HighlightRange(
+                    expressionToken.Line,
+                    expressionToken.Column,
+                    expressionToken.Line,
+                    expressionToken.Column + Math.Max(expressionToken.Length, 1) - 1);
+
+                return;
+            }
+
+            if (row.Tag is ExpressionLexicalError expressionError)
+            {
+                HighlightRange(
+                    expressionError.Line,
+                    expressionError.Column,
+                    expressionError.Line,
+                    expressionError.Column + Math.Max(expressionError.Length, 1) - 1);
+
+                return;
+            }
+
+            if (row.Tag is ExpressionSyntaxError expressionSyntaxError)
+            {
+                HighlightRange(
+                    expressionSyntaxError.Line,
+                    expressionSyntaxError.Column,
+                    expressionSyntaxError.Line,
+                    expressionSyntaxError.Column + Math.Max(expressionSyntaxError.Length, 1) - 1);
+
+                return;
+            }
+
             if (row.Tag is LexerItem lexerItem)
             {
                 HighlightRange(
@@ -534,6 +879,7 @@ namespace GUI
                     antlrError.EndColumn);
                 return;
             }
+
         }
 
         private int GetCharIndexFromLineColumn(int line, int column)
@@ -612,6 +958,36 @@ namespace GUI
 
             miRunExecute.Enabled = hasText;
             btnRun.Enabled = hasText;
+
+            if (miLab6ExpressionLexer != null)
+            {
+                miLab6ExpressionLexer.Enabled = hasText;
+            }
+
+            if (btnLab6ExpressionLexer != null)
+            {
+                btnLab6ExpressionLexer.Enabled = hasText;
+            }
+
+            if (miLab6ExpressionSyntax != null)
+            {
+                miLab6ExpressionSyntax.Enabled = hasText;
+            }
+
+            if (btnLab6ExpressionSyntax != null)
+            {
+                btnLab6ExpressionSyntax.Enabled = hasText;
+            }
+
+            if (miLab6ExpressionQuadruples != null)
+            {
+                miLab6ExpressionQuadruples.Enabled = hasText;
+            }
+
+            if (btnLab6ExpressionQuadruples != null)
+            {
+                btnLab6ExpressionQuadruples.Enabled = hasText;
+            }
         }
 
         private void MainForm_Activated(object sender, EventArgs e)
