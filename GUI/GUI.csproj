@@ -113,6 +113,11 @@
     <Compile Include="ANTLR\AntlrLexerErrorListener.cs" />
     <Compile Include="ANTLR\AntlrSyntaxError.cs" />
     <Compile Include="ANTLR\AntlrSyntaxResult.cs" />
+    <Compile Include="Expressions\ExpressionLexer.cs" />
+    <Compile Include="Expressions\ExpressionLexicalError.cs" />
+    <Compile Include="Expressions\ExpressionLexicalResult.cs" />
+    <Compile Include="Expressions\ExpressionToken.cs" />
+    <Compile Include="Expressions\ExpressionTokenCode.cs" />
     <Compile Include="HelpForm.cs">
       <SubType>Form</SubType>
     </Compile>
