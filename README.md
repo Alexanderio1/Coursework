@@ -1,1302 +1,682 @@
-﻿# Лабораторная работа 1. Разработка пользовательского интерфейса (GUI) для языкового процессора
+﻿# Лабораторная работа 7. Анализ и преобразование кода с использованием Clang и LLVM
 
-## Цель работы
+## Цель работы.
 
-Создание графического интерфейса пользователя для языкового процессора в виде специализированного текстового редактора.
+Познакомиться с инструментарием Clang и LLVM, освоить получение абстрактного синтаксического дерева (AST) и промежуточного представления (LLVM IR) для кода на C/C++, научиться применять базовые оптимизации, строить графы потока управления (CFG), а также анализировать влияние оптимизаций на различные синтаксические конструкции языка.
 
 ## Автор
 
-**Костоломов Александр Евгеньевич**
-Группа: **АВТ-314**
-НГТУ
+**Костоломов Александр Евгеньевич**.
 
-## Описание проекта
+Группа: **АВТ-314**.
 
-В рамках лабораторной работы разработано оконное приложение, представляющее собой специализированный текстовый редактор.
-
-Программа предназначена для:
-
-* ввода текста;
-* редактирования текста;
-* открытия и сохранения текстовых файлов;
-* последующего расширения до языкового процессора для анализа исходного кода.
-
-В интерфейсе реализованы следующие основные элементы:
-
-* главное меню программы;
-* панель инструментов для быстрого доступа к командам;
-* область ввода и редактирования текста;
-* область вывода результатов работы программы.
-
-## Реализованный функционал
-
-### Меню «Файл»
-
-* **Создать** — создание нового документа;
-* **Открыть** — открытие существующего текстового файла;
-* **Сохранить** — сохранение текущего документа;
-* **Сохранить как** — сохранение документа под новым именем;
-* **Выход** — завершение работы программы с подтверждением сохранения изменений.
-
-### Меню «Правка»
-
-* **Отменить** — отмена последнего действия;
-* **Повторить** — повтор отменённого действия;
-* **Вырезать** — вырезание выделенного текста;
-* **Копировать** — копирование выделенного текста;
-* **Вставить** — вставка текста из буфера обмена;
-* **Удалить** — удаление выделенного фрагмента;
-* **Выделить всё** — выделение всего текста в окне редактора.
-
-### Меню «Пуск»
-
-* **Выполнить** — запуск обработки текста.
-
-На текущем этапе языковой процессор ещё не реализован, поэтому команда работает как заглушка и выводит сообщение в нижнюю область результатов.
-
-### Меню «Справка»
-
-* **Справка** — окно с описанием интерфейса и реализованных функций;
-* **О программе** — окно с информацией о приложении и авторе.
-
-### Панель инструментов
-
-Основные функции меню продублированы на панели инструментов для быстрого доступа.
-
-## Используемые технологии
-
-* **Язык программирования:** C#
-* **Платформа:** .NET Framework 4.8
-* **GUI-фреймворк:** Windows Forms
-* **Среда разработки:** Microsoft Visual Studio
-
-## Инструкция по сборке и запуску
-
-### Сборка проекта
-
-1. Открыть решение проекта в Microsoft Visual Studio.
-2. Выбрать конфигурацию **Release**.
-3. Выполнить команду **Сборка → Перестроить решение**.
-
-### Запуск из среды разработки
-
-Для запуска программы в Visual Studio использовать:
-
-* **Отладка → Пуск**
-  или клавишу **F5**.
-
-### Запуск готовой программы
-
-После сборки исполняемый файл находится в одной из папок:
-
-* `bin\x86\Release\GUI.exe`
-* `bin\Release\GUI.exe`
-
-Точный путь зависит от выбранной платформы сборки.
-
-### Установка на целевой машине
-
-Для запуска программы на компьютере без Visual Studio может использоваться готовый оффлайн-установщик:
-
-* `Analyser_Setup.exe`
-
-Если выполняется запуск напрямую через `GUI.exe`, на компьютере должен быть установлен **.NET Framework 4.8**.
-
-## Руководство пользователя
-
-## Главное окно программы
-
-Главное окно приложения содержит:
-
-* главное меню;
-* панель инструментов;
-* верхнюю область редактирования текста;
-* нижнюю область вывода результатов работы программы.
-
-![Главное окно программы](images/main-window.png)
-
+## Постановка задачи.
+1. Установить Clang и LLVM;
+2. Скомпилировать простой C-файл с использованием clang и получить его: абстрактное синтаксическое дерево (AST), промежуточное представление LLVM IR;
+3. Использовать opt для применения базовой комплексной оптимизации (например, О2);
+4. Построить граф потока управления (CFG) для оптимизированной программы;
+5. Проанализировать результат, сделать выводы и ответить на контрольные вопросы.
+6. Выполнить индивидуальное задание в соответствии со своим оператором из КР / РГР.
 ---
-
-## Меню «Файл»
-
-Меню **«Файл»** предназначено для создания, открытия и сохранения документов.
-
-Команды:
-
-* **Создать**
-* **Открыть**
-* **Сохранить**
-* **Сохранить как**
-* **Выход**
-
-Горячие клавиши:
-
-* **Ctrl + N** — создать;
-* **Ctrl + O** — открыть;
-* **Ctrl + S** — сохранить;
-* **Ctrl + Shift + S** — сохранить как;
-* **Alt + F4** — выход.
-
-![Меню Файл](images/file-menu.png)
-
----
-
-## Меню «Правка»
-
-Меню **«Правка»** предназначено для выполнения стандартных операций редактирования текста.
-
-Команды:
-
-* **Отменить**
-* **Повторить**
-* **Вырезать**
-* **Копировать**
-* **Вставить**
-* **Удалить**
-* **Выделить всё**
-
-Горячие клавиши:
-
-* **Ctrl + Z** — отменить;
-* **Ctrl + Y** — повторить;
-* **Ctrl + X** — вырезать;
-* **Ctrl + C** — копировать;
-* **Ctrl + V** — вставить;
-* **Delete** — удалить;
-* **Ctrl + A** — выделить всё.
-
-![Меню Правка](images/edit-menu.png)
-
----
-
-## Подтверждение сохранения изменений
-
-Если пользователь изменил текст и пытается:
-
-* закрыть программу;
-* создать новый документ;
-* открыть другой файл,
-
-то приложение выводит запрос на сохранение изменений.
-
-![Подтверждение сохранения изменений](images/save-confirm.png)
-
----
-
-## Команда «Пуск»
-
-Команда **«Пуск»** запускает обработку текста.
-
-Горячая клавиша:
-
-* **F5** — выполнить.
-
-На текущем этапе в нижней области выводится сообщение о том, что языковой процессор пока не реализован.
-
-![Результат выполнения команды Пуск](images/run-result.png)
-
----
-
-## Окно «Справка»
-
-Окно **«Справка»** содержит описание интерфейса и перечень реализованных функций программы.
-
-Горячая клавиша:
-
-* **F1** — открыть справку.
-
-![Окно справки](images/help-window.png)
-
----
-
-## Окно «О программе»
-
-Окно **«О программе»** содержит краткие сведения о приложении, авторе и используемой технологии.
-
-![Окно О программе](images/about-window.png)
-
-## Описание интерфейса
-
-* **Верхняя область** предназначена для ввода и редактирования текста.
-* **Нижняя область** предназначена только для вывода результатов работы программы.
-* Размеры областей можно изменять с помощью разделителя.
-* При изменении размера окна элементы интерфейса автоматически подстраиваются.
-
-## Ограничения
-
-* Приложение разработано для операционной системы **Windows**.
-* Для прямого запуска программы требуется установленный **.NET Framework 4.8**.
-* На текущем этапе языковой процессор не реализован; команда **«Пуск»** работает как заглушка.
-* Дополнительные функции, такие как вкладки, нумерация строк, drag-and-drop, локализация, строка состояния и подсветка синтаксиса, не реализованы.
-
-
----
-
-# Лабораторная работа №2. Разработка лексического анализатора
-
-## Цель работы
-
-Изучить назначение и принципы работы лексического анализатора в структуре компилятора. Спроектировать диаграмму состояний конечного автомата и выполнить программную реализацию сканера для выделения лексем из входного текста. Интегрировать разработанный модуль в ранее созданный графический интерфейс языкового процессора.
-
-## Постановка задачи
-В рамках лабораторной работы требовалось:
-
-1. Разработать диаграмму состояний сканера.
-2. Реализовать лексический анализатор для выделения лексем входной строки.
-3. Выполнить классификацию лексем и вывести результат в таблицу.
-4. Реализовать переход к позиции лексемы в редакторе по щелчку на строке таблицы.
-5. Интегрировать сканер в графический интерфейс, разработанный в лабораторной работе №1.
-
-## Вариант задания
-**Объявление списка с инициализацией на языке Kotlin**
-
-Пример корректной строки:
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
-
-## Поддерживаемые лексемы
-В программе распознаются следующие типы лексем:
-
-- ключевое слово `val`;
-- идентификатор;
-- оператор присваивания `=`;
-- специальная лексема `listOf`;
-- открывающая круглая скобка `(`;
-- закрывающая круглая скобка `)`;
-- разделитель `,`;
-- конец оператора `;`;
-- строковый литерал;
-- целочисленный литерал;
-- вещественный литерал;
-- логические литералы `true`, `false`;
-- знаки `+` и `-`.
-
-## Диаграмма состояний
-
-![Диаграмма состояний](images/lab2/state-diagram.png)
-
-## Результат лексического анализа
-Для каждой найденной лексемы в таблице отображаются:
-
-- условный код;
-- тип лексемы;
-- лексема / сообщение;
-- местоположение (строка, начальный и конечный столбцы).
-
-При выборе строки в таблице курсор в редакторе переходит к соответствующей позиции.
-
-## Пример корректного ввода
-Исходная строка:
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
-
-Результат работы программы:
-
-
-![Корректный пример](images/lab2/main-success.png)
-
-## Примеры ошибочного ввода
-
-### Пропущен символ `;`
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow")
-```
-
-
-![Ошибка: нет точки с запятой](images/lab2/error-missing-semicolon.png)
-
-### Лишняя запятая
-```kotlin
-val animals = listOf("Dog", , "Cow");
-```
-
-
-![Ошибка: двойная запятая](images/lab2/error-double-comma.png)
-
-### Запятая перед закрывающей скобкой
-```kotlin
-val animals = listOf("Dog", "Cat", );
-```
-
-
-![Ошибка: запятая перед скобкой](images/lab2/error-trailing-comma.png)
-
----
-
-# Дополнительное задание. Интеграция Flex & Bison
-
-## Содержание дополнительного задания
-В рамках дополнительного задания требовалось:
-
-1. Разработать грамматику.
-2. Сгенерировать код лексера и парсера для анализа грамматики с помощью программного обеспечения FLEX & BISON.
-3. Внедрить и протестировать полученный анализатор в программе, реализованной в рамках первой лабораторной работы.
-4. Дополнить README грамматиками, классификацией грамматики, примерами допустимых строк и тестовыми примерами.
-
-## Что было реализовано
-В ходе выполнения дополнительного задания:
-
-- разработана формальная грамматика конструкции объявления списка с инициализацией на языке Kotlin;
-- созданы файлы `lexer.l` и `parser.y`;
-- сгенерирован код лексического и синтаксического анализаторов;
-- реализован нативный модуль `NativeParser.dll`;
-- выполнено подключение нативного парсера к Windows Forms приложению на C#;
-- синтаксический анализ запускается после успешного завершения лексического анализа;
-- результат синтаксического анализа выводится в общей таблице вместе с лексическим разбором.
-
-## Разработанная грамматика
-
-Обозначим грамматику как:
-
-```text
-G[Z] = {Vt, Vn, Z, P}
-```
-
-### Терминальные символы `Vt`
-
-```text
-Vt = {
-val, listOf, identifier, string, int, double, true, false,
-(, ), ,, ;, =, +, -
+### Индивидуальное задание
+Тема: Списки / массивы / словари
+```cpp
+//Пример кода:
+#include <iostream>
+#include <array>
+int main() {
+std::array<int, 5> data = {1, 2, 3, 4, 5};
+int sum = 0;
+for (int i = 0; i < data.size(); ++i) {
+sum += data[i];
+}
+std::cout << sum << std::endl;
+return 0;
 }
 ```
+Задания:
+1. Получите IR для -O0 и -O2.
+2. Исследуйте, разворачивается ли цикл (-unroll).
+3. Постройте CFG для main с -O0 и с -O2.
+4. Примените дополнительно -loop-rotate, -licm и опишите
+изменения.
+5. Вывод: какие оптимизации применились к массиву и циклу?
 
-### Нетерминальные символы `Vn`
+## Общее задание
 
-```text
-Vn = {
-<program>,
-<statement>,
-<elements>,
-<element>,
-<signed_number>
+![1. Исходный код](images/code1.png)
+
+![2. Работа с AST](images/code2.png)
+
+![3. Генерация LLVM IR](images/code3.png)
+
+### Листинг LLVM IR
+
+```llvm
+; ModuleID = 'main.c'
+source_filename = "main.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @square(i32 noundef %0) #0 {
+  %2 = alloca i32, align 4
+  store i32 %0, ptr %2, align 4
+  %3 = load i32, ptr %2, align 4
+  %4 = load i32, ptr %2, align 4
+  %5 = mul nsw i32 %3, %4
+  ret i32 %5
 }
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @main() #0 {
+  %1 = alloca i32, align 4
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  store i32 0, ptr %1, align 4
+  store i32 5, ptr %2, align 4
+  %4 = load i32, ptr %2, align 4
+  %5 = call i32 @square(i32 noundef %4)
+  store i32 %5, ptr %3, align 4
+  %6 = load i32, ptr %3, align 4
+  %7 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %6)
+  ret i32 0
+}
+
+declare i32 @printf(ptr noundef, ...) #1
+
+attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+
+!llvm.module.flags = !{!0, !1, !2, !3, !4}
+!llvm.ident = !{!5}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 8, !"PIC Level", i32 2}
+!2 = !{i32 7, !"PIE Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 2}
+!4 = !{i32 7, !"frame-pointer", i32 2}
+!5 = !{!"Ubuntu clang version 21.1.8 (6ubuntu1)"}
 ```
 
-### Начальный символ
+![4. Оптимизация IR](images/code4.png)
 
-```text
-Z = <program>
+### LLVM IR без оптимизаций (-O0)
+
+```llvm
+; ModuleID = 'main.c'
+source_filename = "main.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @square(i32 noundef %0) #0 {
+  %2 = alloca i32, align 4
+  store i32 %0, ptr %2, align 4
+  %3 = load i32, ptr %2, align 4
+  %4 = load i32, ptr %2, align 4
+  %5 = mul nsw i32 %3, %4
+  ret i32 %5
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @main() #0 {
+  %1 = alloca i32, align 4
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  store i32 0, ptr %1, align 4
+  store i32 5, ptr %2, align 4
+  %4 = load i32, ptr %2, align 4
+  %5 = call i32 @square(i32 noundef %4)
+  store i32 %5, ptr %3, align 4
+  %6 = load i32, ptr %3, align 4
+  %7 = call i32 (ptr, ...) @printf(ptr noundef @.str, i32 noundef %6)
+  ret i32 0
+}
+
+declare i32 @printf(ptr noundef, ...) #1
+
+attributes #0 = { noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+
+!llvm.module.flags = !{!0, !1, !2, !3, !4}
+!llvm.ident = !{!5}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 8, !"PIC Level", i32 2}
+!2 = !{i32 7, !"PIE Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 2}
+!4 = !{i32 7, !"frame-pointer", i32 2}
+!5 = !{!"Ubuntu clang version 21.1.8 (6ubuntu1)"}
 ```
 
-### Правила продукции `P`
+    
+![--](images/code5.png)
 
-```text
-<program> ::= <statement>
+### Комплексная оптимизация среднего уровня IR
 
-<statement> ::= val identifier = listOf ( <elements> ) ;
+```llvm
+; ModuleID = 'main.c'
+source_filename = "main.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
 
-<elements> ::= <element>
-             | <elements> , <element>
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
 
-<element> ::= string
-            | true
-            | false
-            | <signed_number>
+; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none) uwtable
+define dso_local i32 @square(i32 noundef %0) local_unnamed_addr #0 {
+  %2 = mul nsw i32 %0, %0
+  ret i32 %2
+}
 
-<signed_number> ::= int
-                  | double
-                  | + int
-                  | - int
-                  | + double
-                  | - double
+; Function Attrs: nofree nounwind uwtable
+define dso_local noundef i32 @main() local_unnamed_addr #1 {
+  %1 = tail call i32 (ptr, ...) @printf(ptr noundef nonnull dereferenceable(1) @.str, i32 noundef 25)
+  ret i32 0
+}
+
+; Function Attrs: nofree nounwind
+declare noundef i32 @printf(ptr noundef readonly captures(none), ...) local_unnamed_addr #2
+
+attributes #0 = { mustprogress nofree norecurse nosync nounwind willreturn memory(none) uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { nofree nounwind uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #2 = { nofree nounwind "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+
+!llvm.module.flags = !{!0, !1, !2, !3}
+!llvm.ident = !{!4}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 8, !"PIC Level", i32 2}
+!2 = !{i32 7, !"PIE Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 2}
+!4 = !{!"Ubuntu clang version 21.1.8 (6ubuntu1)"}
 ```
 
-## Грамматика в представлении Flex & Bison
 
-### Токены
+5. Сравненение оптимизаций
+(images/code6.png)
 
-```text
-VAL
-LISTOF
-IDENTIFIER
-STRING
-INT
-DOUBLE
-TRUE
-FALSE
-LPAREN
-RPAREN
-COMMA
-SEMICOLON
-ASSIGN
-PLUS
-MINUS
-INVALID
+Изменения после оптимизации:
+- Переменные типа alloca были удалены;
+- Код переведён в SSA-форму;
+- Оптимизация улучшила читаемость и упростила поток управления.
+
+6. Построение CFG для оптимизированного LLVM IR
+(images/code7.png)
+(images/code8.png)
+
+## Индивидуальное задание
+
+1. Исходный код
+(images/code9.png)
+
+2. Оптимизация IR
+(images/code10.png)
+
+(images/code11.png)
+
+### Листинг нулевой оптимизации IR
+
+```llvm
+; ModuleID = 'task.cpp'
+source_filename = "task.cpp"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+module asm ".globl _ZSt21ios_base_library_initv"
+
+%"struct.std::array" = type { [5 x i32] }
+%"class.std::basic_ostream" = type { ptr, %"class.std::basic_ios" }
+%"class.std::basic_ios" = type { %"class.std::ios_base", ptr, i8, i8, ptr, ptr, ptr, ptr }
+%"class.std::ios_base" = type { ptr, i64, i64, i32, i32, i32, ptr, %"struct.std::ios_base::_Words", [8 x %"struct.std::ios_base::_Words"], i32, ptr, %"class.std::locale" }
+%"struct.std::ios_base::_Words" = type { ptr, i64 }
+%"class.std::locale" = type { ptr }
+
+$_ZNSt5arrayIiLm5EEixEm = comdat any
+
+@__const.main.data = private unnamed_addr constant %"struct.std::array" { [5 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5] }, align 4
+@_ZSt4cout = external global %"class.std::basic_ostream", align 8
+@.str = private unnamed_addr constant [66 x i8] c"/usr/lib/gcc/x86_64-linux-gnu/15/../../../../include/c++/15/array\00", align 1
+@__PRETTY_FUNCTION__._ZNSt5arrayIiLm5EEixEm = private unnamed_addr constant [73 x i8] c"reference std::array<int, 5>::operator[](size_type) [_Tp = int, _Nm = 5]\00", align 1
+@.str.1 = private unnamed_addr constant [19 x i8] c"__n < this->size()\00", align 1
+
+; Function Attrs: mustprogress noinline norecurse optnone uwtable
+define dso_local noundef i32 @main() #0 {
+  %1 = alloca ptr, align 8
+  %2 = alloca i32, align 4
+  %3 = alloca %"struct.std::array", align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  store i32 0, ptr %2, align 4
+  call void @llvm.memcpy.p0.p0.i64(ptr align 4 %3, ptr align 4 @__const.main.data, i64 20, i1 false)
+  store i32 0, ptr %4, align 4
+  store i32 0, ptr %5, align 4
+  br label %6
+
+6:                                                ; preds = %18, %0
+  %7 = load i32, ptr %5, align 4
+  %8 = sext i32 %7 to i64
+  store ptr %3, ptr %1, align 8
+  %9 = load ptr, ptr %1, align 8
+  %10 = icmp ult i64 %8, 5
+  br i1 %10, label %11, label %21
+
+11:                                               ; preds = %6
+  %12 = load i32, ptr %5, align 4
+  %13 = sext i32 %12 to i64
+  %14 = call noundef nonnull align 4 dereferenceable(4) ptr @_ZNSt5arrayIiLm5EEixEm(ptr noundef nonnull align 4 dereferenceable(20) %3, i64 noundef %13) #5
+  %15 = load i32, ptr %14, align 4
+  %16 = load i32, ptr %4, align 4
+  %17 = add nsw i32 %16, %15
+  store i32 %17, ptr %4, align 4
+  br label %18
+
+18:                                               ; preds = %11
+  %19 = load i32, ptr %5, align 4
+  %20 = add nsw i32 %19, 1
+  store i32 %20, ptr %5, align 4
+  br label %6, !llvm.loop !6
+
+21:                                               ; preds = %6
+  %22 = load i32, ptr %4, align 4
+  %23 = call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEi(ptr noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i32 noundef %22)
+  %24 = call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEPFRSoS_E(ptr noundef nonnull align 8 dereferenceable(8) %23, ptr noundef @_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_)
+  ret i32 0
+}
+
+; Function Attrs: nocallback nofree nounwind willreturn memory(argmem: readwrite)
+declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
+
+; Function Attrs: mustprogress noinline nounwind optnone uwtable
+define linkonce_odr dso_local noundef nonnull align 4 dereferenceable(4) ptr @_ZNSt5arrayIiLm5EEixEm(ptr noundef nonnull align 4 dereferenceable(20) %0, i64 noundef %1) #2 comdat align 2 {
+  %3 = alloca ptr, align 8
+  %4 = alloca ptr, align 8
+  %5 = alloca i64, align 8
+  store ptr %0, ptr %4, align 8
+  store i64 %1, ptr %5, align 8
+  %6 = load ptr, ptr %4, align 8
+  br label %7
+
+7:                                                ; preds = %2
+  %8 = load i64, ptr %5, align 8
+  store ptr %6, ptr %3, align 8
+  %9 = load ptr, ptr %3, align 8
+  %10 = icmp ult i64 %8, 5
+  %11 = xor i1 %10, true
+  br i1 %11, label %12, label %13
+
+12:                                               ; preds = %7
+  call void @_ZSt21__glibcxx_assert_failPKciS0_S0_(ptr noundef @.str, i32 noundef 210, ptr noundef @__PRETTY_FUNCTION__._ZNSt5arrayIiLm5EEixEm, ptr noundef @.str.1) #6
+  unreachable
+
+13:                                               ; preds = %7
+  br label %14
+
+14:                                               ; preds = %13
+  br label %15
+
+15:                                               ; preds = %14
+  %16 = getelementptr inbounds nuw %"struct.std::array", ptr %6, i32 0, i32 0
+  %17 = load i64, ptr %5, align 8
+  %18 = getelementptr inbounds nuw [5 x i32], ptr %16, i64 0, i64 %17
+  ret ptr %18
+}
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEi(ptr noundef nonnull align 8 dereferenceable(8), i32 noundef) #3
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEPFRSoS_E(ptr noundef nonnull align 8 dereferenceable(8), ptr noundef) #3
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(ptr noundef nonnull align 8 dereferenceable(8)) #3
+
+; Function Attrs: cold noreturn nounwind
+declare void @_ZSt21__glibcxx_assert_failPKciS0_S0_(ptr noundef, i32 noundef, ptr noundef, ptr noundef) #4
+
+attributes #0 = { mustprogress noinline norecurse optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { nocallback nofree nounwind willreturn memory(argmem: readwrite) }
+attributes #2 = { mustprogress noinline nounwind optnone uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #3 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #4 = { cold noreturn nounwind "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #5 = { nounwind }
+attributes #6 = { cold noreturn nounwind }
+
+!llvm.module.flags = !{!0, !1, !2, !3, !4}
+!llvm.ident = !{!5}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 8, !"PIC Level", i32 2}
+!2 = !{i32 7, !"PIE Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 2}
+!4 = !{i32 7, !"frame-pointer", i32 2}
+!5 = !{!"Ubuntu clang version 21.1.8 (6ubuntu1)"}
+!6 = distinct !{!6, !7}
+!7 = !{!"llvm.loop.mustprogress"}
 ```
 
-### Правила синтаксического анализа
+(images/code12.png)
 
-```text
-program
-    : statement
-    ;
+### Листинг комплексной оптимизации среднего уровня IR
 
-statement
-    : VAL IDENTIFIER ASSIGN LISTOF LPAREN elements RPAREN SEMICOLON
-    ;
+```llvm
+; ModuleID = 'task.cpp'
+source_filename = "task.cpp"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
 
-elements
-    : element
-    | elements COMMA element
-    ;
+module asm ".globl _ZSt21ios_base_library_initv"
 
-element
-    : STRING
-    | TRUE
-    | FALSE
-    | signed_number
-    ;
+%"class.std::basic_ostream" = type { ptr, %"class.std::basic_ios" }
+%"class.std::basic_ios" = type { %"class.std::ios_base", ptr, i8, i8, ptr, ptr, ptr, ptr }
+%"class.std::ios_base" = type { ptr, i64, i64, i32, i32, i32, ptr, %"struct.std::ios_base::_Words", [8 x %"struct.std::ios_base::_Words"], i32, ptr, %"class.std::locale" }
+%"struct.std::ios_base::_Words" = type { ptr, i64 }
+%"class.std::locale" = type { ptr }
 
-signed_number
-    : INT
-    | DOUBLE
-    | PLUS INT
-    | MINUS INT
-    | PLUS DOUBLE
-    | MINUS DOUBLE
-    ;
+@_ZSt4cout = external global %"class.std::basic_ostream", align 8
+
+; Function Attrs: mustprogress norecurse uwtable
+define dso_local noundef i32 @main() local_unnamed_addr #0 {
+  %1 = tail call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEi(ptr noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i32 noundef 15)
+  %2 = load ptr, ptr %1, align 8, !tbaa !5
+  %3 = getelementptr i8, ptr %2, i64 -24
+  %4 = load i64, ptr %3, align 8
+  %5 = getelementptr inbounds i8, ptr %1, i64 %4
+  %6 = getelementptr inbounds nuw i8, ptr %5, i64 240
+  %7 = load ptr, ptr %6, align 8, !tbaa !8
+  %8 = icmp eq ptr %7, null
+  br i1 %8, label %9, label %10
+
+9:                                                ; preds = %0
+  tail call void @_ZSt16__throw_bad_castv() #3
+  unreachable
+
+10:                                               ; preds = %0
+  %11 = getelementptr inbounds nuw i8, ptr %7, i64 56
+  %12 = load i8, ptr %11, align 8, !tbaa !28
+  %13 = icmp eq i8 %12, 0
+  br i1 %13, label %17, label %14
+
+14:                                               ; preds = %10
+  %15 = getelementptr inbounds nuw i8, ptr %7, i64 67
+  %16 = load i8, ptr %15, align 1, !tbaa !34
+  br label %22
+
+17:                                               ; preds = %10
+  tail call void @_ZNKSt5ctypeIcE13_M_widen_initEv(ptr noundef nonnull align 8 dereferenceable(570) %7)
+  %18 = load ptr, ptr %7, align 8, !tbaa !5
+  %19 = getelementptr inbounds nuw i8, ptr %18, i64 48
+  %20 = load ptr, ptr %19, align 8
+  %21 = tail call noundef signext i8 %20(ptr noundef nonnull align 8 dereferenceable(570) %7, i8 noundef signext 10)
+  br label %22
+
+22:                                               ; preds = %14, %17
+  %23 = phi i8 [ %16, %14 ], [ %21, %17 ]
+  %24 = tail call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSo3putEc(ptr noundef nonnull align 8 dereferenceable(8) %1, i8 noundef signext %23)
+  %25 = tail call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSo5flushEv(ptr noundef nonnull align 8 dereferenceable(8) %24)
+  ret i32 0
+}
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEi(ptr noundef nonnull align 8 dereferenceable(8), i32 noundef) local_unnamed_addr #1
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSo3putEc(ptr noundef nonnull align 8 dereferenceable(8), i8 noundef signext) local_unnamed_addr #1
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSo5flushEv(ptr noundef nonnull align 8 dereferenceable(8)) local_unnamed_addr #1
+
+; Function Attrs: cold noreturn
+declare void @_ZSt16__throw_bad_castv() local_unnamed_addr #2
+
+declare void @_ZNKSt5ctypeIcE13_M_widen_initEv(ptr noundef nonnull align 8 dereferenceable(570)) local_unnamed_addr #1
+
+attributes #0 = { mustprogress norecurse uwtable "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #2 = { cold noreturn "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #3 = { cold noreturn }
+
+!llvm.module.flags = !{!0, !1, !2, !3}
+!llvm.ident = !{!4}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 8, !"PIC Level", i32 2}
+!2 = !{i32 7, !"PIE Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 2}
+!4 = !{!"Ubuntu clang version 21.1.8 (6ubuntu1)"}
+!5 = !{!6, !6, i64 0}
+!6 = !{!"vtable pointer", !7, i64 0}
+!7 = !{!"Simple C++ TBAA"}
+!8 = !{!9, !25, i64 240}
+!9 = !{!"_ZTSSt9basic_iosIcSt11char_traitsIcEE", !10, i64 0, !22, i64 216, !12, i64 224, !23, i64 225, !24, i64 232, !25, i64 240, !26, i64 248, !27, i64 256}
+!10 = !{!"_ZTSSt8ios_base", !11, i64 8, !11, i64 16, !13, i64 24, !14, i64 28, !14, i64 32, !15, i64 40, !17, i64 48, !12, i64 64, !18, i64 192, !19, i64 200, !20, i64 208}
+!11 = !{!"long", !12, i64 0}
+!12 = !{!"omnipotent char", !7, i64 0}
+!13 = !{!"_ZTSSt13_Ios_Fmtflags", !12, i64 0}
+!14 = !{!"_ZTSSt12_Ios_Iostate", !12, i64 0}
+!15 = !{!"p1 _ZTSNSt8ios_base14_Callback_listE", !16, i64 0}
+!16 = !{!"any pointer", !12, i64 0}
+!17 = !{!"_ZTSNSt8ios_base6_WordsE", !16, i64 0, !11, i64 8}
+!18 = !{!"int", !12, i64 0}
+!19 = !{!"p1 _ZTSNSt8ios_base6_WordsE", !16, i64 0}
+!20 = !{!"_ZTSSt6locale", !21, i64 0}
+!21 = !{!"p1 _ZTSNSt6locale5_ImplE", !16, i64 0}
+!22 = !{!"p1 _ZTSSo", !16, i64 0}
+!23 = !{!"bool", !12, i64 0}
+!24 = !{!"p1 _ZTSSt15basic_streambufIcSt11char_traitsIcEE", !16, i64 0}
+!25 = !{!"p1 _ZTSSt5ctypeIcE", !16, i64 0}
+!26 = !{!"p1 _ZTSSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE", !16, i64 0}
+!27 = !{!"p1 _ZTSSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE", !16, i64 0}
+!28 = !{!29, !12, i64 56}
+!29 = !{!"_ZTSSt5ctypeIcE", !30, i64 0, !31, i64 16, !23, i64 24, !32, i64 32, !32, i64 40, !33, i64 48, !12, i64 56, !12, i64 57, !12, i64 313, !12, i64 569}
+!30 = !{!"_ZTSNSt6locale5facetE", !18, i64 8}
+!31 = !{!"p1 _ZTS15__locale_struct", !16, i64 0}
+!32 = !{!"p1 int", !16, i64 0}
+!33 = !{!"p1 short", !16, i64 0}
+!34 = !{!12, !12, i64 0}
 ```
 
-## Классификация грамматики
-Данная грамматика является **контекстно-свободной**, так как в левой части каждого правила находится ровно один нетерминальный символ.
 
-Для синтаксического анализа использован восходящий анализ, реализуемый генератором парсеров **Bison**.  
-Для лексического анализа использован генератор сканеров **Flex**.
+3. Исследование разворачивается ли цикл (-unroll)
 
-## Архитектура решения
-В проект были добавлены следующие компоненты:
+> [!NOTE]
+> При нулевой оптимизации вычислительный цикл присутствует в явном виде. Внутри базового блока @main() чётко прослеживается стандартная циклическая структура. На уровне -O2 произошла полная развёртка и удаление цикла на этапе компиляции, вычислив результат итераций статически во время компиляции. 
 
-- `lexer.l` — описание правил лексического анализа для Flex;
-- `parser.y` — описание грамматики для Bison;
-- `wrapper.c` — прослойка между нативным парсером и C# приложением;
-- `NativeParser.dll` — собранная библиотека синтаксического анализа;
-- `NativeParserInterop.cs` — C#-обёртка для вызова DLL;
-- модифицированный `MainForm.cs` — запуск синтаксического анализа после лексического.
+4. Построение CFG для main с -O0 и с -O2
 
-При успешном завершении лексического анализа вызывается функция `ParseSourceCode(...)` из `NativeParser.dll`.  
-Если в строке обнаруживается синтаксическая ошибка, в таблицу добавляется отдельная строка с сообщением об ошибке и координатами.
+-O0
 
-## Интеграция Flex & Bison
-Синтаксический анализатор был собран как отдельный нативный модуль и подключён к Windows Forms приложению.
+(images/code13.png)
 
+-O2
 
-![Проект NativeParser](images/lab2/nativeparser-project.png)
+(images/code14.png)
 
-## Переход к позиции ошибки
-При выборе строки таблицы с лексемой курсор в редакторе переходит к позиции найденной лексемы.  
-При выборе строки с синтаксической ошибкой выполняется переход к диапазону позиции ошибки и её подсветка в редакторе.
+ Присутствующие на графе разветвления и блоки относятся к обеспечению работы std::endl и системной локали стандартной библиотеки STL
 
+5. Применение дополнительно -loop-rotate, -licm и описание изменений
 
-![Переход к ошибке](images/lab2/error-highlight.png)
+(images/code15.png)
 
-## Примеры допустимых строк
+### Листинг дополнительных оптимизаций
 
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-val nums = listOf(1, 2, 3);
-val nums2 = listOf(-1, +2, 3.14);
-val flags = listOf(true, false, true);
+```llvm
+; ModuleID = 'task.ll'
+source_filename = "task.cpp"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-i128:128-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+module asm ".globl _ZSt21ios_base_library_initv"
+
+%"struct.std::array" = type { [5 x i32] }
+%"class.std::basic_ostream" = type { ptr, %"class.std::basic_ios" }
+%"class.std::basic_ios" = type { %"class.std::ios_base", ptr, i8, i8, ptr, ptr, ptr, ptr }
+%"class.std::ios_base" = type { ptr, i64, i64, i32, i32, i32, ptr, %"struct.std::ios_base::_Words", [8 x %"struct.std::ios_base::_Words"], i32, ptr, %"class.std::locale" }
+%"struct.std::ios_base::_Words" = type { ptr, i64 }
+%"class.std::locale" = type { ptr }
+
+$_ZNSt5arrayIiLm5EEixEm = comdat any
+
+@__const.main.data = private unnamed_addr constant %"struct.std::array" { [5 x i32] [i32 1, i32 2, i32 3, i32 4, i32 5] }, align 4
+@_ZSt4cout = external global %"class.std::basic_ostream", align 8
+@.str = private unnamed_addr constant [66 x i8] c"/usr/lib/gcc/x86_64-linux-gnu/15/../../../../include/c++/15/array\00", align 1
+@__PRETTY_FUNCTION__._ZNSt5arrayIiLm5EEixEm = private unnamed_addr constant [73 x i8] c"reference std::array<int, 5>::operator[](size_type) [_Tp = int, _Nm = 5]\00", align 1
+@.str.1 = private unnamed_addr constant [19 x i8] c"__n < this->size()\00", align 1
+
+; Function Attrs: mustprogress noinline norecurse uwtable
+define dso_local noundef i32 @main() #0 {
+  %1 = alloca ptr, align 8
+  %2 = alloca i32, align 4
+  %3 = alloca %"struct.std::array", align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i32, align 4
+  store i32 0, ptr %2, align 4
+  call void @llvm.memcpy.p0.p0.i64(ptr align 4 %3, ptr align 4 @__const.main.data, i64 20, i1 false)
+  store i32 0, ptr %4, align 4
+  store i32 0, ptr %5, align 4
+  %6 = load i32, ptr %5, align 4
+  %7 = sext i32 %6 to i64
+  store ptr %3, ptr %1, align 8
+  %8 = load ptr, ptr %1, align 8
+  %9 = icmp ult i64 %7, 5
+  br i1 %9, label %.lr.ph, label %21
+
+.lr.ph:                                           ; preds = %0
+  %.promoted = load i32, ptr %5, align 4
+  %.promoted1 = load i32, ptr %4, align 4
+  br label %10
+
+10:                                               ; preds = %.lr.ph, %17
+  %11 = phi i32 [ %.promoted1, %.lr.ph ], [ %16, %17 ]
+  %12 = phi i32 [ %.promoted, %.lr.ph ], [ %18, %17 ]
+  %13 = sext i32 %12 to i64
+  %14 = call noundef nonnull align 4 dereferenceable(4) ptr @_ZNSt5arrayIiLm5EEixEm(ptr noundef nonnull align 4 dereferenceable(20) %3, i64 noundef %13) #5
+  %15 = load i32, ptr %14, align 4
+  %16 = add nsw i32 %11, %15
+  br label %17
+
+17:                                               ; preds = %10
+  %18 = add nsw i32 %12, 1
+  %19 = sext i32 %18 to i64
+  %20 = icmp ult i64 %19, 5
+  br i1 %20, label %10, label %._crit_edge, !llvm.loop !6
+
+._crit_edge:                                      ; preds = %17
+  %.lcssa2 = phi i32 [ %16, %17 ]
+  %.lcssa = phi i32 [ %18, %17 ]
+  store i32 %.lcssa, ptr %5, align 4
+  store i32 %.lcssa2, ptr %4, align 4
+  store ptr %3, ptr %1, align 1
+  br label %21
+
+21:                                               ; preds = %._crit_edge, %0
+  %22 = load i32, ptr %4, align 4
+  %23 = call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEi(ptr noundef nonnull align 8 dereferenceable(8) @_ZSt4cout, i32 noundef %22)
+  %24 = call noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEPFRSoS_E(ptr noundef nonnull align 8 dereferenceable(8) %23, ptr noundef @_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_)
+  ret i32 0
+}
+
+; Function Attrs: nocallback nofree nounwind willreturn memory(argmem: readwrite)
+declare void @llvm.memcpy.p0.p0.i64(ptr noalias writeonly captures(none), ptr noalias readonly captures(none), i64, i1 immarg) #1
+
+; Function Attrs: mustprogress noinline nounwind uwtable
+define linkonce_odr dso_local noundef nonnull align 4 dereferenceable(4) ptr @_ZNSt5arrayIiLm5EEixEm(ptr noundef nonnull align 4 dereferenceable(20) %0, i64 noundef %1) #2 comdat align 2 {
+  %3 = alloca ptr, align 8
+  %4 = alloca ptr, align 8
+  %5 = alloca i64, align 8
+  store ptr %0, ptr %4, align 8
+  store i64 %1, ptr %5, align 8
+  %6 = load ptr, ptr %4, align 8
+  br label %7
+
+7:                                                ; preds = %2
+  %8 = load i64, ptr %5, align 8
+  store ptr %6, ptr %3, align 8
+  %9 = load ptr, ptr %3, align 8
+  %10 = icmp ult i64 %8, 5
+  %11 = xor i1 %10, true
+  br i1 %11, label %12, label %13
+
+12:                                               ; preds = %7
+  call void @_ZSt21__glibcxx_assert_failPKciS0_S0_(ptr noundef @.str, i32 noundef 210, ptr noundef @__PRETTY_FUNCTION__._ZNSt5arrayIiLm5EEixEm, ptr noundef @.str.1) #6
+  unreachable
+
+13:                                               ; preds = %7
+  br label %14
+
+14:                                               ; preds = %13
+  br label %15
+
+15:                                               ; preds = %14
+  %16 = getelementptr inbounds nuw %"struct.std::array", ptr %6, i32 0, i32 0
+  %17 = load i64, ptr %5, align 8
+  %18 = getelementptr inbounds nuw [5 x i32], ptr %16, i64 0, i64 %17
+  ret ptr %18
+}
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEi(ptr noundef nonnull align 8 dereferenceable(8), i32 noundef) #3
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZNSolsEPFRSoS_E(ptr noundef nonnull align 8 dereferenceable(8), ptr noundef) #3
+
+declare noundef nonnull align 8 dereferenceable(8) ptr @_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_(ptr noundef nonnull align 8 dereferenceable(8)) #3
+
+; Function Attrs: cold noreturn nounwind
+declare void @_ZSt21__glibcxx_assert_failPKciS0_S0_(ptr noundef, i32 noundef, ptr noundef, ptr noundef) #4
+
+attributes #0 = { mustprogress noinline norecurse uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #1 = { nocallback nofree nounwind willreturn memory(argmem: readwrite) }
+attributes #2 = { mustprogress noinline nounwind uwtable "frame-pointer"="all" "min-legal-vector-width"="0" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #3 = { "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #4 = { cold noreturn nounwind "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cmov,+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "tune-cpu"="generic" }
+attributes #5 = { nounwind }
+attributes #6 = { cold noreturn nounwind }
+
+!llvm.module.flags = !{!0, !1, !2, !3, !4}
+!llvm.ident = !{!5}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{i32 8, !"PIC Level", i32 2}
+!2 = !{i32 7, !"PIE Level", i32 2}
+!3 = !{i32 7, !"uwtable", i32 2}
+!4 = !{i32 7, !"frame-pointer", i32 2}
+!5 = !{!"Ubuntu clang version 21.1.8 (6ubuntu1)"}
+!6 = distinct !{!6, !7}
+!7 = !{!"llvm.loop.mustprogress"}
 ```
 
-## Тестовые примеры
 
-### Корректный пример
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
+> [!NOTE]
+> -loop-rotate,licm производят оптимизацию структуры цикла.
+> Оптимизация -loop-rotate поменяла структуру самого цикла. Цикл for превратился в цикл типа do-while (проверка в самом конце). Также избавилась от одного лишнего прыжка (br) на каждом круге цикла.
+Оптимизация -licm вынесла из тела цикла операции со стеком (многократное повторение) и поместила их в предзаголовок цикла (один раз до входа в цикл).
 
-Ожидаемый результат:
+6. Вывод
 
-- лексический анализ проходит успешно;
-- синтаксический анализ проходит успешно;
-- в таблице отображается строка `OK`.
+> [!NOTE]
+> При оптимизации -O2 цикл и массив были полностью удалены, значение 15 было вычислено на этапе компиляции и подставлено напрямую в блок вывода.
 
-### Ошибочные примеры
-
-#### 1. Пропущен `;`
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow")
-```
-
-#### 2. Лишняя запятая
-```kotlin
-val animals = listOf("Dog", , "Cow");
-```
-
-#### 3. Запятая перед `)`
-```kotlin
-val animals = listOf("Dog", "Cat", );
-```
-
-#### 4. Отсутствует элемент после `(`
-```kotlin
-val animals = listOf(, "Dog");
-```
-
-#### 5. Отсутствует запятая между элементами
-```kotlin
-val animals = listOf("Dog" "Cat");
-```
-
-## Инструкция по сборке дополнительного задания
-
-### Требования
-
-- Windows;
-- Microsoft Visual Studio;
-- .NET Framework 4.8;
-- WinFlexBison.
-
-### Сборка
-
-1. Открыть решение в Visual Studio.
-2. Выбрать конфигурацию `Debug` или `Release`.
-3. Для GUI-проекта выбрать платформу `x86`.
-4. Для проекта `NativeParser` выбрать платформу `Win32`.
-5. Сгенерировать файлы `parser.tab.c`, `parser.tab.h`, `lex.yy.c`.
-6. Собрать проект `NativeParser`.
-7. Убедиться, что `NativeParser.dll` располагается рядом с `GUI.exe`.
-8. Выполнить сборку основного GUI-проекта.
-
-## Вывод
-В ходе лабораторной работы был реализован лексический анализатор для конструкции объявления списка с инициализацией на языке Kotlin и выполнена его интеграция в графический интерфейс языкового процессора.
-
-В рамках дополнительного задания была разработана контекстно-свободная грамматика, реализован синтаксический анализатор на основе Flex & Bison и выполнено его подключение к основному приложению. Программа позволяет выполнять как лексический, так и синтаксический анализ входной строки, выводить диагностические сообщения и переходить к позиции найденной ошибки.
-
+## Контрольные вопросы
+1. Что такое Clang, и какова его роль в процессе компиляции программ?
+> фронтенд компилятора для языков семейства C, созданный на базе инфраструктуры LLVM. Роль - трансляция исходного кода в понятное для компилятора промежуточное представление.
+2. Что представляет собой LLVM и как он используется в современных компиляторах?
+> универсальная модульная инфраструктура для разработки компиляторов (оптимизации) и анализа кода. В современных компиляторах выступает в роли мидлфронта (оптимизация) и бэкенда (превращение в машинный код).
+3. Чем отличается абстрактное синтаксическое дерево (AST) от промежуточного представления LLVM IR?
+> AST - высокоуровневое, древовидное представление программы, используется для семантического анализа.  LLVM IR - низкоуровневое линейное представление, напоминающее универсальный ассемблер для гипотетического процессора с бесконечным числом виртуальных регистров, нужен для оптимизаций.
+4. Для чего необходимо промежуточное представление (IR) в процессе компиляции?
+> Для независимости от языков и процессоров, а также для проведения оптимизаций
+5. Что делает инструкция alloc в LLVM IR, и зачем она используется в функциях?
+> Выделяет память на стеке, используется для локальных переменных.
+6. Зачем нужна оптимизация кода в компиляторе, и какие основные цели она преследует?
+> Для повышения быстродействия, уменьшения размера кода.
+7. Что такое SSA-форма и почему она важна при оптимизации программ?
+> SSA (Static Single Assignment - статическое единичное присваивание) — свойство промежуточного представления, при котором каждая переменная должна быть определена до ее использования и получить значение ровно один раз.
+8. Что такое граф потока управления (CFG) и как он помогает анализировать поведение программы?
+> CFG — граф потока управления программы, где вершины — базовые блоки, рёбра — возможные переходы выполнения. Помогает анализировать циклы, ветвления.
+8. Как устроено представление арифметических операций в LLVM IR (например, умножение, сложение)?
+> По принципу ТАС: у операции есть строго один оператор, два операнда и один результат.
+10. Почему функции в LLVM IR обычно представляют собой отдельные единицы анализа и оптимизации?
+> Разделение на отдельные единицы позволяет распараллеливать компиляцию, экономить оперативную память компилятора и применять кэширование результатов.
+11. Что происходит с функцией в LLVM IR, если она вызывается один раз и очень короткая?
+> Происходит инлайнинг. Компилятор удалит сам вызов функции, а её тело перенесет прямо в место вызова, подставив аргументы вместо параметров.
+12. Какие преимущества даёт использование IR и CFG для автоматических оптимизаций по сравнению с анализом исходного текста на C?
+> Явные зависимости, строгая типизация и простота инструкций
 
 ---
-
-# Лабораторная работа №3. Разработка синтаксического анализатора (парсера)
-
-## 1. Название и цель лабораторной работы
-
-**Лабораторная работа №3. Разработка синтаксического анализатора (парсера)**
-
-Цель работы — изучить назначение и принципы работы синтаксического анализатора в структуре компилятора, спроектировать грамматику для заданной синтаксической конструкции, выбрать и обосновать метод анализа, выполнить программную реализацию парсера с нейтрализацией синтаксических ошибок методом Айронса и интегрировать разработанный модуль в ранее созданный графический интерфейс языкового процессора.
-
-## 2. Сведения об авторе
-
-**Костоломов Александр Евгеньевич**  
-Группа: **АВТ-314**  
-НГТУ
-
-## 3. Постановка задачи
-
-В рамках лабораторной работы требовалось:
-
-1. Разработать синтаксический анализатор для заданной синтаксической конструкции
-2. Интегрировать парсер в приложение, разработанное в лабораторной работе №1
-3. Выполнять синтаксический анализ после успешного завершения лексического анализа из лабораторной работы №2
-4. Выводить результаты анализа в таблицу ошибок
-5. Реализовать переход к месту ошибки в редакторе по щелчку на строке таблицы
-6. Реализовать нейтрализацию синтаксических ошибок методом Айронса
-7. Подготовить тестовые примеры корректного и ошибочного ввода
-
-## 4. Вариант задания
-
-**Вариант:** Объявление списка с инициализацией на языке Kotlin
-
-### Примеры корректных строк
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-val nums = listOf(1, -2, +3.5, 0);
-val flags = listOf(true, false, true);
-val letters = listOf('a', 'b', 'c');
-val empty = listOf();
-```
-
-### Поддерживаемые элементы списка
-
-Парсер поддерживает следующие типы элементов:
-
-- строковый литерал
-- символьный литерал
-- целочисленный литерал
-- вещественный литерал
-- логические литералы `true`, `false`
-- числа со знаком `+` и `-`
-- пустой список
-
-### Допустимые лексемы
-
-В синтаксической конструкции используются следующие лексемы:
-
-- ключевое слово `val`
-- идентификатор
-- оператор присваивания `=`
-- специальная лексема `listOf`
-- открывающая круглая скобка `(`
-- закрывающая круглая скобка `)`
-- разделитель `,`
-- конец оператора `;`
-- строковый литерал
-- символьный литерал
-- целочисленный литерал
-- вещественный литерал
-- логические литералы `true`, `false`
-- знаки `+` и `-`
-
-## 5. Разработка грамматики
-
-Синтаксическая конструкция объявления списка с инициализацией на языке Kotlin описывается контекстно-свободной грамматикой.
-
-Формально контекстно-свободная грамматика задаётся как:
-
-```text
-G[Z] = {V_T, V_N, Z, P}
-```
-
-где  
-`V_T` — множество терминальных символов  
-`V_N` — множество нетерминальных символов  
-`Z` — начальный символ грамматики  
-`P` — множество правил продукции, причём для контекстно-свободной грамматики каждое правило имеет вид
-
-```text
-A -> α
-```
-
-где `A ∈ V_N`, `α ∈ (V_T ∪ V_N)*`
-
-### Терминальные символы
-
-```text
-V_T = {
-=, (, ), ,, ;, +, -, ., ", ', _, " ",
-A...Z, a...z, 0...9
-}
-```
-
-### Нетерминальные символы
-
-```text
-V_N = {
-Z,
-<declaration>,
-<elements_opt>,
-<elements>,
-<element>,
-<number>,
-<signed_number>,
-<sign>,
-<identifier>,
-<identifier_tail>,
-<string>,
-<string_body>,
-<string_char>,
-<char>,
-<char_symbol>,
-<int>,
-<double>,
-<digits>,
-<digit>,
-<letter>
-}
-```
-
-### Начальный символ
-
-```text
-Z = <declaration>
-```
-
-### Правила продукции
-
-```text
-<declaration> -> "val" <identifier> "=" "listOf" "(" <elements_opt> ")" ";"
-
-<elements_opt> -> <elements>
-<elements_opt> -> ε
-
-<elements> -> <element>
-<elements> -> <element> "," <elements>
-
-<element> -> <string>
-<element> -> <char>
-<element> -> "true"
-<element> -> "false"
-<element> -> <number>
-
-<number> -> <int>
-<number> -> <double>
-<number> -> <signed_number>
-
-<signed_number> -> <sign> <int>
-<signed_number> -> <sign> <double>
-
-<sign> -> "+"
-<sign> -> "-"
-
-<identifier> -> <letter> <identifier_tail>
-<identifier> -> "_" <identifier_tail>
-
-<identifier_tail> -> <letter> <identifier_tail>
-<identifier_tail> -> <digit> <identifier_tail>
-<identifier_tail> -> "_" <identifier_tail>
-<identifier_tail> -> ε
-
-<string> -> "\"" <string_body> "\""
-
-<string_body> -> <string_char> <string_body>
-<string_body> -> ε
-
-<string_char> -> <letter>
-<string_char> -> <digit>
-<string_char> -> "_"
-<string_char> -> " "
-
-<char> -> "'" <char_symbol> "'"
-
-<char_symbol> -> <letter>
-<char_symbol> -> <digit>
-<char_symbol> -> "_"
-<char_symbol> -> " "
-
-<int> -> <digit> <digits>
-
-<double> -> <digit> <digits> "." <digit> <digits>
-
-<digits> -> <digit> <digits>
-<digits> -> ε
-
-<digit> -> "0"
-<digit> -> "1"
-<digit> -> "2"
-<digit> -> "3"
-<digit> -> "4"
-<digit> -> "5"
-<digit> -> "6"
-<digit> -> "7"
-<digit> -> "8"
-<digit> -> "9"
-
-<letter> -> "A" | "B" | ... | "Z" | "a" | "b" | ... | "z"
-```
-
-## 6. Классификация грамматики по Хомскому
-
-Разработанная грамматика относится к **контекстно-свободным грамматикам**, то есть к **грамматикам второго типа** по классификации Хомского.
-
-Это объясняется тем, что в левой части каждого правила продукции находится ровно один нетерминальный символ, а правая часть может содержать произвольную последовательность терминальных и нетерминальных символов.
-
-Следовательно, данная грамматика имеет вид:
-
-```text
-A -> α, где A ∈ V_N, α ∈ (V_T ∪ V_N)*
-```
-
-что соответствует определению контекстно-свободной грамматики.
-
-## 7. Метод анализа
-
-Для синтаксического анализа в лабораторной работе выбран метод **рекурсивного спуска**.
-
-Выбор данного метода обусловлен тем, что синтаксическая конструкция варианта имеет последовательную и иерархическую структуру: сначала распознаются обязательные элементы объявления, затем выполняется разбор содержимого списка, после чего проверяется корректность завершения всей конструкции. Такой подход удобно реализуется на языке C# и позволяет встраивать диагностику ошибок непосредственно в процедуры анализа.
-
-В разработанном парсере разбор строится поэтапно и соответствует логике корректной входной строки вида:
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
-
-Сначала анализатор последовательно проверяет:
-
-- ключевое слово `val`;
-- идентификатор;
-- оператор присваивания `=`;
-- функцию инициализации списка `listOf`;
-- открывающую круглую скобку `(`.
-
-После этого начинается разбор содержимого списка. На данном этапе допускаются два варианта:
-
-1. **пустой список** — сразу встречается символ `)`;
-2. **непустой список** — считывается первый элемент списка.
-
-Если список непустой, анализатор разбирает один элемент и затем проверяет, следует ли после него запятая. Если запятая присутствует, выполняется переход к разбору следующего элемента. Таким образом, процедура повторяется циклически до тех пор, пока не будет достигнут конец списка.
-
-Элементами списка в реализованном варианте могут быть:
-
-- строковые литералы;
-- символьные литералы;
-- логические литералы `true` и `false`;
-- целочисленные и вещественные литералы;
-- числа со знаком `+` или `-`.
-
-После завершения разбора списка анализатор ожидает закрывающую круглую скобку `)` и символ конца оператора `;`. Только после успешной проверки этих элементов конструкция считается синтаксически корректной.
-
-В программной реализации данная логика поддерживается набором взаимосвязанных процедур рекурсивного спуска. Основной разбор объявления выполняется процедурой `ParseDeclaration()`, разбор пустого или непустого списка — `ParseElementsOpt()`, последовательности элементов — `ParseElements()`, отдельного элемента — `ParseElement()`. Для числовых литералов дополнительно используются процедуры `ParseNumberLiteral()`, `ParseSignedNumber()` и `ParseSign()`.
-
-### Схема метода анализа
-
-Ниже приведена схема метода анализа для выбранной синтаксической конструкции.
-
-![Схема метода анализа](images/lab3/11-parser-graph.png)
-
-На схеме показан общий ход рекурсивного спуска при разборе объявления списка с инициализацией на языке Kotlin. После распознавания ключевого слова, идентификатора, оператора присваивания и функции `listOf` анализатор переходит к разбору списка. Далее допускается либо немедленное завершение списка, либо разбор первого элемента. После каждого элемента проверяется наличие запятой: если она есть, начинается разбор следующего элемента; если её нет, выполняется переход к завершению списка. Завершается разбор проверкой символов `)` и `;`.
-
-### Программная реализация метода анализа
-
-В проект были добавлены следующие классы:
-
-- `SyntaxAnalyzer.cs` — основной синтаксический анализатор
-- `SyntaxResult.cs` — результат синтаксического анализа
-- `SyntaxError.cs` — описание одной синтаксической ошибки
-- `SyntaxTokenStream.cs` — вспомогательный класс для пошагового обхода потока лексем
-
-Парсер работает поверх результата лексического анализа. После нажатия кнопки **«Пуск»** сначала запускается лексический анализатор. Если лексические ошибки отсутствуют, результат передаётся в синтаксический анализатор. После этого выполняется разбор последовательности лексем по правилам заданной грамматики, а информация об ошибках выводится в таблицу результатов.
-
-## 8. Диагностика и нейтрализация синтаксических ошибок
-
-В программе реализована нейтрализация синтаксических ошибок методом **Айронса**.
-
-Суть метода в данной лабораторной работе заключается в следующем:
-
-1. При обнаружении ошибки парсер не завершает работу немедленно
-2. Выполняется поиск ближайшей точки синхронизации
-3. После достижения синхронизирующего символа разбор продолжается
-4. Благодаря этому в одном запуске можно обнаружить несколько ошибок
-
-### Используемые точки синхронизации
-
-В реализации парсера в качестве точек синхронизации используются:
-
-- `val` — начало нового объявления
-- `,` — разделитель элементов списка
-- `)` — завершение списка
-- `;` — завершение оператора
-
-Дополнительно в реализации учитываются границы строк, чтобы одна полностью ошибочная строка не вызывала каскад большого количества вторичных ошибок.
-
-### Примеры диагностируемых ошибок
-
-Парсер обнаруживает, в частности, следующие типы ошибок:
-
-- отсутствует ключевое слово `val`
-- отсутствует идентификатор после `val`
-- отсутствует оператор присваивания `=`
-- отсутствует лексема `listOf`
-- отсутствует открывающая или закрывающая круглая скобка
-- отсутствует `;` в конце объявления
-- отсутствует запятая между элементами списка
-- присутствует лишняя запятая
-- элемент списка имеет недопустимый вид
-- после знака `+` или `-` отсутствует число
-
-### Интеграция в графический интерфейс
-
-Парсер встроен в приложение из лабораторной работы №1.
-
-Реализованы следующие возможности:
-
-- запуск синтаксического анализа из интерфейса
-- вывод найденных ошибок в таблицу
-- отображение неверного фрагмента, позиции и описания ошибки
-- вывод общего количества ошибок
-- переход к месту ошибки в редакторе по щелчку на строке таблицы
-- подсветка ошибочного фрагмента в текстовом поле
-
-### Дополнительное задание. Интеграция ANTLR
-
-В рамках дополнительного задания была реализована альтернативная версия синтаксического анализатора с использованием **ANTLR**.
-
-Выполнено следующее:
-
-- разработана грамматика `KotlinList.g4`
-- сгенерированы классы лексера и парсера ANTLR для C#
-- подключён runtime `Antlr4.Runtime.Standard`
-- реализован запуск ANTLR-анализа из графического интерфейса
-- результаты ANTLR-анализа выводятся в таблицу ошибок
-
-Дополнительная реализация позволяет сравнить ручной синтаксический анализатор на основе рекурсивного спуска и автоматически сгенерированный синтаксический анализатор на основе ANTLR.
-
-## 9. Тестовые примеры
-
-### 1. Корректный ввод
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
-
-Результат: ошибок не обнаружено.
-
-![Корректный ввод](images/lab3/01-main-success.png)
-
-### 2. Отсутствует `val`
-
-```kotlin
-animals = listOf("Dog");
-```
-
-![Ошибка: отсутствует val](images/lab3/02-missing-val.png)
-
-### 3. Отсутствует идентификатор
-
-```kotlin
-val = listOf("Dog");
-```
-
-![Ошибка: отсутствует идентификатор](images/lab3/03-missing-identifier.png)
-
-### 4. Пропущена запятая между элементами
-
-```kotlin
-val animals = listOf("Dog" "Cat");
-```
-
-![Ошибка: пропущена запятая](images/lab3/04-missing-comma.png)
-
-### 5. Некорректный элемент списка
-
-```kotlin
-val animals = listOf("Dog", qwerty, "Cat");
-```
-
-![Ошибка: некорректный элемент](images/lab3/05-invalid-element.png)
-
-### 6. Несколько ошибок в одной строке
-
-```kotlin
-val = listOf(+, , "Dog" true ;
-```
-
-![Несколько ошибок](images/lab3/06-multiple-errors.png)
-
-### 7. Мусорные строки и восстановление разбора
-
-```text
-qwerty
-asdf
-val animals = listOf("Dog", "Cat");
-```
-
-![Мусорные строки](images/lab3/07-garbage-lines.png)
-
-### 8. Навигация к ошибке
-
-При щелчке по строке таблицы курсор в редакторе переходит к ошибочному фрагменту и выделяет его.
-
-![Переход к ошибке](images/lab3/08-navigation-to-error.png)
-
-### 9. Дополнительное задание: корректный запуск ANTLR
-
-![ANTLR: корректный запуск](images/lab3/09-antlr-success.png)
-
-### 10. Дополнительное задание: ошибка ANTLR
-
-![ANTLR: ошибочный запуск](images/lab3/10-antlr-error.png)
-
-## Вывод
-
-В ходе лабораторной работы был разработан синтаксический анализатор для конструкции объявления списка с инициализацией на языке Kotlin.
-
-Выполнено:
-
-- разработана контекстно-свободная грамматика
-- выбран и реализован метод рекурсивного спуска
-- реализована нейтрализация синтаксических ошибок методом Айронса
-- парсер интегрирован в графический интерфейс
-- реализован вывод ошибок в таблицу и переход к месту ошибки
-- проведено тестирование на корректных и ошибочных примерах
-- дополнительно реализована альтернативная версия синтаксического анализатора на основе ANTLR
-
-Разработанная программа позволяет выполнять как лексический, так и синтаксический анализ входного текста и наглядно отображать результаты разбора.
-
-
----
-
-# Лабораторная работа №5. Построение AST и проверка контекстно-зависимых условий
-
-## Автор
-
-**Костоломов Александр Евгеньевич**  
-Группа: **АВТ-314**  
-НГТУ
-
-## Цель работы
-
-Изучить назначение и принципы работы семантического анализатора в структуре компилятора. Освоить построение абстрактного синтаксического дерева (AST) и проверку контекстно-зависимых условий для заданной синтаксической конструкции.
-
-## Вариант задания
-
-**Тема:** объявление списка с инициализацией на языке Kotlin.
-
-Примеры верных строк:
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-val nums = listOf(1, -2, +3.5, 0);
-val flags = listOf(true, false, true);
-val letters = listOf('a', 'b', 'c');
-val empty = listOf();
-val copy = listOf(nums);
-```
-
-Поддерживаемые элементы списка:
-
-- строковые литералы;
-- символьные литералы;
-- целочисленные литералы;
-- вещественные литералы;
-- логические литералы `true`, `false`;
-- числа со знаком `+` и `-`;
-- идентификаторы ранее объявленных списков;
-- пустой список.
-
-## Контекстно-зависимые условия
-
-| № | Проверка | Пример | Ожидаемый результат |
-|---|----------|--------|---------------------|
-| 1 | Уникальность имён объявляемых списков | `val nums = listOf(1);`<br>`val nums = listOf(2);` | Ошибка семантики: `Повторное объявление идентификатора "nums". Первое объявление находится в строке 1.` |
-| 2 | Совместимость типов элементов списка | `val nums = listOf(1, 2, 3);` | Ошибок нет. Для объявления определяется тип `List<Int>`. |
-| 3 | Совместимость разных типов элементов | `val mixed = listOf(1, "two", true);` | Ошибок нет. Для списка с разнотипными элементами определяется обобщённый тип `List<Any>`. |
-| 4 | Допустимое значение целочисленного литерала | `val nums = listOf(999999999999999999999);` | Ошибка семантики: `Значение целочисленного литерала выходит за пределы типа Int32.` |
-| 5 | Допустимое значение вещественного литерала | `val nums = listOf(3.14);` | Ошибок нет. Литерал определяется как `Double`. |
-| 6 | Допустимое значение символьного литерала | `val letters = listOf('ab');` | Ошибка семантики: `Символьный литерал должен содержать ровно один символ.` |
-| 7 | Использование объявленных идентификаторов | `val nums = listOf(1, 2);`<br>`val copy = listOf(nums);` | Ошибок нет. Идентификатор `nums` найден в таблице символов. |
-| 8 | Использование необъявленных идентификаторов | `val copy = listOf(nums);` | Ошибка семантики: `Использование необъявленного идентификатора "nums".` |
-
-## Структура AST
-
-В программе используется абстрактное синтаксическое дерево, в котором удалены технические токены синтаксиса (`=`, `(`, `)`, `,`, `;`) и оставлены только значимые элементы конструкции.
-
-### Типы узлов AST
-
-| Узел | Назначение | Ключевые атрибуты |
-|------|------------|-------------------|
-| `AstNode` | Базовый класс узла AST | `NodeType`, `Line`, `Column`, `Attributes`, `Children` |
-| `ProgramNode` | Корневой узел программы | список объявлений `Declarations` |
-| `ListDeclarationNode` | Объявление списка через `val` | `name`, `keyword`, `type` |
-| `ListOfNode` | Узел инициализации списка через `listOf` | `elementType` |
-| `ElementsNode` | Контейнер элементов списка | дочерние элементы списка |
-| `LiteralNode` | Литерал списка | `value`, тип узла: `StringLiteralNode`, `CharLiteralNode`, `BooleanLiteralNode`, `IntLiteralNode`, `DoubleLiteralNode` |
-| `IdentifierNode` | Использование идентификатора в списке | `name`, `resolvedType` |
-
-### Пример AST для корректной строки
-
-Исходная строка:
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
-
-Текстовое представление AST:
-
-```text
-ProgramNode
-└── ListDeclarationNode
-    ├── name: "animals"
-    ├── keyword: "val"
-    ├── type: List<String>
-    └── value: ListOfNode
-        ├── elementType: String
-        └── elements:
-            ├── StringLiteralNode
-            │   └── value: "Dog"
-            ├── StringLiteralNode
-            │   └── value: "Cat"
-            └── StringLiteralNode
-                └── value: "Cow"
-```
-
-## Рисунок CST / AST
-
-Ниже приведён рисунок, показывающий отличие CST от AST для корректной строки. CST содержит все синтаксические элементы исходной конструкции, а AST оставляет только смысловую структуру объявления списка.
-
-![CST и AST для корректной строки](images/lab5/cst-ast-valid.png)
-
-## Формат вывода AST в программе
-
-После успешного лексического и синтаксического анализа программа строит AST, выполняет семантическую проверку и выводит дерево в таблицу результатов. В выводе отображаются:
-
-- тип узла;
-- ключевые атрибуты узла;
-- иерархия родитель — потомок;
-- результат семантической проверки;
-- общее количество семантических ошибок.
-
-Пример вывода AST в программе:
-
-![Вывод AST в таблице программы](images/lab5/ast-table-output.png)
-
-## Дополнительное задание. Графическая визуализация AST
-
-В рамках дополнительного задания построенное абстрактное синтаксическое дерево визуализируется в отдельном графическом окне.
-
-Реализованы следующие возможности:
-
-- каждый узел AST отображается с указанием типа узла и его ключевых атрибутов;
-- рёбра показывают иерархическую структуру дерева: родительский узел соединяется с дочерними узлами;
-- для связи объявления со значением списка используется подпись ребра `value`;
-- графическое окно открывается отдельной кнопкой **«Показать AST»** в интерфейсе редактора;
-- кнопка **«Показать AST»** становится доступной только после успешного построения AST.
-
-Кнопка вызова графической визуализации AST:
-
-![Кнопка Показать AST](images/lab5/show-ast-button.png)
-
-Графическое окно с AST для корректной строки:
-
-![Графическая визуализация AST](images/lab5/ast-visualizer-valid.png)
-
-Графическое окно с AST для строки с использованием объявленного идентификатора:
-
-```kotlin
-val nums = listOf(1, 2);
-val copy = listOf(nums);
-```
-
-![Графическая визуализация AST с идентификатором](images/lab5/ast-visualizer-identifier.png)
-
-## Тестовые примеры
-
-### 1. Корректный список строк
-
-```kotlin
-val animals = listOf("Dog", "Cat", "Cow");
-```
-
-Ожидаемый результат:
-
-- лексический анализ завершён успешно;
-- синтаксический анализ завершён успешно;
-- AST построено;
-- семантических ошибок нет;
-- тип списка: `List<String>`.
-
-![Корректный список строк](images/lab5/01-valid-string-list.png)
-
-Графический AST:
-
-![AST корректного списка строк](images/lab5/01-valid-string-list-ast.png)
-
-### 2. Корректный список чисел
-
-```kotlin
-val nums = listOf(1, -2, +3.5, 0);
-```
-
-Ожидаемый результат:
-
-- AST построено;
-- семантических ошибок нет;
-- так как в списке присутствуют `Int` и `Double`, итоговый тип списка определяется как `List<Any>`.
-
-![Корректный список чисел](images/lab5/02-valid-number-list.png)
-
-### 3. Пустой список
-
-```kotlin
-val empty = listOf();
-```
-
-Ожидаемый результат:
-
-- AST построено;
-- семантических ошибок нет;
-- тип элемента пустого списка определяется как `Any`.
-
-![Пустой список](images/lab5/03-empty-list.png)
-
-### 4. Повторное объявление идентификатора
-
-```kotlin
-val nums = listOf(1, 2);
-val nums = listOf(3, 4);
-```
-
-Ожидаемый результат:
-
-```text
-Повторное объявление идентификатора "nums". Первое объявление находится в строке 1.
-```
-
-![Повторное объявление идентификатора](images/lab5/04-duplicate-name.png)
-
-### 5. Использование объявленного идентификатора
-
-```kotlin
-val nums = listOf(1, 2);
-val copy = listOf(nums);
-```
-
-Ожидаемый результат:
-
-- идентификатор `nums` найден в таблице символов;
-- AST построено;
-- семантических ошибок нет.
-
-![Использование объявленного идентификатора](images/lab5/05-declared-identifier.png)
-
-### 6. Использование необъявленного идентификатора
-
-```kotlin
-val copy = listOf(nums);
-```
-
-Ожидаемый результат:
-
-```text
-Использование необъявленного идентификатора "nums".
-```
-
-![Использование необъявленного идентификатора](images/lab5/06-undeclared-identifier.png)
-
-### 7. Недопустимое значение символьного литерала
-
-```kotlin
-val letters = listOf('ab');
-```
-
-Ожидаемый результат:
-
-```text
-Символьный литерал должен содержать ровно один символ.
-```
-
-![Недопустимый символьный литерал](images/lab5/07-invalid-char.png)
-
-### 8. Переполнение целочисленного литерала
-
-```kotlin
-val nums = listOf(999999999999999999999);
-```
-
-Ожидаемый результат:
-
-```text
-Значение целочисленного литерала выходит за пределы типа Int32.
-```
-
-![Переполнение целочисленного литерала](images/lab5/08-int-overflow.png)
-
-## Используемые графические средства
-
-Для ручного рисунка CST / AST использован графический редактор **draw.io**.  
-Для программной визуализации AST используется отдельное окно Windows Forms, в котором дерево рисуется средствами `System.Drawing`.
-
-## Инструкция по запуску
-
-1. Открыть решение `GUI.sln` в Microsoft Visual Studio.
-2. Убедиться, что установлен **.NET Framework 4.8**.
-3. Выбрать конфигурацию `Debug` или `Release`.
-4. Для запуска из Visual Studio нажать **F5**.
-5. Ввести тестовую строку в окно редактора.
-6. Нажать кнопку **«Пуск»**.
-7. После успешного анализа нажать кнопку **«Показать AST»** для открытия графического окна с деревом.
-
-После сборки исполняемый файл находится в одной из папок:
-
-```text
-bin\x86\Release\GUI.exe
-bin\Release\GUI.exe
-```
-
-## Вывод
-
-В ходе лабораторной работы был расширен языковой процессор для конструкции объявления списка с инициализацией на языке Kotlin. В программу добавлено построение AST, реализована проверка контекстно-зависимых условий и выполнена визуализация дерева как в текстовом виде, так и в отдельном графическом окне.
