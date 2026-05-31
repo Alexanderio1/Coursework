@@ -9,7 +9,7 @@ namespace GUI.Expressions
 
         public bool CanEvaluate { get; set; }
         public bool Success { get; set; }
-        public int Value { get; set; }
+        public long Value { get; set; }
 
         public PolizEvaluationResult()
         {

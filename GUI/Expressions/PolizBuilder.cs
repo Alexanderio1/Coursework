@@ -13,27 +13,48 @@
                 return _result;
             }
 
-            BuildForNode(root);
+            if (ContainsIdentifier(root))
+            {
+                _result.ContainsIdentifiers = true;
+                return _result;
+            }
 
+            BuildForNode(root);
             return _result;
+        }
+
+        private bool ContainsIdentifier(ExpressionNode node)
+        {
+            var operand = node as OperandExpressionNode;
+
+            if (operand != null)
+            {
+                return !operand.IsNumber;
+            }
+
+            var binary = node as BinaryExpressionNode;
+
+            if (binary != null)
+            {
+                return ContainsIdentifier(binary.Left) ||
+                       ContainsIdentifier(binary.Right);
+            }
+
+            return false;
         }
 
         private void BuildForNode(ExpressionNode node)
         {
             var operand = node as OperandExpressionNode;
+
             if (operand != null)
             {
                 _result.Items.Add(operand.Value);
-
-                if (!operand.IsNumber)
-                {
-                    _result.ContainsIdentifiers = true;
-                }
-
                 return;
             }
 
             var binary = node as BinaryExpressionNode;
+
             if (binary != null)
             {
                 BuildForNode(binary.Left);

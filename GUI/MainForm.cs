@@ -138,10 +138,21 @@ namespace GUI
             var polizBuilder = new PolizBuilder();
             var polizResult = polizBuilder.Build(parseResult.Root);
 
-            var evaluator = new PolizEvaluator();
-            var evaluationResult = evaluator.Evaluate(polizResult.Items);
+            if (polizResult.ContainsIdentifiers)
+            {
+                var evaluationResult = new PolizEvaluationResult();
+                evaluationResult.CanEvaluate = false;
+                evaluationResult.Errors.Add(
+                    "ПОЛИЗ не формируется: выражение содержит идентификаторы. ПОЛИЗ и вычисление выполняются только для выражений из целых чисел.");
 
-            RenderExpressionPolizResult(polizResult, evaluationResult);
+                RenderExpressionPolizResult(polizResult, evaluationResult);
+                return;
+            }
+
+            var evaluator = new PolizEvaluator();
+            var result = evaluator.Evaluate(polizResult.Items);
+
+            RenderExpressionPolizResult(polizResult, result);
         }
 
         private void ConfigureResultsGridForPoliz()

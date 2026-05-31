@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace GUI.Expressions
@@ -19,26 +18,38 @@ namespace GUI.Expressions
 
             foreach (var item in items)
             {
-                int number;
+                if (IsOperator(item))
+                {
+                    continue;
+                }
 
-                if (!int.TryParse(item, out number) && !IsOperator(item))
+                if (!IsIntegerLiteral(item))
                 {
                     result.CanEvaluate = false;
                     result.Errors.Add(
                         "Вычисление невозможно: выражение содержит идентификатор '" + item + "'");
+                    return result;
+                }
 
+                long parsedNumber;
+
+                if (!long.TryParse(item, out parsedNumber))
+                {
+                    result.CanEvaluate = false;
+                    result.Errors.Add(
+                        "Вычисление невозможно: число '" + item + "' выходит за допустимый диапазон");
                     return result;
                 }
             }
 
-            var stack = new Stack<int>();
+            var stack = new Stack<long>();
             int stepNumber = 1;
 
             foreach (var item in items)
             {
-                int number;
+                long number;
 
-                if (int.TryParse(item, out number))
+                if (long.TryParse(item, out number))
                 {
                     stack.Push(number);
 
@@ -57,14 +68,12 @@ namespace GUI.Expressions
                     {
                         result.Errors.Add(
                             "Недостаточно операндов для операции '" + item + "'");
-
                         return result;
                     }
 
-                    int right = stack.Pop();
-                    int left = stack.Pop();
-
-                    int operationResult;
+                    long right = stack.Pop();
+                    long left = stack.Pop();
+                    long operationResult;
 
                     if (!TryCalculate(left, right, item, out operationResult, result))
                     {
@@ -89,15 +98,14 @@ namespace GUI.Expressions
 
             result.Value = stack.Pop();
             result.Success = true;
-
             return result;
         }
 
         private bool TryCalculate(
-            int left,
-            int right,
+            long left,
+            long right,
             string operation,
-            out int value,
+            out long value,
             PolizEvaluationResult result)
         {
             value = 0;
@@ -151,7 +159,25 @@ namespace GUI.Expressions
                    item == "%";
         }
 
-        private string FormatStack(Stack<int> stack)
+        private bool IsIntegerLiteral(string item)
+        {
+            if (string.IsNullOrEmpty(item))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < item.Length; i++)
+            {
+                if (!char.IsDigit(item[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private string FormatStack(Stack<long> stack)
         {
             if (stack.Count == 0)
             {
@@ -159,7 +185,6 @@ namespace GUI.Expressions
             }
 
             var values = stack.ToArray().Reverse();
-
             return "[" + string.Join(", ", values) + "]";
         }
     }
