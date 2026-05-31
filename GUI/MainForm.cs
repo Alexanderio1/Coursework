@@ -1,6 +1,7 @@
 ﻿using GUI.ANTLR;
 using GUI.Lexer;
 using GUI.Syntax;
+using GUI.IR;
 using System;
 using System.Drawing;
 using System.IO;
@@ -37,6 +38,7 @@ namespace GUI
 
         private ProgramNode _lastAst;
         private ToolStripButton btnShowAst;
+        private ToolStripButton btnShowIr;
 
         public MainForm()
         {
@@ -348,6 +350,13 @@ namespace GUI
 
             toolMain.Items.Add(new ToolStripSeparator());
             toolMain.Items.Add(btnShowAst);
+
+            btnShowIr = new ToolStripButton("IR и оптимизации");
+            btnShowIr.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnShowIr.ToolTipText = "Показать промежуточное представление и локальные оптимизации";
+            btnShowIr.Enabled = false;
+            btnShowIr.Click += BtnShowIr_Click;
+            toolMain.Items.Add(btnShowIr);
         }
 
         private void BtnShowAst_Click(object sender, EventArgs e)
@@ -364,6 +373,60 @@ namespace GUI
             }
 
             using (var form = new AstVisualizerForm(_lastAst))
+            {
+                form.ShowDialog(this);
+            }
+        }
+
+        private void BtnShowIr_Click(object sender, EventArgs e)
+        {
+            if (_lastAst == null || _lastAst.Declarations.Count == 0)
+            {
+                MessageBox.Show(
+                    "IR нельзя построить: сначала выполните анализ корректной программы.",
+                    "IR",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            ListIrGenerator generator = new ListIrGenerator();
+            IrProgram originalIr = generator.Generate(_lastAst);
+
+            LocalIrOptimizer optimizer = new LocalIrOptimizer();
+
+            IrProgram normalizedIr = optimizer.NormalizeConstants(originalIr);
+            IrProgram finalIr = optimizer.InlineLiteralTemporaries(normalizedIr);
+
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine("=== AST конструкции из лабораторной работы 5 ===");
+            builder.AppendLine();
+            builder.AppendLine(_lastAst.ToTreeString());
+            builder.AppendLine();
+
+            builder.AppendLine("=== Исходный IR / TAC ===");
+            builder.AppendLine();
+            builder.AppendLine(originalIr.ToDisplayText());
+            builder.AppendLine();
+
+            builder.AppendLine("=== Локальная оптимизация 1: нормализация числовых констант ===");
+            builder.AppendLine();
+            builder.AppendLine("Преобразования:");
+            builder.AppendLine("+N -> N");
+            builder.AppendLine("-0 -> 0");
+            builder.AppendLine("+0 -> 0");
+            builder.AppendLine();
+            builder.AppendLine(normalizedIr.ToDisplayText());
+            builder.AppendLine();
+
+            builder.AppendLine("=== Локальная оптимизация 2: удаление временных переменных литералов ===");
+            builder.AppendLine();
+            builder.AppendLine("Временные переменные, содержащие только литералы, подставляются напрямую в инструкцию listof.");
+            builder.AppendLine();
+            builder.AppendLine(finalIr.ToDisplayText());
+
+            using (IrViewerForm form = new IrViewerForm(builder.ToString()))
             {
                 form.ShowDialog(this);
             }
@@ -769,6 +832,8 @@ namespace GUI
 
             if (btnShowAst != null)
                 btnShowAst.Enabled = _lastAst != null && _lastAst.Declarations.Count > 0;
+
+            if (btnShowIr != null) btnShowIr.Enabled = _lastAst != null && _lastAst.Declarations.Count > 0;
         }
 
         private void MainForm_Activated(object sender, EventArgs e)

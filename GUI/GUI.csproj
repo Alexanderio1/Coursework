@@ -120,6 +120,13 @@
     <Compile Include="HelpForm.Designer.cs">
       <DependentUpon>HelpForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="IR\IrInstruction.cs" />
+    <Compile Include="IR\IrProgram.cs" />
+    <Compile Include="IR\IrViewerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="IR\ListIrGenerator.cs" />
+    <Compile Include="IR\LocalIrOptimizer.cs" />
     <Compile Include="KotlinListBaseListener.cs" />
     <Compile Include="KotlinListLexer.cs" />
     <Compile Include="KotlinListListener.cs" />
