@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -9,6 +8,9 @@ namespace GUI.IR
     {
         public IrProgram NormalizeConstants(IrProgram source)
         {
+            if (source == null)
+                return new IrProgram();
+
             IrProgram result = source.Clone();
 
             foreach (IrInstruction instruction in result.Instructions)
@@ -17,10 +19,13 @@ namespace GUI.IR
                     continue;
 
                 if (instruction.Operation == "const_int")
+                {
                     instruction.Arguments[0] = NormalizeInteger(instruction.Arguments[0]);
-
-                if (instruction.Operation == "const_double")
+                }
+                else if (instruction.Operation == "const_double")
+                {
                     instruction.Arguments[0] = NormalizeDouble(instruction.Arguments[0]);
+                }
             }
 
             return result;
@@ -28,22 +33,40 @@ namespace GUI.IR
 
         public IrProgram InlineLiteralTemporaries(IrProgram source)
         {
-            Dictionary<string, string> literalTemps = new Dictionary<string, string>();
+            if (source == null)
+                return new IrProgram();
+
+            Dictionary<string, string> literalTemps = BuildLiteralTemporaryDictionary(source);
+            Dictionary<string, int> usageCounts = CountArgumentUsages(source);
+
+            HashSet<string> tempsToInline = new HashSet<string>();
 
             foreach (IrInstruction instruction in source.Instructions)
             {
-                if (instruction.Arguments.Count != 1)
+                if (instruction.Operation != "listof")
                     continue;
 
-                if (IsLiteralConstant(instruction.Operation))
-                    literalTemps[instruction.Result] = instruction.Arguments[0];
+                foreach (string argument in instruction.Arguments)
+                {
+                    if (!literalTemps.ContainsKey(argument))
+                        continue;
+
+                    int usageCount = usageCounts.ContainsKey(argument)
+                        ? usageCounts[argument]
+                        : 0;
+
+                    if (usageCount == 1)
+                        tempsToInline.Add(argument);
+                }
             }
 
-            HashSet<string> inlinedTemps = new HashSet<string>();
             List<IrInstruction> optimized = new List<IrInstruction>();
 
             foreach (IrInstruction instruction in source.Instructions)
             {
+                if (tempsToInline.Contains(instruction.Result) && IsLiteralConstant(instruction.Operation))
+                    continue;
+
                 IrInstruction copy = instruction.Clone();
 
                 if (copy.Operation == "listof")
@@ -52,24 +75,60 @@ namespace GUI.IR
                     {
                         string argument = copy.Arguments[i];
 
-                        if (literalTemps.ContainsKey(argument))
-                        {
+                        if (tempsToInline.Contains(argument))
                             copy.Arguments[i] = literalTemps[argument];
-                            inlinedTemps.Add(argument);
-                        }
                     }
-
-                    optimized.Add(copy);
-                    continue;
                 }
-
-                if (inlinedTemps.Contains(copy.Result) && IsLiteralConstant(copy.Operation))
-                    continue;
 
                 optimized.Add(copy);
             }
 
             return new IrProgram(optimized);
+        }
+
+        public Dictionary<string, string> BuildLiteralTemporaryDictionary(IrProgram source)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+
+            if (source == null)
+                return result;
+
+            foreach (IrInstruction instruction in source.Instructions)
+            {
+                if (instruction == null)
+                    continue;
+
+                if (!IsTemporaryName(instruction.Result))
+                    continue;
+
+                if (instruction.Arguments.Count != 1)
+                    continue;
+
+                if (!IsLiteralConstant(instruction.Operation))
+                    continue;
+
+                result[instruction.Result] = instruction.Arguments[0];
+            }
+
+            return result;
+        }
+
+        private Dictionary<string, int> CountArgumentUsages(IrProgram source)
+        {
+            Dictionary<string, int> result = new Dictionary<string, int>();
+
+            foreach (IrInstruction instruction in source.Instructions)
+            {
+                foreach (string argument in instruction.Arguments)
+                {
+                    if (!result.ContainsKey(argument))
+                        result[argument] = 0;
+
+                    result[argument]++;
+                }
+            }
+
+            return result;
         }
 
         private bool IsLiteralConstant(string operation)
@@ -79,6 +138,20 @@ namespace GUI.IR
                 || operation == "const_string"
                 || operation == "const_char"
                 || operation == "const_boolean";
+        }
+
+        private bool IsTemporaryName(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return false;
+
+            if (!name.StartsWith("t"))
+                return false;
+
+            if (name.Length == 1)
+                return false;
+
+            return name.Skip(1).All(char.IsDigit);
         }
 
         private string NormalizeInteger(string rawValue)
@@ -96,20 +169,25 @@ namespace GUI.IR
 
         private string NormalizeDouble(string rawValue)
         {
+            if (string.IsNullOrWhiteSpace(rawValue))
+                return rawValue;
+
+            string preparedValue = rawValue.Replace(',', '.');
+
             double value;
 
-            if (double.TryParse(rawValue, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            if (double.TryParse(preparedValue, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
             {
                 if (value == 0.0)
                     return "0";
 
-                return value.ToString("G", CultureInfo.InvariantCulture);
+                return value.ToString("G15", CultureInfo.InvariantCulture);
             }
 
-            if (!string.IsNullOrWhiteSpace(rawValue) && rawValue.StartsWith("+"))
-                return rawValue.Substring(1);
+            if (preparedValue.StartsWith("+"))
+                return preparedValue.Substring(1);
 
-            return rawValue;
+            return preparedValue;
         }
     }
 }

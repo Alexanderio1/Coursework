@@ -387,6 +387,7 @@ namespace GUI
                     "IR",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
+
                 return;
             }
 
@@ -397,6 +398,8 @@ namespace GUI
 
             IrProgram normalizedIr = optimizer.NormalizeConstants(originalIr);
             IrProgram finalIr = optimizer.InlineLiteralTemporaries(normalizedIr);
+
+            var literalDictionary = optimizer.BuildLiteralTemporaryDictionary(normalizedIr);
 
             StringBuilder builder = new StringBuilder();
 
@@ -412,19 +415,61 @@ namespace GUI
 
             builder.AppendLine("=== Локальная оптимизация 1: нормализация числовых констант ===");
             builder.AppendLine();
-            builder.AppendLine("Преобразования:");
-            builder.AppendLine("+N -> N");
+            builder.AppendLine("Смысл оптимизации:");
+            builder.AppendLine("Числовые литералы приводятся к каноническому виду без изменения значения.");
+            builder.AppendLine();
+            builder.AppendLine("Примеры преобразований:");
+            builder.AppendLine("+001 -> 1");
             builder.AppendLine("-0 -> 0");
             builder.AppendLine("+0 -> 0");
+            builder.AppendLine("2.5000 -> 2.5");
+            builder.AppendLine("2,5000 -> 2.5");
             builder.AppendLine();
+
+            builder.AppendLine("--- Вход оптимизации 1 ---");
+            builder.AppendLine(originalIr.ToDisplayText());
+            builder.AppendLine();
+
+            builder.AppendLine("--- Выход оптимизации 1 ---");
             builder.AppendLine(normalizedIr.ToDisplayText());
             builder.AppendLine();
 
-            builder.AppendLine("=== Локальная оптимизация 2: удаление временных переменных литералов ===");
+            builder.AppendLine("=== Локальная оптимизация 2: встраивание литеральных временных переменных ===");
             builder.AppendLine();
-            builder.AppendLine("Временные переменные, содержащие только литералы, подставляются напрямую в инструкцию listof.");
+            builder.AppendLine("Смысл оптимизации:");
+            builder.AppendLine("Временные переменные, которые содержат только литералы и используются один раз в listof,");
+            builder.AppendLine("подставляются напрямую в инструкцию listof. После этого лишние const_* инструкции удаляются.");
             builder.AppendLine();
+
+            builder.AppendLine("Служебный словарь оптимизации 2:");
+            builder.AppendLine("temporary -> literal");
+
+            if (literalDictionary.Count == 0)
+            {
+                builder.AppendLine("(словарь пуст)");
+            }
+            else
+            {
+                foreach (var pair in literalDictionary.OrderBy(x => x.Key))
+                    builder.AppendLine(pair.Key + " -> " + pair.Value);
+            }
+
+            builder.AppendLine();
+
+            builder.AppendLine("--- Вход оптимизации 2 ---");
+            builder.AppendLine(normalizedIr.ToDisplayText());
+            builder.AppendLine();
+
+            builder.AppendLine("--- Выход оптимизации 2 ---");
             builder.AppendLine(finalIr.ToDisplayText());
+            builder.AppendLine();
+
+            builder.AppendLine("=== Итог ===");
+            builder.AppendLine("1. AST построено для конструкции из лабораторной работы 5.");
+            builder.AppendLine("2. IR сгенерирован в виде трехадресного кода / списка виртуальных инструкций.");
+            builder.AppendLine("3. Реализована локальная оптимизация 1: нормализация числовых констант.");
+            builder.AppendLine("4. Реализована локальная оптимизация 2: встраивание литеральных временных переменных.");
+            builder.AppendLine("5. Для каждой оптимизации показаны входной и выходной IR.");
 
             using (IrViewerForm form = new IrViewerForm(builder.ToString()))
             {
